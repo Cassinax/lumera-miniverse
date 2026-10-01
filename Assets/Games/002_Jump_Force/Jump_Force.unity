@@ -3740,29 +3740,72 @@ MonoBehaviour:
   startingGround: {fileID: 222424821302869639}
   platformPrefab: {fileID: 4569596513166003222, guid: 9964b68f8b77cbb4196b85480e2aef87, type: 3}
   pillarPrefab: {fileID: 8360736158262500850, guid: f0c5c0df8ddaffb4d8072fb93890300e, type: 3}
-  invisibleWalls:
-  - {fileID: 258961686}
-  - {fileID: 1595250949}
+  invisibleWalls: []
   settings:
     levelHeight: 4
-    fixedChance: 0.6
-    secondPlatformChance: 0.35
-    pillarChance: 0.2
-    verticalPillarChance: 0.5
-    platformAmplitude: 5
-    pillarAmplitude: 2
     separation: 0.1
-    shortSpecialGapChance: 0.2
     seed: 0
+    levelsPerTier: 30
+    tiers:
+    - intencao: 'Aprender: quase tudo parado, movimentos curtos e lentos, saltos
+        laterais folgados.'
+      fixedChance: 0.75
+      secondPlatformChance: 0.5
+      pillarChance: 0.08
+      verticalPillarChance: 0
+      platformAmplitude: 1.5
+      pillarAmplitude: 0.75
+      shortSpecialGapChance: 0.15
+      speedMultiplier: 0.6
+      speedVariation: 0.3
+      reachMargin: 0.7
+    - intencao: 'Ritmo: mais movimento, pilares passam a aparecer com frequencia.'
+      fixedChance: 0.6
+      secondPlatformChance: 0.35
+      pillarChance: 0.2
+      verticalPillarChance: 0.4
+      platformAmplitude: 3
+      pillarAmplitude: 1.5
+      shortSpecialGapChance: 0.2
+      speedMultiplier: 0.85
+      speedVariation: 0.6
+      reachMargin: 0.8
+    - intencao: 'Desafio: menos apoio extra, percursos longos e mais rapidos.'
+      fixedChance: 0.45
+      secondPlatformChance: 0.25
+      pillarChance: 0.28
+      verticalPillarChance: 0.5
+      platformAmplitude: 4
+      pillarAmplitude: 2
+      shortSpecialGapChance: 0.25
+      speedMultiplier: 1
+      speedVariation: 0.9
+      reachMargin: 0.85
+    - intencao: 'Mestre: dificuldade maxima, estavel daqui em diante.'
+      fixedChance: 0.35
+      secondPlatformChance: 0.2
+      pillarChance: 0.35
+      verticalPillarChance: 0.6
+      platformAmplitude: 5
+      pillarAmplitude: 2
+      shortSpecialGapChance: 0.3
+      speedMultiplier: 1.15
+      speedVariation: 1.2
+      reachMargin: 0.85
+    minimumSpeed: 0.4
+    maximumSpeedFraction: 0.7
+    safeFallMargin: 0.3
   levelsBelow: 5
   levelsAhead: 5
   anticipationSeconds: 2
   initialPerType: 10
   activationLeadSeconds: 0.5
-  speedVariation: 3
   speedChangeInterval: {x: 1, y: 3}
+  speedAcceleration: 1.5
+  endEaseDistance: 0.8
   viewportMargin: 0.05
   currentLevel: 0
+  currentTier: 0
   plannedThrough: 0
   activeElements: 0
   createdPlatforms: 0

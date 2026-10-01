@@ -566,33 +566,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8502478855015422694}
     m_Modifications:
-    - target: {fileID: 1576014273468231061, guid: cde92d4c243783647bb3649081313cd6, type: 3}
-      propertyPath: m_IsTrigger
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1787574309497332789, guid: cde92d4c243783647bb3649081313cd6, type: 3}
-      propertyPath: forcaMaxima
-      value: 30
-      objectReference: {fileID: 0}
     - target: {fileID: 6311852436408464312, guid: cde92d4c243783647bb3649081313cd6, type: 3}
       propertyPath: m_Name
       value: Trampolim
-      objectReference: {fileID: 0}
-    - target: {fileID: 6311852436408464312, guid: cde92d4c243783647bb3649081313cd6, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6688941616528304386, guid: cde92d4c243783647bb3649081313cd6, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6688941616528304386, guid: cde92d4c243783647bb3649081313cd6, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 3.333333
-      objectReference: {fileID: 0}
-    - target: {fileID: 6688941616528304386, guid: cde92d4c243783647bb3649081313cd6, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6688941616528304386, guid: cde92d4c243783647bb3649081313cd6, type: 3}
       propertyPath: m_LocalPosition.x

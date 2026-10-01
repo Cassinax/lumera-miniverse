@@ -9,16 +9,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 3.333333
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.42
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.89
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.016080568
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -26,15 +38,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -67,6 +79,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_Name
       value: Trampolim
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -123,7 +139,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -143,7 +159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Trampolim
   colisor: {fileID: 1576014273468231061}
   forcaMinima: 5
-  forcaMaxima: 20
+  forcaMaxima: 25
   curvaForca:
     serializedVersion: 2
     m_Curve:
@@ -186,6 +202,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  gizmoSempreVisivel: 0
+  gizmoMetrosPorForca: 0.1
 --- !u!1 &8827161964130369298 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2439047198753042939, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
