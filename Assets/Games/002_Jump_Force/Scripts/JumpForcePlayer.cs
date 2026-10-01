@@ -288,6 +288,3 @@ namespace Lumera.JumpForce
         }
     }
 }
-
-
-

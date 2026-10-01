@@ -31,8 +31,7 @@ namespace Lumera.JumpForce
             var rotation = initialRotation * Quaternion.Euler(0, elapsed * yawDegreesPerSecond, 0);
             // Set before the platform samples its displacement and the character follows it.
             transform.SetPositionAndRotation(position, rotation);
-            
+
         }
     }
 }
-
