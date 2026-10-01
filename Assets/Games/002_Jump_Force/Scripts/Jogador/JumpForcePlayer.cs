@@ -370,7 +370,9 @@ namespace Lumera.JumpForce
             foreach (var hit in body.SweepTestAll(direction, distance + skin, QueryTriggerInteraction.Ignore))
             {
                 // Initial overlaps (distance 0) are left to the solver, so the player can still walk away.
-                if (hit.distance <= 0 || !hit.collider.GetComponentInParent<JumpForcePilarArco>()) continue;
+                // A pillar's standable top is a platform surface, not a wall.
+                if (hit.distance <= 0 || hit.collider.GetComponent<JumpForcePlatform>()
+                    || !hit.collider.GetComponentInParent<JumpForcePilarArco>()) continue;
                 allowed = Mathf.Min(allowed, Mathf.Max(0, hit.distance - skin));
             }
             // Hitting a wall also ends a trampoline or fan slide in that direction.
