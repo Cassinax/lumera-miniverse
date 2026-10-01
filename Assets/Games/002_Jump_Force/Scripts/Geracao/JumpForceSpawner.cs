@@ -100,6 +100,7 @@ namespace Lumera.JumpForce
             enabled = true;
             warnedAtLevel = -1;
             forgottenBelow = 0;
+            startingGround.gameObject.SetActive(true);
             foreach (var item in active.Values) Return(item);
             active.Clear();
             retired.Clear();
@@ -159,6 +160,8 @@ namespace Lumera.JumpForce
             float lead = rising * Mathf.Max(0.1f, activationLeadSeconds);
             float activeTop = Mathf.Max(player.FeetY + 2 * settings.levelHeight, cameraTop + settings.levelHeight) + lead;
             float activeBottom = Mathf.Min(player.FeetY - settings.levelHeight, cameraBottom - settings.levelHeight);
+            // While the player is high in a jump, keep what lies around the support it can fall back to.
+            if (followCamera.LockedUpward) activeBottom = Mathf.Min(activeBottom, followCamera.FloorFeet - settings.levelHeight);
             int activeHigh = Mathf.Min(high, Mathf.CeilToInt((activeTop - originY) / settings.levelHeight));
             int activeLow = Mathf.Max(low, Mathf.FloorToInt((activeBottom - originY) / settings.levelHeight));
             remove.Clear();
@@ -255,8 +258,9 @@ namespace Lumera.JumpForce
                 bool below = inFront && maxY < -viewportMargin;
                 bool above = inFront && minY > 1 + viewportMargin;
                 bool supportingPlayer = IsSupporting(pair.Value);
-                // During the initial camera grace, platforms below can still be reached by descending.
-                if (below && followCamera.LockedUpward && !supportingPlayer)
+                // The camera comes back down to the last support after a jump, so only what it can never
+                // show again is recycled. Before the first platform nothing is (OutOfReachBelow is false).
+                if (!supportingPlayer && followCamera.OutOfReachBelow(bounds, viewportMargin))
                 {
                     remove.Add(pair.Key);
                     retired.Add(pair.Key);
@@ -265,7 +269,13 @@ namespace Lumera.JumpForce
             }
             foreach (int id in remove) { Return(active[id]); active.Remove(id); }
             activeElements = active.Count;
+            // The starting ground is a scene object, not pooled: switched off once it can never be seen again.
+            if (startingGround.gameObject.activeSelf && !IsSupportingGround() &&
+                followCamera.OutOfReachBelow(JumpForceSpawnedElement.ColliderBounds(startingGround.Surface), viewportMargin))
+                startingGround.gameObject.SetActive(false);
         }
+
+        bool IsSupportingGround() => player.Support == startingGround;
 
 #if UNITY_EDITOR
         void OnDrawGizmosSelected()

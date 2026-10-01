@@ -45,7 +45,7 @@ namespace Lumera.JumpForce
         [Tooltip("Velocidade maxima de um elemento, como fracao da velocidade do jogador no ar.")]
         [Range(0.1f, 1)] public float maximumSpeedFraction = 0.7f;
         [Header("Seguranca da rota")]
-        [Tooltip("Folga, em metros, descontada da maior queda que a camera tolera antes de matar.")]
+        [Tooltip("Folga, em metros, descontada da maior queda abaixo da ultima plataforma que a camera tolera antes de matar.")]
         [Min(0)] public float safeFallMargin = 0.3f;
 
         public static JumpForceDifficultyTier[] DefaultTiers() => new[]
@@ -156,7 +156,7 @@ namespace Lumera.JumpForce
             schedules[0] = (nextTrampoline, nextFan, nextCoin);
         }
 
-        // survivableFall: how far below its highest point the player can drop before the camera kills it.
+        // survivableFall: how far below the support it left the player can drop before the camera kills it.
         public void SetCapabilities(float height, float lateralSpeed, float acceleration, float survivableFall)
         {
             jumpHeight = Mathf.Max(0.1f, height);
@@ -209,14 +209,12 @@ namespace Lumera.JumpForce
             return distance <= airSpeed * time * Tier(to.level).reachMargin;
         }
 
-        // Air time until the feet come back down to dy, using the highest jump whose fall the camera still survives.
-        // A full jump onto a low target would kill the player on the way down, so it is not counted as reach.
+        // Air time of a full jump until the feet come back down to dy. The camera comes back down to the support
+        // the player left, so the full jump is always survivable; only a target more than safeFall below it is not.
         float FlightTime(float dy)
         {
-            float apex = Mathf.Min(jumpHeight, dy + safeFall);
-            // Too high to clear, or a drop deeper than the camera allows.
-            if (apex < Mathf.Max(0, dy + 0.1f)) return 0;
-            return Mathf.Sqrt(2 * apex / gravity) + Mathf.Sqrt(2 * (apex - dy) / gravity);
+            if (dy > jumpHeight - 0.1f || dy < -safeFall) return 0;
+            return Mathf.Sqrt(2 * jumpHeight / gravity) + Mathf.Sqrt(2 * (jumpHeight - dy) / gravity);
         }
 
         bool Free(JumpForceTrailNode candidate)

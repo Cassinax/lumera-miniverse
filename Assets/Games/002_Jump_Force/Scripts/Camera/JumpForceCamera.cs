@@ -30,7 +30,7 @@ namespace Lumera.JumpForce
             followOffsetCorrection = player ? initialPosition.y - player.FeetY - heightOffset : 0;
             Restart();
         }
-        // How far below its highest point the player can fall before the death rule triggers, in the
+        // How far below the last support the player can fall before the death rule triggers, in the
         // gameplay framing (also before leaving the wardrobe, when the route is first planned).
         public float SurvivableFall()
         {
@@ -38,12 +38,32 @@ namespace Lumera.JumpForce
             if (!capsule) capsule = player.GetComponent<CapsuleCollider>();
             float depth = Mathf.Abs(player.transform.position.z - initialPosition.z);
             float halfHeight = view.orthographic ? view.orthographicSize : depth * Mathf.Tan(view.fieldOfView * 0.5f * Mathf.Deg2Rad);
-            float cameraAboveFeet = released ? heightOffset + followOffsetCorrection : initialPosition.y - player.FeetY;
+            float cameraAboveFeet = released ? FollowHeight : initialPosition.y - player.FeetY;
             // Capsule size from its settings: bounds can be stale while physics is off in the wardrobe.
             float bodyHeight = capsule.height * Mathf.Abs(capsule.transform.lossyScale.y);
             return halfHeight - cameraAboveFeet + bodyHeight * deathBodyFraction;
         }
-        float followOffsetCorrection;
+        // Feet height of the last support the player stood on. After the first platform the camera follows
+        // jumps up and back down, but never below this floor: missing it means falling into the abyss.
+        public float FloorFeet => LockedUpward ? floorFeet : float.NegativeInfinity;
+        public float LowestY => LockedUpward ? floorFeet + FollowHeight : float.NegativeInfinity;
+        float FollowHeight => heightOffset + followOffsetCorrection;
+        // True when no part of the bounds can appear on screen again, since the camera never goes below LowestY.
+        public bool OutOfReachBelow(Bounds bounds, float viewportMargin)
+        {
+            if (!LockedUpward || !view) return false;
+            // Seen from the lowest camera, everything sits this much higher. Never test from above the current
+            // camera: something visible now must not disappear while the camera is still rising to the floor.
+            float lift = Mathf.Max(0, transform.position.y - LowestY);
+            for (int i = 0; i < 8; i++)
+            {
+                var sign = new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1);
+                var screen = view.WorldToViewportPoint(bounds.center + Vector3.Scale(bounds.extents, sign) + Vector3.up * lift);
+                if (screen.z <= view.nearClipPlane || screen.y >= -viewportMargin) return false;
+            }
+            return true;
+        }
+        float followOffsetCorrection, floorFeet;
         bool released;
         Vector3 initialPosition, wardrobePosition, velocity;
         Camera view;
@@ -76,15 +96,18 @@ namespace Lumera.JumpForce
             if (!InWardrobe)
             {
                 LockedUpward |= player.ReachedPlatform;
-                target = new Vector3(initialPosition.x, player.FeetY + heightOffset + followOffsetCorrection, initialPosition.z);
-                if (LockedUpward) target.y = Mathf.Max(target.y, transform.position.y);
+                // Standing on something moves the floor to it (also down, with a sinking pillar); in the air it holds.
+                if (player.Grounded) floorFeet = player.FeetY;
+                float feet = LockedUpward ? Mathf.Max(player.FeetY, floorFeet) : player.FeetY;
+                target = new Vector3(initialPosition.x, feet + FollowHeight, initialPosition.z);
             }
 
             // Anchor changes only redirect the camera; all displacement happens smoothly here.
             Vector3 position = Vector3.SmoothDamp(transform.position, target, ref velocity, Mathf.Max(0.01f, smoothTime));
-            if (!InWardrobe && LockedUpward && position.y < transform.position.y)
+            // Coming back down from a jump, the camera stops at the floor instead of overshooting below it.
+            if (!InWardrobe && LockedUpward && position.y < LowestY && position.y < transform.position.y)
             {
-                position.y = transform.position.y;
+                position.y = Mathf.Min(transform.position.y, LowestY);
                 velocity.y = Mathf.Max(0, velocity.y);
             }
             transform.position = position;
@@ -111,6 +134,7 @@ namespace Lumera.JumpForce
         {
             LockedUpward = false;
             velocity = Vector3.zero;
+            floorFeet = player ? player.FeetY : 0;
         }
     }
 }
