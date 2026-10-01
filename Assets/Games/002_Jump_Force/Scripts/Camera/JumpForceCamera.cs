@@ -6,6 +6,7 @@ namespace Lumera.JumpForce
     public sealed class JumpForceCamera : MonoBehaviour
     {
         public JumpForcePlayer player;
+        [Tooltip("Tempo de suavizacao ate a ancoragem atual, em segundos.")]
         [Min(0.01f)] public float smoothTime = 0.3f;
         [Tooltip("Altura da camera acima dos pes.")]
         public float heightOffset = 4;
@@ -16,9 +17,9 @@ namespace Lumera.JumpForce
         public bool InWardrobe { get; private set; }
         public void HoldForWardrobe(Vector3 position)
         {
+            wardrobePosition = position;
             InWardrobe = true;
             Restart();
-            transform.position = position;
         }
         public void ReleaseFromWardrobe()
         {
@@ -27,26 +28,39 @@ namespace Lumera.JumpForce
             followOffsetCorrection = player ? initialPosition.y - player.FeetY - heightOffset : 0;
             Restart();
         }
-        float velocity, followOffsetCorrection;
-        Vector3 initialPosition;
+        float followOffsetCorrection;
+        Vector3 initialPosition, wardrobePosition, velocity;
         Camera view;
         CapsuleCollider capsule;
         void Awake()
         {
             initialPosition = transform.position;
+            wardrobePosition = initialPosition;
             view = GetComponent<Camera>();
             if (player) capsule = player.GetComponent<CapsuleCollider>();
         }
         void LateUpdate()
         {
-            if (InWardrobe || !player || player.Dead) return;
+            if (!InWardrobe && (!player || player.Dead)) return;
+            Vector3 target = wardrobePosition;
+            if (!InWardrobe)
+            {
+                LockedUpward |= player.ReachedPlatform;
+                target = new Vector3(initialPosition.x, player.FeetY + heightOffset + followOffsetCorrection, initialPosition.z);
+                if (LockedUpward) target.y = Mathf.Max(target.y, transform.position.y);
+            }
+
+            // Anchor changes only redirect the camera; all displacement happens smoothly here.
+            Vector3 position = Vector3.SmoothDamp(transform.position, target, ref velocity, Mathf.Max(0.01f, smoothTime));
+            if (!InWardrobe && LockedUpward && position.y < transform.position.y)
+            {
+                position.y = transform.position.y;
+                velocity.y = Mathf.Max(0, velocity.y);
+            }
+            transform.position = position;
+            if (InWardrobe) return;
+
             if (!capsule) capsule = player.GetComponent<CapsuleCollider>();
-            LockedUpward |= player.ReachedPlatform;
-            var p = transform.position;
-            float desired = player.FeetY + heightOffset + followOffsetCorrection;
-            float y = Mathf.SmoothDamp(p.y, desired, ref velocity, smoothTime);
-            if (LockedUpward && y < p.y) { y = p.y; velocity = Mathf.Max(0, velocity); }
-            transform.position = new Vector3(initialPosition.x, y, initialPosition.z);
             // Dies once the chosen fraction of the capsule (half, by default) is below the lower edge.
             Bounds body = capsule.bounds;
             float cutY = body.min.y + body.size.y * deathBodyFraction;
@@ -56,8 +70,7 @@ namespace Lumera.JumpForce
         public void Restart()
         {
             LockedUpward = false;
-            velocity = 0;
-            transform.position = initialPosition;
+            velocity = Vector3.zero;
         }
     }
 }
