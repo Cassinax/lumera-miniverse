@@ -230,6 +230,8 @@ public static class CarlosPaletteTools
         var renderers = model.GetComponentsInChildren<SkinnedMeshRenderer>(true);
         if (renderers.Length != 1 || renderers.Any(r => r.sharedMaterials.Length != 1 || r.sharedMesh.subMeshCount != 1))
             throw new InvalidOperationException("Carlos: esperado um renderer, um material e um submesh.");
+        if (renderers[0].bones.Length != renderers[0].sharedMesh.bindposes.Length || renderers[0].rootBone == null)
+            throw new InvalidOperationException("Carlos: bones e bind poses nao correspondem; desative Optimize Game Objects no importador.");
         var importer = (ModelImporter)AssetImporter.GetAtPath(CarlosPaletteImporter.Model);
         if (importer.animationType != ModelImporterAnimationType.Generic)
             throw new InvalidOperationException("Carlos: o rig deve continuar Generic.");
@@ -242,3 +244,4 @@ public static class CarlosPaletteTools
         Debug.Log(report);
     }
 }
+
