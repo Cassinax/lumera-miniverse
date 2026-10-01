@@ -4,20 +4,72 @@ using UnityEngine;
 
 namespace Lumera.JumpForce
 {
+    // One difficulty band. Numbers are balance, not rules: route safety always overrides them.
     [Serializable]
-    public sealed class JumpForceTrailSettings
+    public sealed class JumpForceDifficultyTier
     {
-        [Min(0.5f)] public float levelHeight = 4;
+        [Tooltip("Intencao desta faixa. Guia para ajustar os numeros.")]
+        public string intencao = "";
         [Range(0, 1)] public float fixedChance = 0.6f;
         [Range(0, 1)] public float secondPlatformChance = 0.35f;
         [Range(0, 1)] public float pillarChance = 0.2f;
         [Range(0, 1)] public float verticalPillarChance = 0.5f;
+        [Tooltip("Limite para CADA lado. O planejamento reduz quando o salto, a separacao ou as paredes exigem.")]
         [Range(0, 5)] public float platformAmplitude = 5;
         [Range(0, 2)] public float pillarAmplitude = 2;
-        [Min(0)] public float separation = 0.1f;
         [Range(0, 1)] public float shortSpecialGapChance = 0.2f;
+        [Tooltip("Multiplica a velocidade media do prefab (4 x amplitude / periodo).")]
+        [Min(0.1f)] public float speedMultiplier = 1;
+        [Tooltip("Variacao sorteada em m/s, para mais e para menos, em torno da velocidade media.")]
+        [Min(0)] public float speedVariation = 1;
+        [Tooltip("Fracao do alcance lateral teorico usada no planejamento. Menor deixa os saltos mais folgados.")]
+        [Range(0.4f, 1)] public float reachMargin = 0.85f;
+    }
+
+    [Serializable]
+    public sealed class JumpForceTrailSettings
+    {
+        [Min(0.5f)] public float levelHeight = 4;
+        [Min(0)] public float separation = 0.1f;
         [Tooltip("Semente zero sorteia uma nova trilha a cada tentativa.")]
         public int seed;
+        [Header("Dificuldade")]
+        [Tooltip("A dificuldade sobe a cada este numero de niveis.")]
+        [Min(1)] public int levelsPerTier = 30;
+        [Tooltip("Faixa 0: niveis 0-29; faixa 1: 30-59; faixa 2: 60-89; e assim por diante. " +
+            "A ultima faixa vale para sempre: quatro faixas = tres aumentos e depois estavel.")]
+        public JumpForceDifficultyTier[] tiers = DefaultTiers();
+        [Header("Velocidade dos elementos")]
+        [Tooltip("Velocidade minima de um elemento movel, em m/s. Evita plataformas quase paradas.")]
+        [Min(0.05f)] public float minimumSpeed = 0.4f;
+        [Tooltip("Velocidade maxima de um elemento, como fracao da velocidade do jogador no ar.")]
+        [Range(0.1f, 1)] public float maximumSpeedFraction = 0.7f;
+        [Header("Seguranca da rota")]
+        [Tooltip("Folga, em metros, descontada da maior queda que a camera tolera antes de matar.")]
+        [Min(0)] public float safeFallMargin = 0.3f;
+
+        public static JumpForceDifficultyTier[] DefaultTiers() => new[]
+        {
+            new JumpForceDifficultyTier { intencao = "Aprender: quase tudo parado, movimentos curtos e lentos, saltos laterais folgados.",
+                fixedChance = 0.75f, secondPlatformChance = 0.5f, pillarChance = 0.08f, verticalPillarChance = 0,
+                platformAmplitude = 1.5f, pillarAmplitude = 0.75f, shortSpecialGapChance = 0.15f,
+                speedMultiplier = 0.6f, speedVariation = 0.3f, reachMargin = 0.7f },
+            new JumpForceDifficultyTier { intencao = "Ritmo: mais movimento, pilares passam a aparecer com frequencia.",
+                fixedChance = 0.6f, secondPlatformChance = 0.35f, pillarChance = 0.2f, verticalPillarChance = 0.4f,
+                platformAmplitude = 3, pillarAmplitude = 1.5f, shortSpecialGapChance = 0.2f,
+                speedMultiplier = 0.85f, speedVariation = 0.6f, reachMargin = 0.8f },
+            new JumpForceDifficultyTier { intencao = "Desafio: menos apoio extra, percursos longos e mais rapidos.",
+                fixedChance = 0.45f, secondPlatformChance = 0.25f, pillarChance = 0.28f, verticalPillarChance = 0.5f,
+                platformAmplitude = 4, pillarAmplitude = 2, shortSpecialGapChance = 0.25f,
+                speedMultiplier = 1, speedVariation = 0.9f, reachMargin = 0.85f },
+            new JumpForceDifficultyTier { intencao = "Mestre: dificuldade maxima, estavel daqui em diante.",
+                fixedChance = 0.35f, secondPlatformChance = 0.2f, pillarChance = 0.35f, verticalPillarChance = 0.6f,
+                platformAmplitude = 5, pillarAmplitude = 2, shortSpecialGapChance = 0.3f,
+                speedMultiplier = 1.15f, speedVariation = 1.2f, reachMargin = 0.85f },
+        };
+
+        public int TierIndex(int level) => tiers == null || tiers.Length == 0 ? 0 :
+            Mathf.Clamp(Mathf.Max(0, level) / Mathf.Max(1, levelsPerTier), 0, tiers.Length - 1);
     }
 
     public enum JumpForceElementKind { Platform, Pillar }
@@ -35,17 +87,20 @@ namespace Lumera.JumpForce
     [Serializable]
     public sealed class JumpForceTrailNode
     {
-        public int id, level, lane, previousId;
+        public const float LaneSpacing = 3;
+        public int id, level, lane, previousId, tier;
         public bool primary, hasCoin, coinCollected;
         public JumpForceElementKind kind;
         public JumpForceSpecial special;
         public JumpForceMotionAxis axis;
         public float topY, amplitude, baseSpeed, fanYaw;
+        // Speed limits chosen at planning time, from the tier and the player's air speed.
+        public float speedVariation, minimumSpeed, maximumSpeed;
         public int motionSeed;
         // Movement state belongs to the logical node, so recycling a visual does not change its plan.
-        public float offset, currentSpeed, untilSpeedChange;
+        public float offset, currentSpeed, targetSpeed, untilSpeedChange;
         public int direction = 1;
-        public Vector3 TopPosition(float z) => new Vector3(lane * 3, topY, z);
+        public Vector3 TopPosition(float z) => new Vector3(lane * LaneSpacing, topY, z);
     }
 
     public sealed class JumpForceTrailLevel
@@ -71,9 +126,15 @@ namespace Lumera.JumpForce
         readonly int collisionLevels;
         int lastLevel, nextTrampoline, nextFan, nextCoin;
         float leftBoundary = float.NegativeInfinity, rightBoundary = float.PositiveInfinity;
-        float jumpHeight, airSpeed, gravity;
+        float jumpHeight, airSpeed, gravity, safeFall = float.PositiveInfinity;
+        static readonly JumpForceDifficultyTier fallbackTier = new();
+        // Below this, a "moving" element barely moves: it is planned as fixed instead.
+        const float MinimumAmplitude = 0.25f;
         public IReadOnlyDictionary<int, JumpForceTrailLevel> Levels => levels;
         public int LastLevel => lastLevel;
+        public int TierIndex(int level) => settings.TierIndex(level);
+        JumpForceDifficultyTier Tier(int level) =>
+            settings.tiers != null && settings.tiers.Length > 0 ? settings.tiers[settings.TierIndex(level)] ?? fallbackTier : fallbackTier;
 
         public JumpForceTrailMap(JumpForceTrailSettings settings, int seed, float originY,
             JumpForceElementShape platform, JumpForceElementShape pillar, JumpForceElementShape ground)
@@ -89,23 +150,24 @@ namespace Lumera.JumpForce
             var start = new JumpForceTrailLevel(0);
             start.nodes.Add(new JumpForceTrailNode { id = 0, level = 0, primary = true, topY = originY, previousId = -1 });
             levels.Add(0, start);
-            nextTrampoline = Gap();
-            nextFan = GapExcept(nextTrampoline);
+            nextTrampoline = GapExcept(0, 0);
+            nextFan = GapExcept(nextTrampoline, 0);
             nextCoin = random.Next(2, 6);
             schedules[0] = (nextTrampoline, nextFan, nextCoin);
         }
 
-        public void SetCapabilities(float height, float lateralSpeed, float acceleration)
+        // survivableFall: how far below its highest point the player can drop before the camera kills it.
+        public void SetCapabilities(float height, float lateralSpeed, float acceleration, float survivableFall)
         {
             jumpHeight = Mathf.Max(0.1f, height);
             airSpeed = Mathf.Max(0, lateralSpeed);
             gravity = Mathf.Max(0.1f, acceleration);
+            safeFall = Mathf.Max(0.5f, survivableFall);
         }
 
-        int Gap() => random.NextDouble() < settings.shortSpecialGapChance ? random.Next(2, 5) : random.Next(5, 9);
-        int GapExcept(int forbidden)
+        int GapExcept(int forbidden, int level)
         {
-            bool shortGap = Chance(settings.shortSpecialGapChance);
+            bool shortGap = Chance(Tier(level).shortSpecialGapChance);
             int low = shortGap ? 2 : 5, high = shortGap ? 5 : 9;
             int value;
             do { value = random.Next(low, high); } while (value == forbidden);
@@ -131,19 +193,30 @@ namespace Lumera.JumpForce
             return bounds;
         }
 
+        static float AmplitudeX(JumpForceTrailNode node) => node.axis == JumpForceMotionAxis.X ? node.amplitude : 0;
+        static float AmplitudeY(JumpForceTrailNode node) => node.axis == JumpForceMotionAxis.Y ? node.amplitude : 0;
+
         bool Reachable(JumpForceTrailNode from, JumpForceTrailNode to)
         {
-            float dy = to.topY - from.topY +
-                (from.axis == JumpForceMotionAxis.Y ? from.amplitude : 0) +
-                (to.axis == JumpForceMotionAxis.Y ? to.amplitude : 0);
-            if (dy > jumpHeight - 0.1f) return false;
-            float launch = Mathf.Sqrt(2 * gravity * jumpHeight);
-            float time = (launch + Mathf.Sqrt(Mathf.Max(0, launch * launch - 2 * gravity * dy))) / gravity;
-            float distance = Mathf.Abs(to.lane - from.lane) * 3 +
-                (from.axis == JumpForceMotionAxis.X ? from.amplitude : 0) +
-                (to.axis == JumpForceMotionAxis.X ? to.amplitude : 0);
+            float dy = to.topY - from.topY;
+            float swing = AmplitudeY(from) + AmplitudeY(to);
+            if (dy + swing > jumpHeight - 0.1f) return false;
+            // Both vertical extremes must work: highest target needs height, lowest one must not be a lethal drop.
+            float time = Mathf.Min(FlightTime(dy + swing), FlightTime(dy - swing));
+            if (time <= 0) return false;
+            float distance = Mathf.Abs(to.lane - from.lane) * JumpForceTrailNode.LaneSpacing + AmplitudeX(from) + AmplitudeX(to);
             // A conservative route: center-to-center, with a steering margin, at every motion phase.
-            return distance <= airSpeed * time * 0.85f;
+            return distance <= airSpeed * time * Tier(to.level).reachMargin;
+        }
+
+        // Air time until the feet come back down to dy, using the highest jump whose fall the camera still survives.
+        // A full jump onto a low target would kill the player on the way down, so it is not counted as reach.
+        float FlightTime(float dy)
+        {
+            float apex = Mathf.Min(jumpHeight, dy + safeFall);
+            // Too high to clear, or a drop deeper than the camera allows.
+            if (apex < Mathf.Max(0, dy + 0.1f)) return 0;
+            return Mathf.Sqrt(2 * apex / gravity) + Mathf.Sqrt(2 * (apex - dy) / gravity);
         }
 
         bool Free(JumpForceTrailNode candidate)
@@ -173,12 +246,18 @@ namespace Lumera.JumpForce
 
         JumpForceTrailNode NewNode(int level, int lane, JumpForceElementKind kind, bool primary, int previousId)
         {
+            var tier = Tier(level);
+            float minimumSpeed = settings.minimumSpeed;
+            // Never as fast as the player: a target that outruns the steering is not a fair jump.
+            float maximumSpeed = Mathf.Max(minimumSpeed, airSpeed * settings.maximumSpeedFraction);
+            float speed = (kind == JumpForceElementKind.Pillar ? pillar.baseSpeed : platform.baseSpeed) * tier.speedMultiplier;
             return new JumpForceTrailNode
             {
                 id = level * 2 + (primary ? 0 : 1), level = level, lane = lane, primary = primary,
                 previousId = previousId, topY = originY + level * settings.levelHeight,
-                kind = kind, axis = JumpForceMotionAxis.X,
-                baseSpeed = kind == JumpForceElementKind.Pillar ? pillar.baseSpeed : platform.baseSpeed,
+                kind = kind, axis = JumpForceMotionAxis.X, tier = settings.TierIndex(level),
+                baseSpeed = Mathf.Clamp(speed, minimumSpeed, maximumSpeed), speedVariation = tier.speedVariation,
+                minimumSpeed = minimumSpeed, maximumSpeed = maximumSpeed,
                 motionSeed = random.Next(), direction = Chance(0.5f) ? -1 : 1,
                 fanYaw = lane == -1 ? 180 : lane == 1 ? 0 : Chance(0.5f) ? 180 : 0
             };
@@ -192,6 +271,17 @@ namespace Lumera.JumpForce
                 if (node.amplitude <= 0) return false;
                 node.amplitude = Mathf.Max(0, node.amplitude - 0.25f);
             }
+        }
+
+        // Finds the largest amplitude that fits, then draws uniformly below it. Drawing first and shrinking
+        // afterwards piled most elements up at the space limit, whatever the tier asked for.
+        bool FitMoving(JumpForceTrailNode node, JumpForceTrailNode previous, float maximum)
+        {
+            node.amplitude = Mathf.Max(0, maximum);
+            if (!Fit(node, previous)) return false;
+            float largest = node.amplitude;
+            node.amplitude = largest < MinimumAmplitude ? 0 : Range(MinimumAmplitude, largest);
+            return Fit(node, previous);
         }
 
         int[] ShuffledLanes()
@@ -248,14 +338,20 @@ namespace Lumera.JumpForce
                         node.hasCoin = true;
                         nextCoin = index + random.Next(2, 6);
                     }
-                    if (nextTrampoline <= index) nextTrampoline = index + 1;
-                    if (nextFan <= index) nextFan = index + 1;
-                    if (nextFan == nextTrampoline) nextFan++;
+                    PostponeSpecials(index);
                     lastLevel = index;
                     schedules[index] = (nextTrampoline, nextFan, nextCoin);
                     return true;
                 }
             return false; // Keep every accepted/published record; the caller can retry without disabling itself.
+        }
+
+        // Specials scheduled at or before this level move to the next one; fan and trampoline stay apart.
+        void PostponeSpecials(int index)
+        {
+            if (nextTrampoline <= index) nextTrampoline = index + 1;
+            if (nextFan <= index) nextFan = index + 1;
+            if (nextFan == nextTrampoline) nextFan++;
         }
 
         bool VerticalPillar(JumpForceTrailNode node) =>
@@ -267,10 +363,11 @@ namespace Lumera.JumpForce
             var oldAxis = node.axis;
             node.axis = JumpForceMotionAxis.X;
             // Small but real movement is sufficient to open a passage.
-            float maximum = node.kind == JumpForceElementKind.Pillar ? settings.pillarAmplitude : settings.platformAmplitude;
+            var tier = Tier(node.level);
+            float maximum = node.kind == JumpForceElementKind.Pillar ? tier.pillarAmplitude : tier.platformAmplitude;
             node.amplitude = Mathf.Min(1, maximum);
             node.offset = 0;
-            if (node.amplitude >= 0.25f && Fit(node, previous) && node.amplitude >= 0.25f) return true;
+            if (node.amplitude >= MinimumAmplitude && Fit(node, previous) && node.amplitude >= MinimumAmplitude) return true;
             node.amplitude = oldAmplitude;
             node.offset = oldOffset;
             node.axis = oldAxis;
@@ -288,10 +385,10 @@ namespace Lumera.JumpForce
                     (oppositePillar && lane != -primary.lane)) continue;
                 var node = NewNode(level.index, lane, oppositePillar ? JumpForceElementKind.Pillar :
                     JumpForceElementKind.Platform, false, previous.id);
-                if (!oppositePillar && !restricted && !Chance(settings.fixedChance))
-                    node.amplitude = Range(0, settings.platformAmplitude);
+                var tier = Tier(level.index);
+                bool moving = !oppositePillar && !restricted && !Chance(tier.fixedChance);
                 // An escape beside the fan can also be reached from the fan's own support.
-                if (!Fit(node, previous))
+                if (!(moving ? FitMoving(node, previous, tier.platformAmplitude) : Fit(node, previous)))
                 {
                     if (!Fit(node, primary)) continue;
                     node.previousId = primary.id;
@@ -350,11 +447,14 @@ namespace Lumera.JumpForce
         {
             int index = lastLevel + 1;
             var lower = levels[lastLevel];
+            var tier = Tier(index);
+            bool restricted = lower.nodes.Exists(VerticalPillar);
+            // After a vertical pillar the level only takes common fixed platforms on the sides: specials wait.
+            if (restricted) PostponeSpecials(index);
             bool trampolineDue = index == nextTrampoline, fanDue = index == nextFan;
             bool coinDue = index >= nextCoin;
-            bool restricted = lower.nodes.Exists(VerticalPillar);
-            bool fixedRoll = Chance(settings.fixedChance);
-            bool pillarRoll = !restricted && !trampolineDue && !fanDue && !coinDue && Chance(settings.pillarChance);
+            bool fixedRoll = Chance(tier.fixedChance);
+            bool pillarRoll = !restricted && !trampolineDue && !fanDue && !coinDue && Chance(tier.pillarChance);
             JumpForceTrailLevel accepted = null;
             var lanes = ShuffledLanes();
             for (int attempt = 0; attempt < 2 && accepted == null; attempt++)
@@ -367,18 +467,15 @@ namespace Lumera.JumpForce
                     var node = NewNode(index, lane, kind, true, previous.id);
                     node.special = trampolineDue ? JumpForceSpecial.Trampoline :
                         fanDue ? JumpForceSpecial.Fan : JumpForceSpecial.None;
-                    if (!fixedRoll && !restricted && attempt == 0)
-                    {
-                        node.amplitude = Range(0, kind == JumpForceElementKind.Pillar ?
-                            Mathf.Clamp(settings.pillarAmplitude, 0, 2) : Mathf.Clamp(settings.platformAmplitude, 0, 5));
-                        if (kind == JumpForceElementKind.Pillar && lane == 0 && Chance(settings.verticalPillarChance))
-                            node.axis = JumpForceMotionAxis.Y;
-                    }
-                    if (!Fit(node, previous)) continue;
+                    bool moving = !fixedRoll && !restricted && attempt == 0;
+                    if (moving && kind == JumpForceElementKind.Pillar && lane == 0 && Chance(tier.verticalPillarChance))
+                        node.axis = JumpForceMotionAxis.Y;
+                    if (!(moving ? FitMoving(node, previous, kind == JumpForceElementKind.Pillar ?
+                        tier.pillarAmplitude : tier.platformAmplitude) : Fit(node, previous))) continue;
                     var candidate = new JumpForceTrailLevel(index);
                     candidate.nodes.Add(node);
                     levels.Add(index, candidate);
-                    if (Chance(settings.secondPlatformChance)) AddAlternative(candidate, previous, restricted, false);
+                    if (Chance(tier.secondPlatformChance)) AddAlternative(candidate, previous, restricted, false);
                     if (ResolveDeadEnds(candidate, lower, restricted)) { accepted = candidate; break; }
                     levels.Remove(index);
                 }
@@ -394,18 +491,23 @@ namespace Lumera.JumpForce
                     }
             }
             // Independent schedules, but a date reserved for one cannot be used by the other.
-            if (trampolineDue) nextTrampoline = index + GapExcept(nextFan - index);
-            if (fanDue) nextFan = index + GapExcept(nextTrampoline - index);
+            if (trampolineDue) nextTrampoline = index + GapExcept(nextFan - index, index);
+            if (fanDue) nextFan = index + GapExcept(nextTrampoline - index, index);
             lastLevel = index;
             schedules[index] = (nextTrampoline, nextFan, nextCoin);
             return true;
         }
 
+        // The route is endless: history far below the camera is dropped so memory stays flat on long runs.
         public void ForgetBelow(int firstLevel)
         {
             obsolete.Clear();
-            foreach (int index in levels.Keys) if (index < firstLevel && index < lastLevel) obsolete.Add(index);
-            foreach (int index in obsolete) levels.Remove(index);
+            foreach (int index in levels.Keys)
+            {
+                if (index >= firstLevel || index >= lastLevel) break; // Keys are sorted.
+                obsolete.Add(index);
+            }
+            foreach (int index in obsolete) { levels.Remove(index); schedules.Remove(index); }
         }
     }
 }

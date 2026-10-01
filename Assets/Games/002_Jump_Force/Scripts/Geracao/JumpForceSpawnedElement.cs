@@ -148,16 +148,25 @@ namespace Lumera.JumpForce
         }
 
         Vector3 Axis => node.axis == JumpForceMotionAxis.Y ? Vector3.up : Vector3.right;
-        public Vector3 Step(float dt, float speedVariation, Vector2 changeInterval)
+        // Lowest fraction of the speed kept at the ends, so the element still arrives and leaves.
+        const float MinimumEase = 0.2f;
+        // Speed changes ramp with `acceleration` and the element slows down near both ends, instead of
+        // jumping between speeds and reversing at full speed (which also jolted a carried player).
+        public Vector3 Step(float dt, Vector2 changeInterval, float acceleration, float endEaseDistance)
         {
             if (node.amplitude <= 0) return Vector3.zero;
             node.untilSpeedChange -= dt;
             if (node.untilSpeedChange <= 0)
             {
-                node.currentSpeed = Mathf.Max(0.1f, node.baseSpeed + ((float)motionRandom.NextDouble() * 2 - 1) * speedVariation);
+                float variation = ((float)motionRandom.NextDouble() * 2 - 1) * node.speedVariation;
+                node.targetSpeed = Mathf.Clamp(node.baseSpeed + variation, node.minimumSpeed, Mathf.Max(node.minimumSpeed, node.maximumSpeed));
                 node.untilSpeedChange = Mathf.Lerp(Mathf.Max(0.1f, changeInterval.x), Mathf.Max(changeInterval.x, changeInterval.y), (float)motionRandom.NextDouble());
+                if (node.currentSpeed <= 0) node.currentSpeed = node.targetSpeed; // First activation starts at cruise speed.
             }
-            float next = Mathf.MoveTowards(node.offset, node.direction * node.amplitude, node.currentSpeed * dt);
+            node.currentSpeed = acceleration > 0 ? Mathf.MoveTowards(node.currentSpeed, node.targetSpeed, acceleration * dt) : node.targetSpeed;
+            float toEnd = node.amplitude - Mathf.Abs(node.offset);
+            float ease = endEaseDistance > 0 ? Mathf.Clamp(toEnd / endEaseDistance, MinimumEase, 1) : 1;
+            float next = Mathf.MoveTowards(node.offset, node.direction * node.amplitude, node.currentSpeed * ease * dt);
             return Axis * (next - node.offset);
         }
 

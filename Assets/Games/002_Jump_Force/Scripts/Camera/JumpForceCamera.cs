@@ -19,16 +19,32 @@ namespace Lumera.JumpForce
         {
             wardrobePosition = position;
             InWardrobe = true;
+            released = false;
             Restart();
         }
         public void ReleaseFromWardrobe()
         {
             InWardrobe = false;
+            released = true;
             // Keep the scene's gameplay framing, then follow changes in the player's height.
             followOffsetCorrection = player ? initialPosition.y - player.FeetY - heightOffset : 0;
             Restart();
         }
+        // How far below its highest point the player can fall before the death rule triggers, in the
+        // gameplay framing (also before leaving the wardrobe, when the route is first planned).
+        public float SurvivableFall()
+        {
+            if (!deathEnabled || !player || !view) return float.PositiveInfinity;
+            if (!capsule) capsule = player.GetComponent<CapsuleCollider>();
+            float depth = Mathf.Abs(player.transform.position.z - initialPosition.z);
+            float halfHeight = view.orthographic ? view.orthographicSize : depth * Mathf.Tan(view.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            float cameraAboveFeet = released ? heightOffset + followOffsetCorrection : initialPosition.y - player.FeetY;
+            // Capsule size from its settings: bounds can be stale while physics is off in the wardrobe.
+            float bodyHeight = capsule.height * Mathf.Abs(capsule.transform.lossyScale.y);
+            return halfHeight - cameraAboveFeet + bodyHeight * deathBodyFraction;
+        }
         float followOffsetCorrection;
+        bool released;
         Vector3 initialPosition, wardrobePosition, velocity;
         Camera view;
         Transform[] wallTransforms;

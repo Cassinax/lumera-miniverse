@@ -24,13 +24,18 @@ namespace Lumera.JumpForce
         [Tooltip("Objetos fisicos acompanham a camera e a velocidade; o restante existe apenas no mapa.")]
         [Min(0.1f)] public float activationLeadSeconds = 0.5f;
         [Header("Movimento")]
-        [Tooltip("Variacao positiva/negativa em m/s sobre a velocidade media do prefab (4 x amplitude / periodo).")]
-        [Min(0)] public float speedVariation = 3;
+        [Tooltip("Intervalo, em segundos, entre sorteios de velocidade. A variacao de cada faixa fica em Settings > Tiers.")]
         public Vector2 speedChangeInterval = new Vector2(1, 3);
+        [Tooltip("Aceleracao, em m/s2, ao trocar de velocidade. Zero troca na hora.")]
+        [Min(0)] public float speedAcceleration = 1.5f;
+        [Tooltip("Distancia, em metros, em que o elemento desacelera antes de cada ponta e acelera ao sair dela.")]
+        [Min(0)] public float endEaseDistance = 0.8f;
         [Header("Visibilidade")]
         [Range(0, 0.5f)] public float viewportMargin = 0.05f;
         [Header("Estado atual (leitura)")]
         [SerializeField] int currentLevel;
+        [Tooltip("Faixa de dificuldade do nivel em que o jogador esta.")]
+        [SerializeField] int currentTier;
         [SerializeField] int plannedThrough;
         [SerializeField] int activeElements;
         [SerializeField] int createdPlatforms;
@@ -50,7 +55,7 @@ namespace Lumera.JumpForce
         float originY, z;
         Camera view;
         bool initialized;
-        int warnedAtLevel = -1;
+        int warnedAtLevel = -1, forgottenBelow;
 
         void Start()
         {
@@ -94,6 +99,7 @@ namespace Lumera.JumpForce
             if (!initialized) return;
             enabled = true;
             warnedAtLevel = -1;
+            forgottenBelow = 0;
             foreach (var item in active.Values) Return(item);
             active.Clear();
             retired.Clear();
@@ -106,14 +112,17 @@ namespace Lumera.JumpForce
 
         void UpdateCapabilities()
         {
+            // The camera kills a fall deeper than this: planned jumps must never need one.
+            float survivableFall = followCamera.SurvivableFall() - settings.safeFallMargin;
             Map.SetCapabilities(player.maximumJumpHeight, player.airSpeed,
-                Mathf.Abs(Physics.gravity.y) * player.gravityMultiplier);
+                Mathf.Abs(Physics.gravity.y) * player.gravityMultiplier, survivableFall);
         }
 
         void RefreshWindow()
         {
             UpdateCapabilities();
             currentLevel = Mathf.Max(0, Mathf.FloorToInt((player.FeetY - originY) / Mathf.Max(0.5f, settings.levelHeight)));
+            currentTier = settings.TierIndex(currentLevel);
             float gravity = Mathf.Max(0.1f, Mathf.Abs(Physics.gravity.y) * player.gravityMultiplier);
             float rising = Mathf.Max(0, player.Body.linearVelocity.y);
             float projectedRise = Mathf.Max(player.maximumJumpHeight, rising * rising / (2 * gravity));
@@ -177,6 +186,12 @@ namespace Lumera.JumpForce
             remove.Clear();
             foreach (int id in retired) if (id / 2 < low) remove.Add(id);
             foreach (int id in remove) retired.Remove(id);
+            // Endless route: logical history below the window is no longer needed by planning or recycling.
+            if (low - 1 > forgottenBelow)
+            {
+                forgottenBelow = low - 1;
+                Map.ForgetBelow(forgottenBelow);
+            }
             plannedThrough = Map.LastLevel;
             activeElements = active.Count;
         }
@@ -203,7 +218,7 @@ namespace Lumera.JumpForce
             bool hasWalls = JumpForceSpawnedElement.TryGetWallLimits(invisibleWalls, out float left, out float right);
             foreach (var item in active.Values)
             {
-                Vector3 step = item.Step(Time.fixedDeltaTime, Mathf.Max(0, speedVariation), speedChangeInterval);
+                Vector3 step = item.Step(Time.fixedDeltaTime, speedChangeInterval, speedAcceleration, endEaseDistance);
                 if (step == Vector3.zero) continue;
                 Bounds swept = item.WorldBounds;
                 bool wallBlocked = false;
