@@ -6,6 +6,7 @@ namespace Lumera.JumpForce
 {
     public sealed class JumpForceHUD : MonoBehaviour
     {
+        public JumpForceSpawner spawner;
         public JumpForceWardrobe wardrobe;
         public JumpForcePlayer player;
         public JumpForceCamera followCamera;
@@ -43,6 +44,7 @@ namespace Lumera.JumpForce
             if (restartFrame == Time.frameCount) return;
             restartFrame = Time.frameCount;
             player.Restart();
+            if (spawner) spawner.RestartTrail();
             followCamera.Restart();
             deathPanel.SetActive(false);
             showedDeath = false;

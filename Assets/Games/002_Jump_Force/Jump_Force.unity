@@ -3410,6 +3410,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1452426268}
+  - component: {fileID: 1452426269}
   m_Layer: 0
   m_Name: Spawner
   m_TagString: Untagged
@@ -4804,6 +4805,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47ace896c424b354f84c3b4b69683660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceHUD
+  spawner: {fileID: 1452426269}
   wardrobe: {fileID: 2130574732}
   player: {fileID: 896773395}
   followCamera: {fileID: 2065248609}
@@ -5076,6 +5078,47 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2f0b37cd30ed3cd45aa5f2cce825d837, type: 3}
+--- !u!114 &1452426269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452426267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10565761f9f96954485f211739cad815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceSpawner
+  player: {fileID: 896773395}
+  followCamera: {fileID: 2065248609}
+  startingGround: {fileID: 222424821302869639}
+  platformPrefab: {fileID: 4569596513166003222, guid: 9964b68f8b77cbb4196b85480e2aef87, type: 3}
+  pillarPrefab: {fileID: 8360736158262500850, guid: f0c5c0df8ddaffb4d8072fb93890300e, type: 3}
+  settings:
+    levelHeight: 4
+    fixedChance: 0.6
+    secondPlatformChance: 0.35
+    pillarChance: 0.2
+    verticalPillarChance: 0.5
+    platformAmplitude: 5
+    pillarAmplitude: 2
+    separation: 0.1
+    shortSpecialGapChance: 0.2
+    seed: 0
+  levelsBelow: 5
+  levelsAhead: 5
+  anticipationSeconds: 2
+  initialPerType: 10
+  speedVariation: 3
+  speedChangeInterval: {x: 1, y: 3}
+  viewportMargin: 0.05
+  currentLevel: 0
+  plannedThrough: 0
+  activeElements: 0
+  createdPlatforms: 0
+  createdPillars: 0
+  runSeed: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -22,6 +22,7 @@ namespace Lumera.JumpForce
             if (!follow) follow = GetComponent<JumpForceCamera>();
             foreach (var platform in FindObjectsByType<JumpForcePlatform>())
             {
+                if (platform.GetComponentInParent<JumpForceSpawnedElement>()) continue;
                 var renderers = platform.GetComponentsInChildren<Renderer>(true);
                 var enabled = new bool[renderers.Length];
                 for (int i = 0; i < enabled.Length; i++) enabled[i] = renderers[i].enabled;
