@@ -174,18 +174,26 @@ public static class CarlosPaletteTools
     [MenuItem("Tools/Lumera/Carlos/Atualizar paleta e validar")]
     public static void Rebuild()
     {
-        var texture = new Texture2D(16, 1, TextureFormat.RGBA32, false);
-        for (int i = 0; i < 16; i++) texture.SetPixel(i, 0, Color.black);
-        foreach (string region in CarlosPaletteImporter.Regions)
+        var settings = CarlosPalettes.LoadOrCreate();
+        if (settings.paletas == null || settings.paletas.Length != 4 ||
+            (int)settings.selecionada < 0 || (int)settings.selecionada >= settings.paletas.Length)
+            throw new InvalidOperationException("Carlos: configure as quatro paletas e uma selecao valida.");
+        int rows = settings.paletas.Length;
+        var texture = new Texture2D(16, rows, TextureFormat.RGBA32, false);
+        for (int row = 0; row < rows; row++)
         {
-            var source = AssetDatabase.LoadAssetAtPath<Material>(CarlosPaletteImporter.Root + "Materials/" + region + ".mat");
-            if (source == null || source.shader.name != "Universal Render Pipeline/Simple Lit" ||
-                source.GetTexture("_BaseMap") != null || source.GetFloat("_Surface") != 0 ||
-                source.GetFloat("_AlphaClip") != 0 || source.GetFloat("_SpecularHighlights") != 1)
-                throw new InvalidOperationException("Paleta requer URP Simple Lit opaco, sem textura e sem reflexo especular: " + region);
-            Color color = source.GetColor("_BaseColor");
-            color.a = source.GetFloat("_Smoothness");
-            texture.SetPixel(Array.IndexOf(CarlosPaletteImporter.Regions, region), 0, color);
+            for (int i = 0; i < 16; i++) texture.SetPixel(i, row, Color.black);
+            foreach (string region in CarlosPaletteImporter.Regions)
+            {
+                var source = AssetDatabase.LoadAssetAtPath<Material>(CarlosPaletteImporter.Root + "Materials/" + region + ".mat");
+                if (source == null || source.shader.name != "Universal Render Pipeline/Simple Lit" ||
+                    source.GetTexture("_BaseMap") != null || source.GetFloat("_Surface") != 0 ||
+                    source.GetFloat("_AlphaClip") != 0 || source.GetFloat("_SpecularHighlights") != 1)
+                    throw new InvalidOperationException("Paleta requer Simple Lit opaco, sem textura e sem reflexo especular: " + region);
+                Color color = settings.paletas[row].RegionColor(region, source.GetColor("_BaseColor"));
+                color.a = source.GetFloat("_Smoothness");
+                texture.SetPixel(Array.IndexOf(CarlosPaletteImporter.Regions, region), row, color);
+            }
         }
         texture.Apply();
         File.WriteAllBytes(CarlosPaletteImporter.Palette, texture.EncodeToPNG());
@@ -202,6 +210,8 @@ public static class CarlosPaletteTools
         material.name = "Carlos_Paleta";
         material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(CarlosPaletteImporter.Palette));
         material.SetColor("_BaseColor", Color.white);
+        material.SetTextureScale("_BaseMap", new Vector2(1f, 1f / rows));
+        material.SetTextureOffset("_BaseMap", new Vector2(0f, (int)settings.selecionada / (float)rows));
         material.SetFloat("_SpecularHighlights", 1);
         material.SetFloat("_Smoothness", 1);
         material.SetFloat("_SmoothnessSource", 1);
@@ -232,7 +242,3 @@ public static class CarlosPaletteTools
         Debug.Log(report);
     }
 }
-
-
-
-
