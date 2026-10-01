@@ -16,12 +16,18 @@ namespace Lumera.JumpForce
         public bool InWardrobe { get; private set; }
         public void HoldForWardrobe(Vector3 position)
         {
-            initialPosition = position;
             InWardrobe = true;
             Restart();
+            transform.position = position;
         }
-        public void ReleaseFromWardrobe() => InWardrobe = false;
-        float velocity;
+        public void ReleaseFromWardrobe()
+        {
+            InWardrobe = false;
+            // Keep the scene's gameplay framing, then follow changes in the player's height.
+            followOffsetCorrection = player ? initialPosition.y - player.FeetY - heightOffset : 0;
+            Restart();
+        }
+        float velocity, followOffsetCorrection;
         Vector3 initialPosition;
         Camera view;
         CapsuleCollider capsule;
@@ -37,7 +43,7 @@ namespace Lumera.JumpForce
             if (!capsule) capsule = player.GetComponent<CapsuleCollider>();
             LockedUpward |= player.ReachedPlatform;
             var p = transform.position;
-            float desired = player.FeetY + heightOffset;
+            float desired = player.FeetY + heightOffset + followOffsetCorrection;
             float y = Mathf.SmoothDamp(p.y, desired, ref velocity, smoothTime);
             if (LockedUpward && y < p.y) { y = p.y; velocity = Mathf.Max(0, velocity); }
             transform.position = new Vector3(initialPosition.x, y, initialPosition.z);
