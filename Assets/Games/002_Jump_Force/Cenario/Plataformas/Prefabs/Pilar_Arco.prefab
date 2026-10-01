@@ -1,0 +1,142 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &8702683929226584227
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.91
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      propertyPath: m_Name
+      value: Pilar_Arco
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8497771321948885394}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 549309674611278525}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2171040454902257885}
+  m_SourcePrefab: {fileID: 100100000, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+--- !u!1 &8360736158262500850 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6860cd0a3da3e9744a6891c09e0cbd6a, type: 3}
+  m_PrefabInstance: {fileID: 8702683929226584227}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &8497771321948885394
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8360736158262500850}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.6005317
+  m_Height: 3.9700785
+  m_Direction: 1
+  m_Center: {x: -0.004877925, y: 0.6987109, z: 0.0077005625}
+--- !u!114 &549309674611278525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8360736158262500850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46d52e1210a7df74a97f868fff7c23b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JumpForcePilarArco
+  eixo: 0
+  amplitude: 2
+  period: 4
+  phase: 0
+  randomStartDirection: 1
+  topoContaComoChao: 1
+  larguraTopo: 0.7
+--- !u!54 &2171040454902257885
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8360736158262500850}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
