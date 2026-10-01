@@ -133,7 +133,7 @@ namespace Lumera.JumpForce
             if (returnMenuPanel && returnMenuPanel.activeInHierarchy) return;
             var keyboard = Keyboard.current;
             var pad = Gamepad.current;
-            if ((keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame)) ||
+            if ((keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame)) ||
                 (pad != null && pad.buttonSouth.wasPressedThisFrame))
             {
                 StartGame();
@@ -198,7 +198,7 @@ namespace Lumera.JumpForce
             wardrobeActions = ScriptableObject.CreateInstance<InputActionAsset>();
             wardrobeSubmit = wardrobeActions.AddActionMap("Vestiario").AddAction("ConfirmarPaleta", InputActionType.Button);
             wardrobeSubmit.AddBinding("<Gamepad>/buttonWest");
-            wardrobeSubmit.AddBinding("<Keyboard>/space");
+
             wardrobeSubmitReference = InputActionReference.Create(wardrobeSubmit);
             uiModule.submit = wardrobeSubmitReference;
         }

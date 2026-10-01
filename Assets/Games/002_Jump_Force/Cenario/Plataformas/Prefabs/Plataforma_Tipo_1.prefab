@@ -275,6 +275,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -733780072980804430, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1704487880735814427}
+    - targetCorrespondingSourceObject: {fileID: -733780072980804430, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5211144045208158581}
     - targetCorrespondingSourceObject: {fileID: 1594563328881446633, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5785118273928737687}
@@ -389,6 +392,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.5, y: 2.2149997, z: 1.2747204}
   m_Center: {x: -0.03125, y: 1.1074998, z: 0}
+--- !u!114 &5211144045208158581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8631016147041234422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73329f6bf7a3c6a4691d09b61a956f25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatform
+  startingGround: 0
+  extraOrbitClearance: 0.15
 --- !u!1001 &2611624529986468207
 PrefabInstance:
   m_ObjectHideFlags: 0

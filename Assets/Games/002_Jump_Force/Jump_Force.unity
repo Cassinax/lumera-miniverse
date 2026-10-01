@@ -612,7 +612,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 99999
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ab3754d8885feab4e93cdbec3acb5fc5, type: 2}
   m_sharedMaterial: {fileID: -3760407880448567746, guid: ab3754d8885feab4e93cdbec3acb5fc5, type: 2}
@@ -2304,9 +2304,25 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
+      propertyPath: score
+      value: 
+      objectReference: {fileID: 2130574733}
+    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
       propertyPath: movementCamera
       value: 
       objectReference: {fileID: 2065248606}
+    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
+      propertyPath: invisibleWalls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
+      propertyPath: 'invisibleWalls.Array.data[0]'
+      value: 
+      objectReference: {fileID: 258961686}
+    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
+      propertyPath: 'invisibleWalls.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1595250949}
     - target: {fileID: 4635189979873005393, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2671,7 +2687,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 99999
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -3724,6 +3740,9 @@ MonoBehaviour:
   startingGround: {fileID: 222424821302869639}
   platformPrefab: {fileID: 4569596513166003222, guid: 9964b68f8b77cbb4196b85480e2aef87, type: 3}
   pillarPrefab: {fileID: 8360736158262500850, guid: f0c5c0df8ddaffb4d8072fb93890300e, type: 3}
+  invisibleWalls:
+  - {fileID: 258961686}
+  - {fileID: 1595250949}
   settings:
     levelHeight: 4
     fixedChance: 0.6
@@ -3739,6 +3758,7 @@ MonoBehaviour:
   levelsAhead: 5
   anticipationSeconds: 2
   initialPerType: 10
+  activationLeadSeconds: 0.5
   speedVariation: 3
   speedChangeInterval: {x: 1, y: 3}
   viewportMargin: 0.05
@@ -5101,6 +5121,7 @@ GameObject:
   - component: {fileID: 2130574728}
   - component: {fileID: 2130574727}
   - component: {fileID: 2130574732}
+  - component: {fileID: 2130574733}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -5243,6 +5264,25 @@ MonoBehaviour:
   palettes: {fileID: 11400000, guid: 247f8712268f8354b9808b32d0db2581, type: 2}
   openingCameraPosition: {x: 0.4, y: 1.7, z: -4}
   reopenOnRetry: 1
+--- !u!114 &2130574733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2130574726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a54345ad170ba784eb170dedcbd5576c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceScore
+  player: {fileID: 896773395}
+  scoreText: {fileID: 1049173556}
+  coinsText: {fileID: 383330716}
+  metersPerPoint: 4
+  maximumHeight: 0
+  points: 0
+  coins: 0
 --- !u!1 &2142381661
 GameObject:
   m_ObjectHideFlags: 0

@@ -24,7 +24,7 @@ namespace Lumera.JumpForce
             {
                 if (touchControls) touchControls.SetActive(false);
                 if (charge) charge.gameObject.SetActive(false);
-                if (status) status.text = "Escolha sua cor. Toque fora para jogar.\nControle: quadrado escolhe, X inicia. Teclado: setas, espaco e Enter.";
+                if (status) status.text = "Escolha sua cor. Toque fora para jogar.\nControle: quadrado escolhe, X inicia. Teclado: Espaco ou Enter inicia.";
                 return;
             }
             if (player.Dead && showedDeath && player.input.AnyPressed) { Restart(); return; }
@@ -44,6 +44,7 @@ namespace Lumera.JumpForce
             if (restartFrame == Time.frameCount) return;
             restartFrame = Time.frameCount;
             player.Restart();
+            if (player.score) player.score.ResetRun();
             if (spawner) spawner.RestartTrail();
             followCamera.Restart();
             deathPanel.SetActive(false);

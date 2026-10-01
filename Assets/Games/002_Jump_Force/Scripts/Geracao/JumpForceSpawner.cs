@@ -13,6 +13,7 @@ namespace Lumera.JumpForce
         public JumpForcePlatform startingGround;
         public GameObject platformPrefab;
         public GameObject pillarPrefab;
+        public Collider[] invisibleWalls = Array.Empty<Collider>();
         [Header("Mapa da trilha")]
         public JumpForceTrailSettings settings = new();
         [Min(5)] public int levelsBelow = 5;
@@ -20,6 +21,8 @@ namespace Lumera.JumpForce
         [Min(0.1f)] public float anticipationSeconds = 2;
         [Header("Pool")]
         [Min(10)] public int initialPerType = 10;
+        [Tooltip("Objetos fisicos acompanham a camera e a velocidade; o restante existe apenas no mapa.")]
+        [Min(0.1f)] public float activationLeadSeconds = 0.5f;
         [Header("Movimento")]
         [Tooltip("Variacao positiva/negativa em m/s sobre a velocidade media do prefab (4 x amplitude / periodo).")]
         [Min(0)] public float speedVariation = 3;
@@ -38,8 +41,8 @@ namespace Lumera.JumpForce
         public int CreatedPlatforms => createdPlatforms;
         public int CreatedPillars => createdPillars;
 
-        readonly Stack<JumpForceSpawnedElement> platforms = new();
-        readonly Stack<JumpForceSpawnedElement> pillars = new();
+        readonly List<JumpForceSpawnedElement> platforms = new();
+        readonly List<JumpForceSpawnedElement> pillars = new();
         readonly Dictionary<int, JumpForceSpawnedElement> active = new();
         readonly HashSet<int> retired = new();
         readonly List<int> remove = new();
@@ -64,11 +67,11 @@ namespace Lumera.JumpForce
             groundShape = new JumpForceElementShape { bodyFromTop = groundBounds };
             for (int i = 0; i < Mathf.Max(10, initialPerType); i++)
             {
-                platforms.Push(Create(JumpForceElementKind.Platform));
-                pillars.Push(Create(JumpForceElementKind.Pillar));
+                Create(JumpForceElementKind.Platform);
+                Create(JumpForceElementKind.Pillar);
             }
-            platformShape = platforms.Peek().Shape;
-            pillarShape = pillars.Peek().Shape;
+            platformShape = platforms[0].Shape;
+            pillarShape = pillars[0].Shape;
             initialized = true;
             RestartTrail();
         }
@@ -81,6 +84,7 @@ namespace Lumera.JumpForce
             item.Initialize(kind);
             instance.SetActive(false);
             if (kind == JumpForceElementKind.Platform) createdPlatforms++; else createdPillars++;
+            (kind == JumpForceElementKind.Platform ? platforms : pillars).Add(item);
             return item;
         }
 
@@ -92,6 +96,15 @@ namespace Lumera.JumpForce
             retired.Clear();
             runSeed = settings.seed != 0 ? settings.seed : UnityEngine.Random.Range(1, int.MaxValue);
             Map = new JumpForceTrailMap(settings, runSeed, originY, platformShape, pillarShape, groundShape);
+            float left = float.NegativeInfinity, right = float.PositiveInfinity;
+            foreach (var wall in invisibleWalls)
+            {
+                if (!wall) continue;
+                var bounds = JumpForceSpawnedElement.ColliderBounds(wall);
+                if (bounds.center.x < 0) left = Mathf.Max(left, bounds.max.x);
+                else right = Mathf.Min(right, bounds.min.x);
+            }
+            Map.SetHorizontalBounds(left, right);
             RefreshWindow();
         }
 
@@ -109,11 +122,18 @@ namespace Lumera.JumpForce
             float rising = Mathf.Max(0, player.Body.linearVelocity.y);
             float projectedRise = Mathf.Max(player.maximumJumpHeight, rising * rising / (2 * gravity));
             float aheadHeight = projectedRise + rising * Mathf.Max(0.1f, anticipationSeconds);
+            float cameraBottom = player.FeetY - 2 * settings.levelHeight;
+            float cameraTop = player.FeetY + 2 * settings.levelHeight;
             // Also cover what the camera can show above the player, not only the fixed five-level window.
             if (view)
             {
                 float depth = view.WorldToViewportPoint(new Vector3(0, player.FeetY, z)).z;
-                if (depth > 0) aheadHeight = Mathf.Max(aheadHeight, view.ViewportToWorldPoint(new Vector3(0.5f, 1.1f, depth)).y - player.FeetY);
+                if (depth > 0)
+                {
+                    cameraTop = view.ViewportToWorldPoint(new Vector3(0.5f, 1.1f, depth)).y;
+                    cameraBottom = view.ViewportToWorldPoint(new Vector3(0.5f, -0.1f, depth)).y;
+                    aheadHeight = Mathf.Max(aheadHeight, cameraTop - player.FeetY);
+                }
             }
             int ahead = Mathf.Max(5, levelsAhead, Mathf.CeilToInt(aheadHeight / Mathf.Max(0.5f, settings.levelHeight)));
             int low = Mathf.Max(1, currentLevel - Mathf.Max(5, levelsBelow));
@@ -125,24 +145,29 @@ namespace Lumera.JumpForce
                 enabled = false;
                 return;
             }
+            // Planning five levels ahead does not allocate five levels of GameObjects.
+            float lead = rising * Mathf.Max(0.1f, activationLeadSeconds);
+            float activeTop = Mathf.Max(player.FeetY + 2 * settings.levelHeight, cameraTop + settings.levelHeight) + lead;
+            float activeBottom = Mathf.Min(player.FeetY - settings.levelHeight, cameraBottom - settings.levelHeight);
+            int activeHigh = Mathf.Min(high, Mathf.CeilToInt((activeTop - originY) / settings.levelHeight));
+            int activeLow = Mathf.Max(low, Mathf.FloorToInt((activeBottom - originY) / settings.levelHeight));
             remove.Clear();
             foreach (var pair in active)
             {
                 var item = pair.Value;
-                bool supportingPlayer = player.Support && player.Support.transform.IsChildOf(item.transform);
-                if ((item.Node.level < low || item.Node.level > high) && !supportingPlayer) remove.Add(pair.Key);
+                bool supportingPlayer = IsSupporting(item);
+                if (!item.gameObject.activeSelf || ((item.Node.level < activeLow || item.Node.level > activeHigh) && !supportingPlayer)) remove.Add(pair.Key);
             }
             foreach (int id in remove) { Return(active[id]); active.Remove(id); }
-            for (int index = low; index <= high; index++)
+            for (int index = activeLow; index <= activeHigh; index++)
             {
                 if (!Map.Levels.TryGetValue(index, out var level)) continue;
                 foreach (var node in level.nodes)
                 {
                     if (active.ContainsKey(node.id) || retired.Contains(node.id)) continue;
-                    var pool = node.kind == JumpForceElementKind.Platform ? platforms : pillars;
-                    var item = pool.Count > 0 ? pool.Pop() : Create(node.kind);
+                    var item = Acquire(node.kind);
                     item.name = (node.kind == JumpForceElementKind.Platform ? "Plataforma" : "Pilar") + "_Nivel_" + node.level + "_X_" + node.lane * 3;
-                    item.Assign(node, z);
+                    item.Assign(node, z, player.score);
                     active.Add(node.id, item);
                 }
             }
@@ -154,11 +179,19 @@ namespace Lumera.JumpForce
             activeElements = active.Count;
         }
 
-        void Return(JumpForceSpawnedElement item)
+        bool IsSupporting(JumpForceSpawnedElement item) =>
+            (player.Support && player.Support.transform.IsChildOf(item.transform)) ||
+            (player.PillarContact && player.PillarContact.transform.IsChildOf(item.transform));
+
+        JumpForceSpawnedElement Acquire(JumpForceElementKind kind)
         {
-            item.Release();
-            (item.Kind == JumpForceElementKind.Platform ? platforms : pillars).Push(item);
+            var pool = kind == JumpForceElementKind.Platform ? platforms : pillars;
+            foreach (var item in pool)
+                if (item && !item.gameObject.activeSelf && item.Node == null) return item;
+            return Create(kind);
         }
+
+        void Return(JumpForceSpawnedElement item) => item.Release();
 
         void FixedUpdate()
         {
@@ -177,6 +210,10 @@ namespace Lumera.JumpForce
                 bool blocked = false;
                 foreach (var other in active.Values)
                     if (other != item && swept.Intersects(other.WorldBounds)) { blocked = true; break; }
+                if (!blocked)
+                    foreach (var wall in invisibleWalls)
+                        if (wall && wall.enabled && wall.gameObject.activeInHierarchy && swept.Intersects(wall.bounds))
+                        { blocked = true; break; }
                 item.ApplyStep(step, blocked);
             }
         }
@@ -200,7 +237,7 @@ namespace Lumera.JumpForce
                 }
                 bool below = inFront && maxY < -viewportMargin;
                 bool above = inFront && minY > 1 + viewportMargin;
-                bool supportingPlayer = player.Support && player.Support.transform.IsChildOf(pair.Value.transform);
+                bool supportingPlayer = IsSupporting(pair.Value);
                 // During the initial camera grace, platforms below can still be reached by descending.
                 if (below && followCamera.LockedUpward && !supportingPlayer)
                 {

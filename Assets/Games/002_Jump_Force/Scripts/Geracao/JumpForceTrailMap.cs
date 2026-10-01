@@ -27,7 +27,7 @@ namespace Lumera.JumpForce
     // Value-only geometry, measured once from prefabs. No scene objects are stored in the map.
     public struct JumpForceElementShape
     {
-        public Bounds bodyFromTop;
+        public Bounds bodyFromTop, fanBodyFromTop;
         public float topOffset;
         public float baseSpeed;
     }
@@ -36,7 +36,7 @@ namespace Lumera.JumpForce
     public sealed class JumpForceTrailNode
     {
         public int id, level, lane, previousId;
-        public bool primary;
+        public bool primary, hasCoin, coinCollected;
         public JumpForceElementKind kind;
         public JumpForceSpecial special;
         public JumpForceMotionAxis axis;
@@ -66,7 +66,8 @@ namespace Lumera.JumpForce
         readonly List<int> obsolete = new();
         readonly float originY;
         readonly int collisionLevels;
-        int lastLevel, nextTrampoline, nextFan;
+        int lastLevel, nextTrampoline, nextFan, nextCoin;
+        float leftBoundary = float.NegativeInfinity, rightBoundary = float.PositiveInfinity;
         float jumpHeight, airSpeed, gravity;
         public IReadOnlyDictionary<int, JumpForceTrailLevel> Levels => levels;
         public int LastLevel => lastLevel;
@@ -86,7 +87,8 @@ namespace Lumera.JumpForce
             start.nodes.Add(new JumpForceTrailNode { id = 0, level = 0, primary = true, topY = originY, previousId = -1 });
             levels.Add(0, start);
             nextTrampoline = Gap();
-            nextFan = Gap();
+            nextFan = GapExcept(nextTrampoline);
+            nextCoin = random.Next(2, 6);
         }
 
         public void SetCapabilities(float height, float lateralSpeed, float acceleration)
@@ -97,6 +99,20 @@ namespace Lumera.JumpForce
         }
 
         int Gap() => random.NextDouble() < settings.shortSpecialGapChance ? random.Next(2, 5) : random.Next(5, 9);
+        int GapExcept(int forbidden)
+        {
+            bool shortGap = Chance(settings.shortSpecialGapChance);
+            int low = shortGap ? 2 : 5, high = shortGap ? 5 : 9;
+            int value;
+            do { value = random.Next(low, high); } while (value == forbidden);
+            return value;
+        }
+
+        public void SetHorizontalBounds(float left, float right)
+        {
+            leftBoundary = left;
+            rightBoundary = right;
+        }
         bool Chance(float chance) => random.NextDouble() < chance;
         float Range(float low, float high) => Mathf.Lerp(low, high, (float)random.NextDouble());
         JumpForceElementShape Shape(JumpForceTrailNode node) => node.level == 0 ? ground : node.kind == JumpForceElementKind.Pillar ? pillar : platform;
@@ -104,7 +120,7 @@ namespace Lumera.JumpForce
         public Bounds Envelope(JumpForceTrailNode node)
         {
             var shape = Shape(node);
-            var bounds = shape.bodyFromTop;
+            var bounds = node.special == JumpForceSpecial.Fan ? shape.fanBodyFromTop : shape.bodyFromTop;
             bounds.center += node.TopPosition(0);
             bounds.Expand(node.axis == JumpForceMotionAxis.X ? new Vector3(2 * node.amplitude, 0, 0) : new Vector3(0, 2 * node.amplitude, 0));
             bounds.Expand(settings.separation);
@@ -129,28 +145,24 @@ namespace Lumera.JumpForce
         bool Free(JumpForceTrailNode candidate)
         {
             Bounds bounds = Envelope(candidate);
+            if (candidate.level > 0 && (bounds.min.x < leftBoundary || bounds.max.x > rightBoundary)) return false;
             for (int i = Mathf.Max(0, candidate.level - collisionLevels); i <= candidate.level + collisionLevels; i++)
                 if (levels.TryGetValue(i, out var level))
                     foreach (var node in level.nodes)
-                        if (bounds.Intersects(Envelope(node))) return false;
+                        if (node.id != candidate.id && bounds.Intersects(Envelope(node))) return false;
             return true;
         }
 
         bool HasSafeExit(JumpForceTrailNode node)
         {
             bool vertical = node.kind == JumpForceElementKind.Pillar && node.axis == JumpForceMotionAxis.Y && node.amplitude > 0;
-            bool bothNext = nextTrampoline == node.level + 1 && nextFan == node.level + 1;
-            if (!vertical && !bothNext) return true;
-            int exits = 0;
-            foreach (int lane in new[] { -1, 0, 1 })
+            if (!vertical) return true;
+            foreach (int lane in new[] { -1, 1 })
             {
-                if ((vertical && lane == 0) || Mathf.Abs(lane - node.lane) > 1) continue;
                 var next = NewNode(node.level + 1, lane, JumpForceElementKind.Platform, true, node.id);
-                next.amplitude = 0;
-                if (Reachable(node, next) && Free(next) && !Envelope(node).Intersects(Envelope(next))) exits++;
+                if (Reachable(node, next) && Free(next) && !Envelope(node).Intersects(Envelope(next))) return true;
             }
-            // Reserve both sides if both independent specials are due on the next level.
-            return exits >= (bothNext ? 2 : 1);
+            return false;
         }
 
         JumpForceTrailNode NewNode(int level, int lane, JumpForceElementKind kind, bool primary, int previousId)
@@ -188,25 +200,114 @@ namespace Lumera.JumpForce
             while (lastLevel < endLevel) GenerateNext();
         }
 
+        bool VerticalPillar(JumpForceTrailNode node) =>
+            node.kind == JumpForceElementKind.Pillar && node.axis == JumpForceMotionAxis.Y && node.amplitude > 0;
+
+        bool TryMoveX(JumpForceTrailNode node, JumpForceTrailNode previous)
+        {
+            float oldAmplitude = node.amplitude, oldOffset = node.offset;
+            var oldAxis = node.axis;
+            node.axis = JumpForceMotionAxis.X;
+            // Small but real movement is sufficient to open a passage.
+            float maximum = node.kind == JumpForceElementKind.Pillar ? settings.pillarAmplitude : settings.platformAmplitude;
+            node.amplitude = Mathf.Min(1, maximum);
+            node.offset = 0;
+            if (node.amplitude >= 0.25f && Fit(node, previous) && node.amplitude >= 0.25f) return true;
+            node.amplitude = oldAmplitude;
+            node.offset = oldOffset;
+            node.axis = oldAxis;
+            return false;
+        }
+
+        bool AddAlternative(JumpForceTrailLevel level, JumpForceTrailNode previous,
+            bool restricted, bool oppositePillar)
+        {
+            if (level.nodes.Count == 2) return true;
+            var primary = level.Primary;
+            foreach (int lane in ShuffledLanes())
+            {
+                if (lane == primary.lane || (restricted && lane == 0) ||
+                    (oppositePillar && lane != -primary.lane)) continue;
+                var node = NewNode(level.index, lane, oppositePillar ? JumpForceElementKind.Pillar :
+                    JumpForceElementKind.Platform, false, previous.id);
+                if (!oppositePillar && !restricted && !Chance(settings.fixedChance))
+                    node.amplitude = Range(0, settings.platformAmplitude);
+                // An escape beside the fan can also be reached from the fan's own support.
+                if (!Fit(node, previous))
+                {
+                    if (!Fit(node, primary)) continue;
+                    node.previousId = primary.id;
+                }
+                level.nodes.Add(node);
+                return true;
+            }
+            return false;
+        }
+
+        bool ResolveDeadEnds(JumpForceTrailLevel level, JumpForceTrailLevel lower, bool restricted)
+        {
+            var primary = level.Primary;
+            var previous = lower.Primary;
+            bool fixedFan = primary.special == JumpForceSpecial.Fan && primary.amplitude == 0;
+            if (fixedFan && primary.lane != 0 && lower.nodes.Count == 1)
+            {
+                // Exact requested escape: stationary pillar in the opposite corner.
+                level.nodes.RemoveAll(n => !n.primary);
+                if (!AddAlternative(level, previous, restricted, true)) return false;
+            }
+
+            if (level.nodes.Count == 1 &&
+                (primary.special == JumpForceSpecial.Fan || primary.kind == JumpForceElementKind.Pillar))
+                foreach (var below in lower.nodes)
+                    if (below.special == JumpForceSpecial.Trampoline && below.lane == primary.lane)
+                    {
+                        if ((!restricted && TryMoveX(primary, previous)) ||
+                            AddAlternative(level, previous, restricted, false)) break;
+                        return false;
+                    }
+
+            if (level.nodes.Count == 1 && primary.special == JumpForceSpecial.Fan &&
+                primary.lane == 0 && primary.amplitude == 0)
+            {
+                foreach (var below in lower.nodes)
+                {
+                    if (below.level == 0 || below.kind != JumpForceElementKind.Platform) continue;
+                    if (below.axis == JumpForceMotionAxis.X && below.amplitude > 0) return true;
+                    var before = levels[below.level - 1].Primary;
+                    if (VerticalPillar(before)) continue;
+                    if (TryMoveX(below, before))
+                    {
+                        if (Reachable(below, primary)) return true;
+                        below.amplitude = 0;
+                    }
+                }
+                return AddAlternative(level, previous, restricted, false) ||
+                    (!restricted && TryMoveX(primary, previous));
+            }
+            return true;
+        }
+
         void GenerateNext()
         {
             int index = lastLevel + 1;
-            var previous = levels[lastLevel].Primary;
+            var lower = levels[lastLevel];
+            var previous = lower.Primary;
             bool trampolineDue = index == nextTrampoline, fanDue = index == nextFan;
-            bool both = trampolineDue && fanDue;
-            bool restricted = previous.kind == JumpForceElementKind.Pillar && previous.axis == JumpForceMotionAxis.Y && previous.amplitude > 0;
+            bool coinDue = index >= nextCoin;
+            bool restricted = VerticalPillar(previous);
             bool fixedRoll = Chance(settings.fixedChance);
-            bool pillarRoll = !restricted && !trampolineDue && !fanDue && Chance(settings.pillarChance);
-            JumpForceTrailNode primary = null;
+            bool pillarRoll = !restricted && !trampolineDue && !fanDue && !coinDue && Chance(settings.pillarChance);
+            JumpForceTrailLevel accepted = null;
             var lanes = ShuffledLanes();
-            // Try the selected type first; a normal, fixed platform is the safe fallback.
-            for (int attempt = 0; attempt < 2 && primary == null; attempt++)
+            for (int attempt = 0; attempt < 2 && accepted == null; attempt++)
                 foreach (int lane in lanes)
                 {
                     if ((restricted && lane == 0) || Mathf.Abs(lane - previous.lane) > 1) continue;
                     var kind = attempt == 0 && pillarRoll ? JumpForceElementKind.Pillar : JumpForceElementKind.Platform;
                     var node = NewNode(index, lane, kind, true, previous.id);
-                    if (!fixedRoll && !restricted && !both && attempt == 0)
+                    node.special = trampolineDue ? JumpForceSpecial.Trampoline :
+                        fanDue ? JumpForceSpecial.Fan : JumpForceSpecial.None;
+                    if (!fixedRoll && !restricted && attempt == 0)
                     {
                         node.amplitude = Range(0, kind == JumpForceElementKind.Pillar ?
                             Mathf.Clamp(settings.pillarAmplitude, 0, 2) : Mathf.Clamp(settings.platformAmplitude, 0, 5));
@@ -214,49 +315,29 @@ namespace Lumera.JumpForce
                             node.axis = JumpForceMotionAxis.Y;
                     }
                     if (!Fit(node, previous)) continue;
-                    if (both)
-                    {
-                        bool spaceForSecond = false;
-                        foreach (int otherLane in new[] { -1, 0, 1 })
-                        {
-                            if (otherLane == lane || (restricted && otherLane == 0)) continue;
-                            var other = NewNode(index, otherLane, JumpForceElementKind.Platform, false, previous.id);
-                            if (Reachable(previous, other) && Free(other) && !Envelope(node).Intersects(Envelope(other)))
-                                spaceForSecond = true;
-                        }
-                        if (!spaceForSecond) continue;
-                    }
-                    primary = node;
-                    break;
+                    var candidate = new JumpForceTrailLevel(index);
+                    candidate.nodes.Add(node);
+                    levels.Add(index, candidate);
+                    if (Chance(settings.secondPlatformChance)) AddAlternative(candidate, previous, restricted, false);
+                    if (ResolveDeadEnds(candidate, lower, restricted)) { accepted = candidate; break; }
+                    levels.Remove(index);
                 }
-            if (primary == null)
-                throw new InvalidOperationException("Jump Force: sem rota segura no nivel " + index + ". Confira dimensoes dos prefabs e alcance do jogador.");
-            var level = new JumpForceTrailLevel(index);
-            level.nodes.Add(primary);
-            levels.Add(index, level);
-            if (trampolineDue) primary.special = JumpForceSpecial.Trampoline;
-            else if (fanDue) primary.special = JumpForceSpecial.Fan;
-
-            if (both || Chance(settings.secondPlatformChance))
-                foreach (int lane in ShuffledLanes())
-                {
-                    if (lane == primary.lane || (restricted && lane == 0)) continue;
-                    // A vertical pillar reserves the central shaft through the next level.
-                    var node = NewNode(index, lane, JumpForceElementKind.Platform, false, previous.id);
-                    if (!restricted && !both && !Chance(settings.fixedChance))
-                        node.amplitude = Range(0, Mathf.Clamp(settings.platformAmplitude, 0, 5));
-                    if (!Fit(node, previous)) continue;
-                    if (both) node.special = JumpForceSpecial.Fan;
-                    level.nodes.Add(node);
-                    break;
-                }
-            if (both && level.nodes.Count != 2)
+            if (accepted == null)
+                throw new InvalidOperationException("Jump Force: sem rota segura no nivel " + index +
+                    ". Confira dimensoes dos prefabs, paredes e alcance do jogador.");
+            if (coinDue)
             {
-                levels.Remove(index);
-                throw new InvalidOperationException("Jump Force: os dois especiais precisam de duas plataformas no nivel " + index + ".");
+                foreach (var node in accepted.nodes)
+                    if (node.kind == JumpForceElementKind.Platform)
+                    {
+                        node.hasCoin = true;
+                        nextCoin = index + random.Next(2, 6);
+                        break;
+                    }
             }
-            if (trampolineDue) nextTrampoline = index + Gap();
-            if (fanDue) nextFan = index + Gap();
+            // Independent schedules, but a date reserved for one cannot be used by the other.
+            if (trampolineDue) nextTrampoline = index + GapExcept(nextFan - index);
+            if (fanDue) nextFan = index + GapExcept(nextTrampoline - index);
             lastLevel = index;
         }
 

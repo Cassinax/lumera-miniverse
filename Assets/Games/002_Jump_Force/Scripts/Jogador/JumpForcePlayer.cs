@@ -9,6 +9,21 @@ namespace Lumera.JumpForce
     {
         [Header("Referencias")]
         public JumpForceInput input;
+        public JumpForceScore score;
+        public Collider[] invisibleWalls = System.Array.Empty<Collider>();
+        [Header("Deslizar e pular na lateral do pilar")]
+        [Min(0)] public float wallAttraction = 3;
+        [Min(0)] public float wallSlideDrag = 5;
+        [Min(0.1f)] public float wallSlideSpeed = 2;
+        [Min(0.01f)] public float wallProbeDistance = 0.1f;
+        [Min(0)] public float wallJumpAwaySpeed = 2.5f;
+        public bool TouchingPillar => wallContact;
+        public Collider PillarContact => wallContact;
+        public bool CanWallJump => wallContact && wallJumpReady && takeoffGrace <= 0;
+        Collider wallContact;
+        bool wallJumpReady;
+        float wallNormalX;
+        readonly RaycastHit[] contactHits = new RaycastHit[24];
         public JumpForceAnimation animationDriver;
         public Transform visual;
         [Header("Pulo - alturas em metros")]
@@ -64,7 +79,7 @@ namespace Lumera.JumpForce
         float? pendingJumpHeight;
         JumpForcePlatform launchPlatform;
         Vector3 facing = Vector3.forward;
-        Vector3 initialPosition;
+
         Quaternion initialRotation;
         bool initialized;
         public bool GameplayEnabled { get; private set; } = true;
@@ -105,7 +120,7 @@ namespace Lumera.JumpForce
             body.useGravity = false;
             body.interpolation = RigidbodyInterpolation.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            initialPosition = body.position;
+
             initialRotation = visual ? visual.localRotation : Quaternion.identity;
             previousFeet = FeetY;
             facing = visual ? visual.forward : Vector3.forward;
@@ -121,7 +136,7 @@ namespace Lumera.JumpForce
         // Public commands also serve future UI buttons, upgrades and deterministic validation.
         public void BeginCharge()
         {
-            if (!GameplayEnabled || !Grounded || Dead || Charging || pendingJumpHeight.HasValue) return;
+            if (!GameplayEnabled || (!Grounded && !CanWallJump) || Dead || Charging || pendingJumpHeight.HasValue) return;
             Charging = true;
             chargeTime = 0;
             animationDriver?.BeginCharge();
@@ -130,7 +145,7 @@ namespace Lumera.JumpForce
         {
             if (!Charging) return;
             Charging = false;
-            if (!Grounded || Dead) { animationDriver?.Land(); return; }
+            if ((!Grounded && !CanWallJump) || Dead) { animationDriver?.Land(); return; }
             float factor = Mathf.Clamp01(chargeCurve.Evaluate(Charge01));
             pendingJumpHeight = Mathf.Lerp(minimumJumpHeight, Mathf.Max(minimumJumpHeight, maximumJumpHeight), factor);
         }
@@ -180,6 +195,7 @@ namespace Lumera.JumpForce
         void OnTriggerEnter(Collider other)
         {
             if (Dead || !GameplayEnabled) return;
+            if (other.TryGetComponent(out JumpForceCoin coin)) { coin.Collect(this); return; }
             if (other.TryGetComponent(out JumpForceTrampolim trampolim)) trampolim.Impulsionar(this, other, capsule);
             else if (other.TryGetComponent(out JumpForceVentilador ventilador)) ventilador.Empurrar(this);
         }
@@ -200,10 +216,16 @@ namespace Lumera.JumpForce
                 body.position = Support.CarryPoint(body.position);
             Physics.SyncTransforms();
             FindSupport();
+            ProbePillar();
             if (pendingJumpHeight.HasValue)
             {
-                if (Grounded)
+                if (Grounded || CanWallJump)
                 {
+                    if (!Grounded)
+                    {
+                        wallJumpReady = false;
+                        externalSpeedX = wallNormalX * wallJumpAwaySpeed;
+                    }
                     launchPlatform = Support;
                     float speed = Mathf.Sqrt(2 * Gravity * pendingJumpHeight.Value);
                     body.linearVelocity = Vector3.up * speed;
@@ -217,10 +239,11 @@ namespace Lumera.JumpForce
             }
             if (!Grounded)
             {
-                if (Charging) { CancelCharge(); animationDriver?.Release(); }
+                if (Charging && !CanWallJump) { CancelCharge(); animationDriver?.Release(); }
                 SelectTarget();
                 MoveHorizontally(dt);
                 body.AddForce(Vector3.down * Gravity, ForceMode.Acceleration);
+                ApplyWallSlide();
                 if (body.linearVelocity.y < -maximumFallSpeed)
                     body.linearVelocity = Vector3.down * maximumFallSpeed;
             }
@@ -347,7 +370,7 @@ namespace Lumera.JumpForce
             if (camera && camera.transform.right.x < 0) right = Vector3.left;
             Vector3 desired = right * command * (Grounded ? groundSpeed : airSpeed);
             Vector3 help = Vector3.zero;
-            if (!Grounded && assistanceEnabled && Target)
+            if (!Grounded && !wallContact && assistanceEnabled && Target)
             {
                 var radial = body.position - Target.Center;
                 radial.y = 0;
@@ -390,17 +413,70 @@ namespace Lumera.JumpForce
             if (distance < 0.00001f) return step;
             var direction = step / distance;
             float allowed = distance;
-            foreach (var hit in body.SweepTestAll(direction, distance + skin, QueryTriggerInteraction.Ignore))
+            CapsulePoints(out var bottom, out var top);
+            int count = Physics.CapsuleCastNonAlloc(bottom, top, playerRadius * 0.95f, direction,
+                contactHits, distance + skin, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
             {
-                // Initial overlaps (distance 0) are left to the solver, so the player can still walk away.
-                // A pillar's standable top is a platform surface, not a wall.
-                if (hit.distance <= 0 || hit.collider.GetComponent<JumpForcePlatform>()
-                    || !hit.collider.GetComponentInParent<JumpForcePilarArco>()) continue;
+                var hit = contactHits[i];
+                if (hit.collider == capsule || hit.distance <= 0 || hit.collider.GetComponent<JumpForcePlatform>()) continue;
+                bool wall = System.Array.IndexOf(invisibleWalls, hit.collider) >= 0;
+                if (!wall && !hit.collider.GetComponentInParent<JumpForcePilarArco>()) continue;
                 allowed = Mathf.Min(allowed, Mathf.Max(0, hit.distance - skin));
             }
             // Hitting a wall also ends a trampoline or fan slide in that direction.
             if (allowed < distance && externalSpeedX * direction.x > 0) externalSpeedX = 0;
             return direction * allowed;
+        }
+        void CapsulePoints(out Vector3 bottom, out Vector3 top)
+        {
+            Vector3 center = body.position + Vector3.Scale(capsule.center, transform.lossyScale);
+            float half = Mathf.Max(0, capsule.height * transform.lossyScale.y * 0.5f - playerRadius);
+            bottom = center - Vector3.up * half;
+            top = center + Vector3.up * half;
+        }
+        void ProbePillar()
+        {
+            Collider found = null;
+            float normal = 0, best = float.PositiveInfinity;
+            if (!Grounded)
+            {
+                CapsulePoints(out var bottom, out var top);
+                Vector3 center = (bottom + top) * 0.5f;
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    int count = Physics.SphereCastNonAlloc(center, playerRadius * 0.9f, Vector3.right * side,
+                        contactHits, wallProbeDistance + playerRadius * 0.1f, ~0, QueryTriggerInteraction.Ignore);
+                    for (int i = 0; i < count; i++)
+                    {
+                        var hit = contactHits[i];
+                        if (!hit.collider || hit.collider == capsule || hit.collider.GetComponent<JumpForcePlatform>() ||
+                            !hit.collider.GetComponentInParent<JumpForcePilarArco>() || Mathf.Abs(hit.normal.x) < 0.7f ||
+                            center.y >= hit.collider.bounds.max.y - 0.05f || hit.distance >= best) continue;
+                        found = hit.collider;
+                        normal = Mathf.Sign(hit.normal.x);
+                        best = hit.distance;
+                    }
+                }
+            }
+            if (found != wallContact) wallJumpReady = found != null;
+            wallContact = found;
+            wallNormalX = normal;
+        }
+        void ApplyWallSlide()
+        {
+            if (!wallContact || takeoffGrace > 0) return;
+            // Steering away releases the attraction; contact must actually break to rearm another jump.
+            float command = input ? input.Movement.x : 0;
+            if (command * wallNormalX > 0.1f) return;
+            body.AddForce(Vector3.left * wallNormalX * wallAttraction, ForceMode.Acceleration);
+            if (body.linearVelocity.y < 0)
+            {
+                body.AddForce(Vector3.up * (-body.linearVelocity.y * wallSlideDrag), ForceMode.Acceleration);
+                var velocity = body.linearVelocity;
+                velocity.y = Mathf.Max(velocity.y, -wallSlideSpeed);
+                body.linearVelocity = velocity;
+            }
         }
         void UpdateCollisions()
         {
@@ -415,10 +491,17 @@ namespace Lumera.JumpForce
         {
             if (Dead || !GameplayEnabled) return;
             CancelCharge();
+            score?.ObserveHeight(body.position.y);
             Dead = true;
             body.linearVelocity = Vector3.zero;
             body.isKinematic = true;
             onDeath.Invoke();
+            body.position = Vector3.zero;
+            transform.position = Vector3.zero;
+            Grounded = false;
+            Target = Support = launchPlatform = null;
+            wallContact = null;
+            wallJumpReady = false;
         }
         public void Restart()
         {
@@ -427,7 +510,11 @@ namespace Lumera.JumpForce
             Dead = Grounded = ReachedPlatform = false;
             Target = Support = launchPlatform = null;
             CancelCharge();
-            body.position = initialPosition;
+            body.position = Vector3.zero;
+            transform.position = Vector3.zero;
+            planeZ = 0;
+            wallContact = null;
+            wallJumpReady = false;
             body.linearVelocity = Vector3.zero;
             previousFeet = FeetY;
             takeoffGrace = externalSpeedX = 0;
