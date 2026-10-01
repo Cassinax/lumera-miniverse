@@ -64,6 +64,9 @@ namespace Lumera.JumpForce
         readonly JumpForceElementShape platform, pillar, ground;
         readonly SortedDictionary<int, JumpForceTrailLevel> levels = new();
         readonly List<int> obsolete = new();
+        readonly Dictionary<int, (int trampoline, int fan, int coin)> schedules = new();
+        int protectedThrough;
+        public int RecoveryCount { get; private set; }
         readonly float originY;
         readonly int collisionLevels;
         int lastLevel, nextTrampoline, nextFan, nextCoin;
@@ -89,6 +92,7 @@ namespace Lumera.JumpForce
             nextTrampoline = Gap();
             nextFan = GapExcept(nextTrampoline);
             nextCoin = random.Next(2, 6);
+            schedules[0] = (nextTrampoline, nextFan, nextCoin);
         }
 
         public void SetCapabilities(float height, float lateralSpeed, float acceleration)
@@ -156,10 +160,12 @@ namespace Lumera.JumpForce
         bool HasSafeExit(JumpForceTrailNode node)
         {
             bool vertical = node.kind == JumpForceElementKind.Pillar && node.axis == JumpForceMotionAxis.Y && node.amplitude > 0;
-            if (!vertical) return true;
-            foreach (int lane in new[] { -1, 1 })
+            foreach (int lane in new[] { -1, 0, 1 })
             {
+                if (vertical && lane == 0) continue;
                 var next = NewNode(node.level + 1, lane, JumpForceElementKind.Platform, true, node.id);
+                next.special = nextFan == next.level ? JumpForceSpecial.Fan :
+                    nextTrampoline == next.level ? JumpForceSpecial.Trampoline : JumpForceSpecial.None;
                 if (Reachable(node, next) && Free(next) && !Envelope(node).Intersects(Envelope(next))) return true;
             }
             return false;
@@ -195,9 +201,61 @@ namespace Lumera.JumpForce
             return lanes;
         }
 
-        public void EnsureThrough(int endLevel)
+        // Published records are never rewritten, even after their scene objects return to the pool.
+        public void ProtectThrough(int level) => protectedThrough = Mathf.Max(protectedThrough, level);
+
+        public bool EnsureThrough(int endLevel)
         {
-            while (lastLevel < endLevel) GenerateNext();
+            int repairs = 0;
+            while (lastLevel < endLevel)
+            {
+                if (GenerateNext()) continue;
+                if (lastLevel > protectedThrough && repairs++ < 12)
+                {
+                    int first = Mathf.Max(protectedThrough + 1, lastLevel - 1);
+                    for (int i = first; i <= lastLevel; i++) { levels.Remove(i); schedules.Remove(i); }
+                    lastLevel = first - 1;
+                    var schedule = schedules[lastLevel];
+                    nextTrampoline = schedule.trampoline;
+                    nextFan = schedule.fan;
+                    nextCoin = schedule.coin;
+                    RecoveryCount++;
+                    continue;
+                }
+                // An ordinary reachable bridge takes priority over an impossible special combination.
+                if (!GenerateBridge()) return false;
+                RecoveryCount++;
+            }
+            return true;
+        }
+
+        bool GenerateBridge()
+        {
+            int index = lastLevel + 1;
+            var lower = levels[lastLevel];
+            bool restricted = lower.nodes.Exists(VerticalPillar);
+            foreach (var previous in lower.nodes)
+                foreach (int lane in new[] { previous.lane, 0, -1, 1 })
+                {
+                    if (restricted && lane == 0) continue;
+                    var node = NewNode(index, lane, JumpForceElementKind.Platform, true, previous.id);
+                    if (!Reachable(previous, node) || !Free(node)) continue;
+                    var level = new JumpForceTrailLevel(index);
+                    level.nodes.Add(node);
+                    levels.Add(index, level);
+                    if (index >= nextCoin)
+                    {
+                        node.hasCoin = true;
+                        nextCoin = index + random.Next(2, 6);
+                    }
+                    if (nextTrampoline <= index) nextTrampoline = index + 1;
+                    if (nextFan <= index) nextFan = index + 1;
+                    if (nextFan == nextTrampoline) nextFan++;
+                    lastLevel = index;
+                    schedules[index] = (nextTrampoline, nextFan, nextCoin);
+                    return true;
+                }
+            return false; // Keep every accepted/published record; the caller can retry without disabling itself.
         }
 
         bool VerticalPillar(JumpForceTrailNode node) =>
@@ -273,6 +331,7 @@ namespace Lumera.JumpForce
                 {
                     if (below.level == 0 || below.kind != JumpForceElementKind.Platform) continue;
                     if (below.axis == JumpForceMotionAxis.X && below.amplitude > 0) return true;
+                    if (below.level <= protectedThrough) continue;
                     var before = levels[below.level - 1].Primary;
                     if (VerticalPillar(before)) continue;
                     if (TryMoveX(below, before))
@@ -287,21 +346,22 @@ namespace Lumera.JumpForce
             return true;
         }
 
-        void GenerateNext()
+        bool GenerateNext()
         {
             int index = lastLevel + 1;
             var lower = levels[lastLevel];
-            var previous = lower.Primary;
             bool trampolineDue = index == nextTrampoline, fanDue = index == nextFan;
             bool coinDue = index >= nextCoin;
-            bool restricted = VerticalPillar(previous);
+            bool restricted = lower.nodes.Exists(VerticalPillar);
             bool fixedRoll = Chance(settings.fixedChance);
             bool pillarRoll = !restricted && !trampolineDue && !fanDue && !coinDue && Chance(settings.pillarChance);
             JumpForceTrailLevel accepted = null;
             var lanes = ShuffledLanes();
             for (int attempt = 0; attempt < 2 && accepted == null; attempt++)
+                foreach (var previous in lower.nodes)
                 foreach (int lane in lanes)
                 {
+                    if (accepted != null) break;
                     if ((restricted && lane == 0) || Mathf.Abs(lane - previous.lane) > 1) continue;
                     var kind = attempt == 0 && pillarRoll ? JumpForceElementKind.Pillar : JumpForceElementKind.Platform;
                     var node = NewNode(index, lane, kind, true, previous.id);
@@ -322,9 +382,7 @@ namespace Lumera.JumpForce
                     if (ResolveDeadEnds(candidate, lower, restricted)) { accepted = candidate; break; }
                     levels.Remove(index);
                 }
-            if (accepted == null)
-                throw new InvalidOperationException("Jump Force: sem rota segura no nivel " + index +
-                    ". Confira dimensoes dos prefabs, paredes e alcance do jogador.");
+            if (accepted == null) return false;
             if (coinDue)
             {
                 foreach (var node in accepted.nodes)
@@ -339,6 +397,8 @@ namespace Lumera.JumpForce
             if (trampolineDue) nextTrampoline = index + GapExcept(nextFan - index);
             if (fanDue) nextFan = index + GapExcept(nextTrampoline - index);
             lastLevel = index;
+            schedules[index] = (nextTrampoline, nextFan, nextCoin);
+            return true;
         }
 
         public void ForgetBelow(int firstLevel)

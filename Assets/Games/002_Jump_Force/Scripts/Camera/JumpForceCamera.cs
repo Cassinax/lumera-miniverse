@@ -31,13 +31,27 @@ namespace Lumera.JumpForce
         float followOffsetCorrection;
         Vector3 initialPosition, wardrobePosition, velocity;
         Camera view;
+        Transform[] wallTransforms;
+        Vector3[] wallOrigins;
         CapsuleCollider capsule;
         void Awake()
         {
             initialPosition = transform.position;
             wardrobePosition = initialPosition;
             view = GetComponent<Camera>();
-            if (player) capsule = player.GetComponent<CapsuleCollider>();
+            if (player)
+            {
+                capsule = player.GetComponent<CapsuleCollider>();
+                wallTransforms = new Transform[player.invisibleWalls.Length];
+                wallOrigins = new Vector3[wallTransforms.Length];
+                for (int i = 0; i < wallTransforms.Length; i++)
+                {
+                    var wall = player.invisibleWalls[i];
+                    if (!wall || !wall.transform.IsChildOf(transform)) continue;
+                    wallTransforms[i] = wall.transform;
+                    wallOrigins[i] = wall.transform.position;
+                }
+            }
         }
         void LateUpdate()
         {
@@ -58,6 +72,16 @@ namespace Lumera.JumpForce
                 velocity.y = Mathf.Max(0, velocity.y);
             }
             transform.position = position;
+            // The walls follow height only. Wardrobe X/Z transitions must not move the gameplay corridor.
+            if (wallTransforms != null)
+                for (int i = 0; i < wallTransforms.Length; i++)
+                    if (wallTransforms[i])
+                    {
+                        var wallPosition = wallTransforms[i].position;
+                        wallPosition.x = wallOrigins[i].x;
+                        wallPosition.z = wallOrigins[i].z;
+                        wallTransforms[i].position = wallPosition;
+                    }
             if (InWardrobe) return;
 
             if (!capsule) capsule = player.GetComponent<CapsuleCollider>();

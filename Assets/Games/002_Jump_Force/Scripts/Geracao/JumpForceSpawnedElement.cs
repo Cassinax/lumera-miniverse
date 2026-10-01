@@ -86,6 +86,22 @@ namespace Lumera.JumpForce
             return part == transform ? null : part;
         }
 
+        // These are corridor limits, independent of the finite wall height and physics sync timing.
+        public static bool TryGetWallLimits(Collider[] walls, out float left, out float right)
+        {
+            left = float.NegativeInfinity;
+            right = float.PositiveInfinity;
+            float firstX = float.PositiveInfinity, lastX = float.NegativeInfinity;
+            foreach (var wall in walls)
+            {
+                if (!wall || !wall.enabled || !wall.gameObject.activeInHierarchy) continue;
+                var bounds = ColliderBounds(wall);
+                if (bounds.center.x < firstX) { firstX = bounds.center.x; left = bounds.max.x; }
+                if (bounds.center.x > lastX) { lastX = bounds.center.x; right = bounds.min.x; }
+            }
+            return firstX < lastX && left < right;
+        }
+
         public static Bounds ColliderBounds(Collider collider)
         {
             Bounds local;
@@ -145,12 +161,23 @@ namespace Lumera.JumpForce
             return Axis * (next - node.offset);
         }
 
-        public void ApplyStep(Vector3 step, bool blocked)
+        public Vector3 LimitStepToWalls(Vector3 step, float left, float right, float clearance, out bool blocked)
+        {
+            var bounds = WorldBounds;
+            float minimum = left + clearance - bounds.min.x;
+            float maximum = right - clearance - bounds.max.x;
+            float allowed = Mathf.Clamp(step.x, minimum, maximum);
+            blocked = !Mathf.Approximately(allowed, step.x);
+            step.x = allowed;
+            return step;
+        }
+
+        public void ApplyStep(Vector3 step, bool blocked, bool reverseAfterStep = false)
         {
             if (blocked) { node.direction = -node.direction; return; }
             node.offset += Vector3.Dot(step, Axis);
             transform.position = origin + Axis * node.offset;
-            if (Mathf.Abs(node.offset - node.direction * node.amplitude) < 0.0001f) node.direction = -node.direction;
+            if (reverseAfterStep || Mathf.Abs(node.offset - node.direction * node.amplitude) < 0.0001f) node.direction = -node.direction;
         }
 
         public void SetVisible(bool value)

@@ -50,6 +50,7 @@ namespace Lumera.JumpForce
         float originY, z;
         Camera view;
         bool initialized;
+        int warnedAtLevel = -1;
 
         void Start()
         {
@@ -91,20 +92,15 @@ namespace Lumera.JumpForce
         public void RestartTrail()
         {
             if (!initialized) return;
+            enabled = true;
+            warnedAtLevel = -1;
             foreach (var item in active.Values) Return(item);
             active.Clear();
             retired.Clear();
             runSeed = settings.seed != 0 ? settings.seed : UnityEngine.Random.Range(1, int.MaxValue);
             Map = new JumpForceTrailMap(settings, runSeed, originY, platformShape, pillarShape, groundShape);
-            float left = float.NegativeInfinity, right = float.PositiveInfinity;
-            foreach (var wall in invisibleWalls)
-            {
-                if (!wall) continue;
-                var bounds = JumpForceSpawnedElement.ColliderBounds(wall);
-                if (bounds.center.x < 0) left = Mathf.Max(left, bounds.max.x);
-                else right = Mathf.Min(right, bounds.min.x);
-            }
-            Map.SetHorizontalBounds(left, right);
+            if (JumpForceSpawnedElement.TryGetWallLimits(invisibleWalls, out float left, out float right))
+                Map.SetHorizontalBounds(left, right);
             RefreshWindow();
         }
 
@@ -138,13 +134,18 @@ namespace Lumera.JumpForce
             int ahead = Mathf.Max(5, levelsAhead, Mathf.CeilToInt(aheadHeight / Mathf.Max(0.5f, settings.levelHeight)));
             int low = Mathf.Max(1, currentLevel - Mathf.Max(5, levelsBelow));
             int high = currentLevel + ahead;
-            try { Map.EnsureThrough(high); }
-            catch (InvalidOperationException ex)
+            if (!Map.EnsureThrough(high))
             {
-                Debug.LogError(ex.Message + " Semente: " + runSeed, this);
-                enabled = false;
+                if (warnedAtLevel != Map.LastLevel)
+                {
+                    warnedAtLevel = Map.LastLevel;
+                    Debug.LogWarning("Jump Force: mantendo a rota existente e tentando outra continuacao apos o nivel " +
+                        Map.LastLevel + ". Semente: " + runSeed, this);
+                }
+                // Do not recycle the route or disable the component when a planning attempt fails.
                 return;
             }
+            warnedAtLevel = -1;
             // Planning five levels ahead does not allocate five levels of GameObjects.
             float lead = rising * Mathf.Max(0.1f, activationLeadSeconds);
             float activeTop = Mathf.Max(player.FeetY + 2 * settings.levelHeight, cameraTop + settings.levelHeight) + lead;
@@ -165,6 +166,7 @@ namespace Lumera.JumpForce
                 foreach (var node in level.nodes)
                 {
                     if (active.ContainsKey(node.id) || retired.Contains(node.id)) continue;
+                    Map.ProtectThrough(node.level);
                     var item = Acquire(node.kind);
                     item.name = (node.kind == JumpForceElementKind.Platform ? "Plataforma" : "Pilar") + "_Nivel_" + node.level + "_X_" + node.lane * 3;
                     item.Assign(node, z, player.score);
@@ -198,11 +200,15 @@ namespace Lumera.JumpForce
             if (!initialized || player.Dead) return;
             RefreshWindow();
             if (!enabled || !player.GameplayEnabled) return;
+            bool hasWalls = JumpForceSpawnedElement.TryGetWallLimits(invisibleWalls, out float left, out float right);
             foreach (var item in active.Values)
             {
                 Vector3 step = item.Step(Time.fixedDeltaTime, Mathf.Max(0, speedVariation), speedChangeInterval);
                 if (step == Vector3.zero) continue;
                 Bounds swept = item.WorldBounds;
+                bool wallBlocked = false;
+                if (hasWalls && step.x != 0)
+                    step = item.LimitStepToWalls(step, left, right, settings.separation, out wallBlocked);
                 var destination = swept;
                 destination.center += step;
                 swept.Encapsulate(destination);
@@ -210,11 +216,7 @@ namespace Lumera.JumpForce
                 bool blocked = false;
                 foreach (var other in active.Values)
                     if (other != item && swept.Intersects(other.WorldBounds)) { blocked = true; break; }
-                if (!blocked)
-                    foreach (var wall in invisibleWalls)
-                        if (wall && wall.enabled && wall.gameObject.activeInHierarchy && swept.Intersects(wall.bounds))
-                        { blocked = true; break; }
-                item.ApplyStep(step, blocked);
+                item.ApplyStep(step, blocked, wallBlocked);
             }
         }
 

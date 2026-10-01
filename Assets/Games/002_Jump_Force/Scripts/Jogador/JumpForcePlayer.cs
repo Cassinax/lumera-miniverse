@@ -33,6 +33,12 @@ namespace Lumera.JumpForce
         public AnimationCurve chargeCurve = AnimationCurve.Linear(0, 0, 1, 1);
         [Min(0.1f)] public float gravityMultiplier = 1.8f;
         [Min(1)] public float maximumFallSpeed = 28;
+        [Header("Toque duplo para carga rapida")]
+        [Tooltip("Janela a partir do primeiro pressionamento. Um toque breve aguarda esta janela antes de saltar.")]
+        [Min(0)] public float doubleTapWindow = 0.25f;
+        [Min(0)] public float quickTapDuration = 0.12f;
+        [Min(1)] public float doubleTapChargeMultiplier = 2;
+        public float ChargeSpeedMultiplier => chargeMultiplier;
         [Header("Movimento livre")]
         public Camera movementCamera;
         [Min(0)] public float groundSpeed = 3.5f;
@@ -76,7 +82,8 @@ namespace Lumera.JumpForce
         Rigidbody body;
         CapsuleCollider capsule;
         float feetOffset, playerRadius, chargeTime, previousFeet, takeoffGrace, planeZ, externalSpeedX;
-        float? pendingJumpHeight;
+        float? pendingJumpHeight, deferredTapHeight;
+        float pressStartedAt, secondTapDeadline, chargeMultiplier = 1;
         JumpForcePlatform launchPlatform;
         Vector3 facing = Vector3.forward;
 
@@ -130,15 +137,31 @@ namespace Lumera.JumpForce
         {
             if (Dead || !GameplayEnabled || !input) return;
             if (input.JumpPressed) BeginCharge();
-            if (Charging) chargeTime += Time.deltaTime;
+            if (Charging) chargeTime += Time.deltaTime * chargeMultiplier;
             if (input.JumpReleased) ReleaseJump();
+            if (deferredTapHeight.HasValue && Time.time >= secondTapDeadline)
+            {
+                if (Grounded) pendingJumpHeight = deferredTapHeight;
+                deferredTapHeight = null;
+            }
         }
         // Public commands also serve future UI buttons, upgrades and deterministic validation.
         public void BeginCharge()
         {
             if (!GameplayEnabled || (!Grounded && !CanWallJump) || Dead || Charging || pendingJumpHeight.HasValue) return;
+            if (!Grounded && CanWallJump)
+            {
+                deferredTapHeight = null;
+                chargeTime = fullChargeSeconds;
+                pendingJumpHeight = Mathf.Max(minimumJumpHeight, maximumJumpHeight);
+                return; // Full wall jump on press; no hold/release delay.
+            }
+            bool secondTap = deferredTapHeight.HasValue && Time.time <= secondTapDeadline;
+            deferredTapHeight = null;
+            chargeMultiplier = secondTap ? Mathf.Max(1, doubleTapChargeMultiplier) : 1;
             Charging = true;
             chargeTime = 0;
+            pressStartedAt = Time.time;
             animationDriver?.BeginCharge();
         }
         public void ReleaseJump()
@@ -147,12 +170,20 @@ namespace Lumera.JumpForce
             Charging = false;
             if ((!Grounded && !CanWallJump) || Dead) { animationDriver?.Land(); return; }
             float factor = Mathf.Clamp01(chargeCurve.Evaluate(Charge01));
-            pendingJumpHeight = Mathf.Lerp(minimumJumpHeight, Mathf.Max(minimumJumpHeight, maximumJumpHeight), factor);
+            float height = Mathf.Lerp(minimumJumpHeight, Mathf.Max(minimumJumpHeight, maximumJumpHeight), factor);
+            if (Grounded && chargeMultiplier == 1 && doubleTapWindow > 0 &&
+                Time.time - pressStartedAt <= quickTapDuration && Time.time < pressStartedAt + doubleTapWindow)
+            {
+                deferredTapHeight = height;
+                secondTapDeadline = pressStartedAt + doubleTapWindow;
+            }
+            else pendingJumpHeight = height;
         }
         public void CancelCharge()
         {
             Charging = false;
-            pendingJumpHeight = null;
+            pendingJumpHeight = deferredTapHeight = null;
+            chargeMultiplier = 1;
             chargeTime = 0;
             animationDriver?.Land();
         }
@@ -168,7 +199,7 @@ namespace Lumera.JumpForce
                 Grounded = false;
                 Support = null;
             }
-            if (Charging) CancelCharge();
+            if (Charging || deferredTapHeight.HasValue) CancelCharge();
             pendingJumpHeight = null;
             launchPlatform = null;
             body.linearVelocity = Vector3.up * velocity.y;
@@ -213,10 +244,11 @@ namespace Lumera.JumpForce
             takeoffGrace = Mathf.Max(0, takeoffGrace - dt);
             // Carry before contact tests. The support has already sampled its new transform.
             if (Grounded && Support && Support.isActiveAndEnabled)
-                body.position = Support.CarryPoint(body.position);
+                body.position = ConstrainToWalls(Support.CarryPoint(body.position));
             Physics.SyncTransforms();
             FindSupport();
             ProbePillar();
+            if (CanWallJump && input && input.JumpHeld && !pendingJumpHeight.HasValue) BeginCharge();
             if (pendingJumpHeight.HasValue)
             {
                 if (Grounded || CanWallJump)
@@ -263,8 +295,16 @@ namespace Lumera.JumpForce
         const float TakeoffGrace = 0.12f;
 
         // The constraint only covers the solver; carry, snaps and direct position writes can still leak into Z.
+        Vector3 ConstrainToWalls(Vector3 position)
+        {
+            if (JumpForceSpawnedElement.TryGetWallLimits(invisibleWalls, out float left, out float right) &&
+                right - left > 2 * playerRadius)
+                position.x = Mathf.Clamp(position.x, left + playerRadius + 0.01f, right - playerRadius - 0.01f);
+            return position;
+        }
         void LockToPlane()
         {
+            body.position = ConstrainToWalls(body.position);
             if (!lockZ) return;
             var p = body.position;
             if (p.z != planeZ) { p.z = planeZ; body.position = p; }
@@ -361,8 +401,9 @@ namespace Lumera.JumpForce
         }
         void MoveHorizontally(float dt)
         {
-            // Only the horizontal part of the command counts: up/down never means "move forward".
-            float command = input ? Mathf.Clamp(input.Movement.x, -1, 1) : 0;
+            // Keep the held sources intact: airborne steering must remain available while jump is held.
+            bool holdOnGround = Grounded && (Charging || (input && input.JumpHeld));
+            float command = !holdOnGround && input ? Mathf.Clamp(input.Movement.x, -1, 1) : 0;
             MoveAmount = Mathf.Abs(command);
             // Screen right mapped onto world X (flipped if the camera looks from the other side).
             Vector3 right = Vector3.right;
