@@ -12,15 +12,19 @@ namespace Lumera.JumpForce
         public Slider charge;
         public GameObject deathPanel;
         public Button restartButton;
+        public GameObject touchControls;
         bool showedDeath;
+        int restartFrame = -1;
         void Update()
         {
             if (!player) return;
+            if (player.Dead && showedDeath && player.input.AnyPressed) { Restart(); return; }
+            if (touchControls) touchControls.SetActive(!player.Dead);
             charge.gameObject.SetActive(player.Charging);
             charge.value = player.Charge01;
             status.text = player.Dead ? "" : player.Grounded
-                ? "Segure para carregar o pulo. Solte para saltar."
-                : "Esquerda / direita: contornar a plataforma";
+                ? "Mova para andar. Segure PULAR e solte para saltar."
+                : "Controle a direcao no ar";
             deathPanel.SetActive(player.Dead);
             if (player.Dead && !showedDeath && EventSystem.current)
                 EventSystem.current.SetSelectedGameObject(restartButton.gameObject);
@@ -28,6 +32,8 @@ namespace Lumera.JumpForce
         }
         public void Restart()
         {
+            if (restartFrame == Time.frameCount) return;
+            restartFrame = Time.frameCount;
             player.Restart();
             followCamera.Restart();
             deathPanel.SetActive(false);

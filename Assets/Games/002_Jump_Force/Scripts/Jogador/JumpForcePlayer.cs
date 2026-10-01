@@ -18,14 +18,25 @@ namespace Lumera.JumpForce
         public AnimationCurve chargeCurve = AnimationCurve.Linear(0, 0, 1, 1);
         [Min(0.1f)] public float gravityMultiplier = 1.8f;
         [Min(1)] public float maximumFallSpeed = 28;
-        [Header("Orbita")]
-        [Min(0)] public float orbitDegreesPerSecond = 150;
-        [Min(0)] public float repulsionSpeed = 6;
-        [Min(0)] public float attractionSpeed = 7;
-        [Min(0)] public float steeringRadius = 0.3f;
+        [Header("Movimento livre")]
+        public Camera movementCamera;
+        [Min(0)] public float groundSpeed = 3.5f;
+        [Min(0)] public float airSpeed = 5;
         [Min(0)] public float visualTurnSpeed = 720;
-        [Tooltip("Carrega X/Z com a plataforma alvo mesmo no ar. Y continua balistico.")]
-        public bool followTargetInAir = true;
+        [Header("Plano 2D - so X e Y")]
+        [Tooltip("Trava o personagem no Z em que ele comeca a cena.")]
+        public bool lockZ = true;
+        [Tooltip("Quao rapido o empurrao horizontal de impulsos externos (trampolim, ventilador) se dissipa no ar.")]
+        [Min(0)] public float externalHorizontalDrag = 2.5f;
+        [Tooltip("O mesmo, com o personagem no chao (atrito).")]
+        [Min(0)] public float externalGroundDrag = 8;
+        [Header("Ajuda de plataforma - somente no ar")]
+        public bool assistanceEnabled = true;
+        [Min(0)] public float assistanceRange = 2.5f;
+        [Min(0)] public float repulsionSpeed = 1;
+        [Min(0)] public float attractionSpeed = 1;
+        [Range(0, 1)] public float assistanceWhileSteering = 0.15f;
+        public float MoveAmount { get; private set; }
         [Header("Escolha de plataforma")]
         [Min(0.1f)] public float searchRadius = 8;
         [Min(0)] public float verticalDistanceWeight = 0.5f;
@@ -49,7 +60,7 @@ namespace Lumera.JumpForce
         public Rigidbody Body => body;
         Rigidbody body;
         CapsuleCollider capsule;
-        float feetOffset, playerRadius, chargeTime, previousFeet, takeoffGrace;
+        float feetOffset, playerRadius, chargeTime, previousFeet, takeoffGrace, planeZ, externalSpeedX;
         float? pendingJumpHeight;
         JumpForcePlatform launchPlatform;
         Vector3 facing = Vector3.forward;
@@ -65,7 +76,9 @@ namespace Lumera.JumpForce
             if (!animationDriver) animationDriver = GetComponent<JumpForceAnimation>();
             feetOffset = capsule.center.y * transform.lossyScale.y - capsule.height * transform.lossyScale.y * 0.5f;
             playerRadius = capsule.radius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
-            body.constraints = RigidbodyConstraints.FreezeRotation;
+            // Combine with the lock instead of overwriting what the Inspector set.
+            planeZ = body.position.z;
+            body.constraints = RigidbodyConstraints.FreezeRotation | (lockZ ? RigidbodyConstraints.FreezePositionZ : RigidbodyConstraints.None);
             body.useGravity = false;
             body.interpolation = RigidbodyInterpolation.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
@@ -105,23 +118,63 @@ namespace Lumera.JumpForce
             chargeTime = 0;
             animationDriver?.Land();
         }
+        // Velocity in m/s, independent of the Rigidbody mass. Used by the trampoline, the fan and other launchers.
+        public void Launch(Vector2 velocity)
+        {
+            if (Dead) return;
+            externalSpeedX = velocity.x;
+            if (Grounded)
+            {
+                // A push too weak to clear the floor during the takeoff grace would sink through it: slide instead.
+                if (velocity.y <= Gravity * TakeoffGrace) return;
+                Grounded = false;
+                Support = null;
+            }
+            if (Charging) CancelCharge();
+            pendingJumpHeight = null;
+            launchPlatform = null;
+            body.linearVelocity = Vector3.up * velocity.y;
+            if (velocity.y > 0)
+            {
+                takeoffGrace = TakeoffGrace;
+                animationDriver?.Release();
+            }
+        }
+        // A child collider's collision messages go to its Rigidbody's GameObject (a trampoline inside a
+        // platform with a kinematic Rigidbody never hears them), but the player always gets its own.
+        void OnCollisionEnter(Collision collision)
+        {
+            if (Dead) return;
+            for (int i = 0; i < collision.contactCount; i++)
+            {
+                var contact = collision.GetContact(i);
+                var other = contact.otherCollider;
+                if (!other) continue;
+                if (other.TryGetComponent(out JumpForceTrampolim trampolim) && trampolim.Impulsionar(this, other, contact.point)) return;
+                if (other.TryGetComponent(out JumpForceVentilador ventilador)) { ventilador.Empurrar(this); return; }
+            }
+        }
+        void OnTriggerEnter(Collider other)
+        {
+            if (Dead) return;
+            if (other.TryGetComponent(out JumpForceTrampolim trampolim)) trampolim.Impulsionar(this, other, capsule);
+            else if (other.TryGetComponent(out JumpForceVentilador ventilador)) ventilador.Empurrar(this);
+        }
         void OnApplicationFocus(bool focus) { if (!focus) CancelCharge(); }
         void OnApplicationPause(bool paused) { if (paused) CancelCharge(); }
 
         void FixedUpdate()
         {
             if (Dead) return;
+#if UNITY_EDITOR
+            if (FollowEditorDrag()) return;
+#endif
             float dt = Time.fixedDeltaTime;
             body.linearVelocity = Vector3.up * body.linearVelocity.y;
             takeoffGrace = Mathf.Max(0, takeoffGrace - dt);
             // Carry before contact tests. The support has already sampled its new transform.
             if (Grounded && Support && Support.isActiveAndEnabled)
                 body.position = Support.CarryPoint(body.position);
-            else if (followTargetInAir && Target && Target.isActiveAndEnabled)
-            {
-                var carried = Target.CarryPoint(body.position);
-                body.position = new Vector3(carried.x, body.position.y, carried.z);
-            }
             Physics.SyncTransforms();
             FindSupport();
             if (pendingJumpHeight.HasValue)
@@ -133,7 +186,7 @@ namespace Lumera.JumpForce
                     body.linearVelocity = Vector3.up * speed;
                     Grounded = false;
                     Support = null;
-                    takeoffGrace = 0.12f;
+                    takeoffGrace = TakeoffGrace;
                     animationDriver?.Release();
                     onJump.Invoke();
                 }
@@ -143,16 +196,61 @@ namespace Lumera.JumpForce
             {
                 if (Charging) { CancelCharge(); animationDriver?.Release(); }
                 SelectTarget();
-                Orbit(dt);
+                MoveHorizontally(dt);
                 body.AddForce(Vector3.down * Gravity, ForceMode.Acceleration);
                 if (body.linearVelocity.y < -maximumFallSpeed)
                     body.linearVelocity = Vector3.down * maximumFallSpeed;
             }
-            else body.linearVelocity = Vector3.zero;
+            else
+            {
+                MoveHorizontally(dt);
+                FindSupport();
+                if (Grounded) body.linearVelocity = Vector3.zero;
+                else body.AddForce(Vector3.down * Gravity, ForceMode.Acceleration);
+            }
+            externalSpeedX *= Mathf.Exp(-(Grounded ? externalGroundDrag : externalHorizontalDrag) * dt);
             UpdateCollisions();
+            LockToPlane();
             previousFeet = FeetY;
         }
         float Gravity => Mathf.Max(0.1f, -Physics.gravity.y * gravityMultiplier);
+        const float TakeoffGrace = 0.12f;
+
+        // The constraint only covers the solver; carry, snaps and direct position writes can still leak into Z.
+        void LockToPlane()
+        {
+            if (!lockZ) return;
+            var p = body.position;
+            if (p.z != planeZ) { p.z = planeZ; body.position = p; }
+            var v = body.linearVelocity;
+            if (v.z != 0) { v.z = 0; body.linearVelocity = v; }
+        }
+#if UNITY_EDITOR
+        bool editorDragging;
+        // Play mode: interpolation and FixedUpdate rewrite the Transform every step, undoing Scene view gizmo drags.
+        // While the root is being dragged in the Scene view, the body follows the Transform instead.
+        bool FollowEditorDrag()
+        {
+            bool dragging = GUIUtility.hotControl != 0
+                && UnityEditor.EditorWindow.focusedWindow is UnityEditor.SceneView
+                && UnityEditor.Selection.Contains(gameObject);
+            if (dragging != editorDragging)
+            {
+                editorDragging = dragging;
+                body.interpolation = dragging ? RigidbodyInterpolation.None : RigidbodyInterpolation.Interpolate;
+                if (!dragging) { Grounded = false; Support = null; }
+            }
+            if (!dragging) return false;
+            var p = transform.position;
+            if (lockZ) p.z = planeZ;
+            body.position = p;
+            body.rotation = transform.rotation;
+            body.linearVelocity = Vector3.zero;
+            externalSpeedX = 0;
+            previousFeet = FeetY;
+            return true;
+        }
+#endif
 
         void FindSupport()
         {
@@ -204,6 +302,7 @@ namespace Lumera.JumpForce
                 if (platform == launchPlatform && body.linearVelocity.y > 0) continue;
                 if (platform.Top > apex + contactTolerance) continue;
                 var delta = platform.Center - body.position;
+                if (lockZ) delta.z = 0;
                 float horizontal = new Vector2(delta.x, delta.z).magnitude;
                 if (horizontal > searchRadius || Mathf.Abs(platform.Top - FeetY) > searchRadius) continue;
                 delta.y = 0;
@@ -212,39 +311,71 @@ namespace Lumera.JumpForce
                 if (platform == Target) score -= targetHysteresis;
                 if (score < bestScore) { bestScore = score; best = platform; }
             }
-            Target = best ? best : launchPlatform && launchPlatform.isActiveAndEnabled ? launchPlatform : null;
+            Target = best;
         }
-        void Orbit(float dt)
+        void MoveHorizontally(float dt)
         {
-            if (!Target) return;
-            var p = body.position;
-            var center = Target.Center;
-            var radial = new Vector3(p.x - center.x, 0, p.z - center.z);
-            float radius = radial.magnitude;
-            if (radius < 0.001f) radial = Vector3.back;
-            else radial /= radius;
-            float steer = input ? input.Direction : 0;
-            radial = Quaternion.AngleAxis(-steer * orbitDegreesPerSecond * dt, Vector3.up) * radial;
-            if (FeetY < Target.Top)
+            // Only the horizontal part of the command counts: up/down never means "move forward".
+            float command = input ? Mathf.Clamp(input.Movement.x, -1, 1) : 0;
+            MoveAmount = Mathf.Abs(command);
+            // Screen right mapped onto world X (flipped if the camera looks from the other side).
+            Vector3 right = Vector3.right;
+            var camera = movementCamera ? movementCamera : Camera.main;
+            if (camera && camera.transform.right.x < 0) right = Vector3.left;
+            Vector3 desired = right * command * (Grounded ? groundSpeed : airSpeed);
+            Vector3 help = Vector3.zero;
+            if (!Grounded && assistanceEnabled && Target)
             {
-                // Only push up to the safe ring; never keep accelerating outward.
-                float safe = Target.SafeRadius(playerRadius);
-                if (radius < safe) radius = Mathf.MoveTowards(radius, safe, repulsionSpeed * dt);
+                var radial = body.position - Target.Center;
+                radial.y = 0;
+                if (lockZ) radial.z = 0;
+                float radius = radial.magnitude;
+                if (radius <= assistanceRange)
+                {
+                    var outward = radius > 0.001f ? radial / radius : -right;
+                    if (FeetY < Target.Top)
+                    {
+                        float remaining = Mathf.Max(0, Target.SafeRadius(playerRadius) - radius);
+                        help = outward * Mathf.Min(repulsionSpeed, remaining / dt);
+                    }
+                    else help = -outward * Mathf.Min(attractionSpeed, radius / dt);
+                    if (MoveAmount > 0.01f)
+                    {
+                        help *= assistanceWhileSteering;
+                        // Assistance can bend the trajectory, but never oppose the player's command.
+                        var direction = desired.normalized;
+                        help -= direction * Mathf.Min(0, Vector3.Dot(help, direction));
+                    }
+                }
             }
-            else
+            if (MoveAmount > 0.01f)
             {
-                float insideRadius = Mathf.Min(steeringRadius,
-                    Mathf.Min(Target.Surface.bounds.extents.x, Target.Surface.bounds.extents.z) * 0.5f);
-                radius = Mathf.MoveTowards(radius, Mathf.Abs(steer) > 0.1f ? insideRadius : 0, attractionSpeed * dt);
+                facing = desired.normalized;
+                if (visual) visual.rotation = Quaternion.RotateTowards(visual.rotation, Quaternion.LookRotation(facing), visualTurnSpeed * dt);
             }
-            var next = new Vector3(center.x + radial.x * radius, p.y, center.z + radial.z * radius);
-            var motion = next - p;
-            if (Mathf.Abs(steer) > 0.1f)
-                facing = Vector3.Cross(Vector3.up, radial) * -Mathf.Sign(steer);
-            else if (motion.sqrMagnitude > 0.0001f) facing = motion.normalized;
-            if (visual && facing.sqrMagnitude > 0.01f)
-                visual.rotation = Quaternion.RotateTowards(visual.rotation, Quaternion.LookRotation(facing), visualTurnSpeed * dt);
-            body.position = next;
+            Vector3 posicaoAlvo = (desired + help + Vector3.right * externalSpeedX) * dt;
+            if (lockZ) posicaoAlvo.z = 0f;
+            posicaoAlvo = StopAtObstacles(posicaoAlvo);
+            if (posicaoAlvo != Vector3.zero) body.position += posicaoAlvo;
+        }
+        // Horizontal movement teleports the body, so the solver alone would let it sink into solid obstacles.
+        // Only obstacles stop it: platforms keep their pass-through-from-below behaviour.
+        Vector3 StopAtObstacles(Vector3 step)
+        {
+            const float skin = 0.01f;
+            float distance = step.magnitude;
+            if (distance < 0.00001f) return step;
+            var direction = step / distance;
+            float allowed = distance;
+            foreach (var hit in body.SweepTestAll(direction, distance + skin, QueryTriggerInteraction.Ignore))
+            {
+                // Initial overlaps (distance 0) are left to the solver, so the player can still walk away.
+                if (hit.distance <= 0 || !hit.collider.GetComponentInParent<JumpForcePilarArco>()) continue;
+                allowed = Mathf.Min(allowed, Mathf.Max(0, hit.distance - skin));
+            }
+            // Hitting a wall also ends a trampoline or fan slide in that direction.
+            if (allowed < distance && externalSpeedX * direction.x > 0) externalSpeedX = 0;
+            return direction * allowed;
         }
         void UpdateCollisions()
         {
@@ -266,6 +397,7 @@ namespace Lumera.JumpForce
         }
         public void Restart()
         {
+            FindAnyObjectByType<JumpForcePlatformVisibility>()?.RestoreAll();
             body.isKinematic = false;
             Dead = Grounded = ReachedPlatform = false;
             Target = Support = launchPlatform = null;
@@ -273,7 +405,7 @@ namespace Lumera.JumpForce
             body.position = initialPosition;
             body.linearVelocity = Vector3.zero;
             previousFeet = FeetY;
-            takeoffGrace = 0;
+            takeoffGrace = externalSpeedX = 0;
             facing = Vector3.forward;
             if (visual) visual.localRotation = initialRotation;
             animationDriver?.ResetIntro();

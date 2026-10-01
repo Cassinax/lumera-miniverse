@@ -1,5 +1,37 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1855153138081497110
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5008387681636680152}
+  m_Layer: 0
+  m_Name: Direcao_Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5008387681636680152
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855153138081497110}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3144400045793191909}
+  m_Father: {fileID: 4635189979873005393}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6387708242225370226
 GameObject:
   m_ObjectHideFlags: 0
@@ -34,7 +66,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3144400045793191909}
+  - {fileID: 5008387681636680152}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &973104482007196312
@@ -62,7 +94,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 112
+  m_Constraints: 120
   m_CollisionDetection: 2
 --- !u!136 &4569807952584693221
 CapsuleCollider:
@@ -118,10 +150,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceAnimation
   animator: {fileID: 9026071246890368415}
+  player: {fileID: 960174193935266852}
+  poseTransform: {fileID: 3144400045793191909}
   chargePauseFrame: 0.5
   chargeAnimationSeconds: 0.35
-  releaseAnimationSeconds: 0.45
+  releaseAnimationSeconds: 0.18
   transitionSeconds: 0.08
+  flyingEuler: {x: 284.4371, y: 0.7487552, z: 359.0341}
+  poseRotationSpeed: 540
+  runningPlaybackSpeed: 1
 --- !u!114 &960174193935266852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,8 +173,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlayer
   input: {fileID: 9034177216035967105}
   animationDriver: {fileID: 8182250728086957446}
-  visual: {fileID: 3144400045793191909}
-  minimumJumpHeight: 1.5
+  visual: {fileID: 5008387681636680152}
+  minimumJumpHeight: 0.45
   maximumJumpHeight: 6.5
   fullChargeSeconds: 1
   chargeCurve:
@@ -166,12 +203,15 @@ MonoBehaviour:
     m_RotationOrder: 4
   gravityMultiplier: 1.8
   maximumFallSpeed: 28
-  orbitDegreesPerSecond: 150
-  repulsionSpeed: 6
-  attractionSpeed: 7
-  steeringRadius: 0.3
-  visualTurnSpeed: 720
-  followTargetInAir: 1
+  movementCamera: {fileID: 0}
+  groundSpeed: 3.5
+  airSpeed: 5
+  visualTurnSpeed: 1500
+  assistanceEnabled: 1
+  assistanceRange: 2.5
+  repulsionSpeed: 1
+  attractionSpeed: 1
+  assistanceWhileSteering: 0.15
   searchRadius: 8
   verticalDistanceWeight: 0.5
   facingPreference: 1.4
@@ -193,7 +233,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 4635189979873005393}
+    m_TransformParent: {fileID: 5008387681636680152}
     m_Modifications:
     - target: {fileID: 3494818017880245723, guid: 06c117b2b1fbaad4baab5bc7bf9d430e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -209,7 +249,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3494818017880245723, guid: 06c117b2b1fbaad4baab5bc7bf9d430e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.00000004371139
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3494818017880245723, guid: 06c117b2b1fbaad4baab5bc7bf9d430e, type: 3}
       propertyPath: m_LocalRotation.x
@@ -217,7 +257,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3494818017880245723, guid: 06c117b2b1fbaad4baab5bc7bf9d430e, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3494818017880245723, guid: 06c117b2b1fbaad4baab5bc7bf9d430e, type: 3}
       propertyPath: m_LocalRotation.z
@@ -266,4 +306,3 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 7376960700228231073, guid: 06c117b2b1fbaad4baab5bc7bf9d430e, type: 3}
   m_PrefabInstance: {fileID: 1955460909171909182}
   m_PrefabAsset: {fileID: 0}
-
