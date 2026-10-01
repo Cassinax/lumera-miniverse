@@ -67,6 +67,29 @@ namespace Lumera.JumpForce
         Vector3 initialPosition;
         Quaternion initialRotation;
         bool initialized;
+        public bool GameplayEnabled { get; private set; } = true;
+        CollisionDetectionMode gameplayCollisionMode;
+        public void SetGameplayEnabled(bool value)
+        {
+            if (GameplayEnabled == value) return;
+            GameplayEnabled = value;
+            if (!value)
+            {
+                CancelCharge();
+                MoveAmount = 0;
+                body.linearVelocity = Vector3.zero;
+                gameplayCollisionMode = body.collisionDetectionMode;
+                body.collisionDetectionMode = CollisionDetectionMode.Discrete;
+                body.isKinematic = true;
+                body.detectCollisions = false;
+            }
+            else
+            {
+                body.isKinematic = false;
+                body.detectCollisions = true;
+                body.collisionDetectionMode = gameplayCollisionMode;
+            }
+        }
 
         void Awake()
         {
@@ -90,7 +113,7 @@ namespace Lumera.JumpForce
         }
         void Update()
         {
-            if (Dead || !input) return;
+            if (Dead || !GameplayEnabled || !input) return;
             if (input.JumpPressed) BeginCharge();
             if (Charging) chargeTime += Time.deltaTime;
             if (input.JumpReleased) ReleaseJump();
@@ -98,7 +121,7 @@ namespace Lumera.JumpForce
         // Public commands also serve future UI buttons, upgrades and deterministic validation.
         public void BeginCharge()
         {
-            if (!Grounded || Dead || Charging || pendingJumpHeight.HasValue) return;
+            if (!GameplayEnabled || !Grounded || Dead || Charging || pendingJumpHeight.HasValue) return;
             Charging = true;
             chargeTime = 0;
             animationDriver?.BeginCharge();
@@ -121,7 +144,7 @@ namespace Lumera.JumpForce
         // Velocity in m/s, independent of the Rigidbody mass. Used by the trampoline, the fan and other launchers.
         public void Launch(Vector2 velocity)
         {
-            if (Dead) return;
+            if (Dead || !GameplayEnabled) return;
             externalSpeedX = velocity.x;
             if (Grounded)
             {
@@ -144,7 +167,7 @@ namespace Lumera.JumpForce
         // platform with a kinematic Rigidbody never hears them), but the player always gets its own.
         void OnCollisionEnter(Collision collision)
         {
-            if (Dead) return;
+            if (Dead || !GameplayEnabled) return;
             for (int i = 0; i < collision.contactCount; i++)
             {
                 var contact = collision.GetContact(i);
@@ -156,7 +179,7 @@ namespace Lumera.JumpForce
         }
         void OnTriggerEnter(Collider other)
         {
-            if (Dead) return;
+            if (Dead || !GameplayEnabled) return;
             if (other.TryGetComponent(out JumpForceTrampolim trampolim)) trampolim.Impulsionar(this, other, capsule);
             else if (other.TryGetComponent(out JumpForceVentilador ventilador)) ventilador.Empurrar(this);
         }
@@ -165,7 +188,7 @@ namespace Lumera.JumpForce
 
         void FixedUpdate()
         {
-            if (Dead) return;
+            if (Dead || !GameplayEnabled) return;
 #if UNITY_EDITOR
             if (FollowEditorDrag()) return;
 #endif
@@ -390,7 +413,7 @@ namespace Lumera.JumpForce
         }
         public void Die()
         {
-            if (Dead) return;
+            if (Dead || !GameplayEnabled) return;
             CancelCharge();
             Dead = true;
             body.linearVelocity = Vector3.zero;

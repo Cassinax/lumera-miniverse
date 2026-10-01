@@ -221,7 +221,25 @@ public static class CarlosPaletteTools
         EditorUtility.SetDirty(material);
         AssetDatabase.SaveAssetIfDirty(material);
         AssetDatabase.ImportAsset(CarlosPaletteImporter.Model, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+        UpdateWardrobeCatalog();
         Validate();
+    }
+
+    public static Lumera.JumpForce.JumpForcePaletteCatalog UpdateWardrobeCatalog()
+    {
+        const string path = CarlosPaletteImporter.Root + "Paletas_Vestiario.asset";
+        var settings = CarlosPalettes.LoadOrCreate();
+        var catalog = AssetDatabase.LoadAssetAtPath<Lumera.JumpForce.JumpForcePaletteCatalog>(path);
+        if (!catalog)
+        {
+            catalog = ScriptableObject.CreateInstance<Lumera.JumpForce.JumpForcePaletteCatalog>();
+            AssetDatabase.CreateAsset(catalog, path);
+        }
+        catalog.options = settings.paletas.Select(p => new Lumera.JumpForce.JumpForcePaletteCatalog.Option { name = p.nome, swatch = p.camisa }).ToArray();
+        catalog.defaultIndex = (int)settings.selecionada;
+        EditorUtility.SetDirty(catalog);
+        AssetDatabase.SaveAssetIfDirty(catalog);
+        return catalog;
     }
 
     public static void Validate()

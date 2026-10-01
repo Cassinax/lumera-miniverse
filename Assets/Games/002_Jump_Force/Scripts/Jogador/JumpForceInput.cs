@@ -27,14 +27,37 @@ namespace Lumera.JumpForce
         readonly List<RaycastResult> uiHits = new();
         bool mouseAccepted, previousHeld, sensorEnabledByUs, uiJumpPulse;
         float tilt, tiltNeutral;
+        bool gameplayEnabled = true, waitingForRelease;
+        public void SetGameplayEnabled(bool value)
+        {
+            gameplayEnabled = value;
+            waitingForRelease = value;
+            Clear();
+        }
+        bool ControlsHeld()
+        {
+            if (Keyboard.current != null && Keyboard.current.anyKey.isPressed) return true;
+            if (Mouse.current != null && Mouse.current.leftButton.isPressed) return true;
+            if (Gamepad.current != null)
+            {
+                var pad = Gamepad.current;
+                if (pad.buttonSouth.isPressed || pad.buttonWest.isPressed ||
+                    pad.dpad.ReadValue().sqrMagnitude > 0.01f || pad.leftStick.ReadValue().sqrMagnitude > 0.04f) return true;
+            }
+            if (Touchscreen.current != null)
+                foreach (var touch in Touchscreen.current.touches) if (touch.press.isPressed) return true;
+            return false;
+        }
 
         public void SetMoveSource(object id, Vector2 value)
         {
+            if (!gameplayEnabled || waitingForRelease) return;
             if (value == Vector2.zero) moveSources.Remove(id);
             else moveSources[id] = value;
         }
         public void SetJumpSource(object id, bool held)
         {
+            if (!gameplayEnabled || waitingForRelease) return;
             if (held) { if (jumpSources.Count == 0) uiJumpPulse = true; jumpSources.Add(id); }
             else jumpSources.Remove(id);
         }
@@ -56,6 +79,13 @@ namespace Lumera.JumpForce
         }
         void Update()
         {
+            if (!gameplayEnabled) { Clear(); return; }
+            if (waitingForRelease)
+            {
+                Clear();
+                if (!ControlsHeld()) { waitingForRelease = false; CalibrateTilt(); }
+                return;
+            }
             bool held = jumpSources.Count > 0, pressed = uiJumpPulse;
             uiJumpPulse = false;
             AnyPressed = pressed;

@@ -13,6 +13,14 @@ namespace Lumera.JumpForce
         [Range(0.05f, 1)] public float deathBodyFraction = 0.5f;
         public bool deathEnabled = true;
         public bool LockedUpward { get; private set; }
+        public bool InWardrobe { get; private set; }
+        public void HoldForWardrobe(Vector3 position)
+        {
+            initialPosition = position;
+            InWardrobe = true;
+            Restart();
+        }
+        public void ReleaseFromWardrobe() => InWardrobe = false;
         float velocity;
         Vector3 initialPosition;
         Camera view;
@@ -25,7 +33,7 @@ namespace Lumera.JumpForce
         }
         void LateUpdate()
         {
-            if (!player || player.Dead) return;
+            if (InWardrobe || !player || player.Dead) return;
             if (!capsule) capsule = player.GetComponent<CapsuleCollider>();
             LockedUpward |= player.ReachedPlatform;
             var p = transform.position;

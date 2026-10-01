@@ -17,6 +17,7 @@ namespace Lumera.JumpForce
         [Min(0)] public float poseRotationSpeed = 540;
         [Min(0.01f)] public float runningPlaybackSpeed = 1;
         public string CurrentState { get; private set; } = "Acenar";
+        public bool Preview { get; set; }
         public float JumpProgress => jumpProgress;
         static readonly int Progress = Animator.StringToHash("ProgressoPulo");
         float jumpProgress, launchTime;
@@ -67,6 +68,11 @@ namespace Lumera.JumpForce
         {
             if (!animator || !player || player.Dead) return;
             animator.speed = 1;
+            if (Preview)
+            {
+                if (animator.GetCurrentAnimatorStateInfo(0).IsName("Parado")) { intro = false; CurrentState = "Parado"; }
+                return;
+            }
             if (charging)
             {
                 jumpProgress = Mathf.MoveTowards(jumpProgress, chargePauseFrame, chargePauseFrame / Mathf.Max(0.01f, chargeAnimationSeconds) * Time.deltaTime);

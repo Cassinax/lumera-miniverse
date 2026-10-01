@@ -6,6 +6,7 @@ namespace Lumera.JumpForce
 {
     public sealed class JumpForceHUD : MonoBehaviour
     {
+        public JumpForceWardrobe wardrobe;
         public JumpForcePlayer player;
         public JumpForceCamera followCamera;
         public Text status;
@@ -18,6 +19,13 @@ namespace Lumera.JumpForce
         void Update()
         {
             if (!player) return;
+            if (wardrobe && wardrobe.IsOpen)
+            {
+                if (touchControls) touchControls.SetActive(false);
+                if (charge) charge.gameObject.SetActive(false);
+                if (status) status.text = "Escolha sua cor. Toque fora para jogar.\nControle: quadrado escolhe, X inicia. Teclado: setas, espaco e Enter.";
+                return;
+            }
             if (player.Dead && showedDeath && player.input.AnyPressed) { Restart(); return; }
             if (touchControls) touchControls.SetActive(!player.Dead);
             charge.gameObject.SetActive(player.Charging);
@@ -39,6 +47,7 @@ namespace Lumera.JumpForce
             deathPanel.SetActive(false);
             showedDeath = false;
             if (EventSystem.current) EventSystem.current.SetSelectedGameObject(null);
+            if (wardrobe && wardrobe.reopenOnRetry) wardrobe.Begin();
         }
     }
 }
