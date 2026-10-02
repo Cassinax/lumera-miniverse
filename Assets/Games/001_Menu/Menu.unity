@@ -2295,6 +2295,51 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &249128358
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 249128359}
+  - component: {fileID: 249128360}
+  m_Layer: 0
+  m_Name: Graficos_Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &249128359
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 249128358}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 260527539}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &249128360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 249128358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fb48ace51125c544bee6a0a2f6ddd3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorGraficos
+  fpsAlvo: 1e0000003c0000003c0000003c000000
 --- !u!1 &256352108
 GameObject:
   m_ObjectHideFlags: 0
@@ -2394,6 +2439,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 260527539}
+  - component: {fileID: 260527540}
   m_Layer: 0
   m_Name: Objeto Mestre
   m_TagString: Untagged
@@ -2419,8 +2465,25 @@ Transform:
   - {fileID: 1350656553}
   - {fileID: 1062836731}
   - {fileID: 1459631361}
+  - {fileID: 1316942992}
+  - {fileID: 249128359}
+  - {fileID: 366195803}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &260527540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 260527538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cfc3a7b9a97dc749b684158dd340614, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjetoMestre
+  painelCarregando: {fileID: 741880789}
+  textoCarregando: {fileID: 1806117152}
 --- !u!1 &265090438
 GameObject:
   m_ObjectHideFlags: 0
@@ -3470,6 +3533,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 358173664}
   m_CullTransparentMesh: 1
+--- !u!1 &366195802
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 366195803}
+  - component: {fileID: 366195804}
+  m_Layer: 0
+  m_Name: Monitor_Desempenho
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &366195803
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 366195802}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 260527539}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &366195804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 366195802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4929f580893f9a14f8050f4cc79d0960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MonitorDesempenho
+  fpsMinimo: 30
+  segundosAbaixo: 30
+  duracaoAmostra: 1
+  carencia: 5
+  fpsMedido: 0
+  tempoAbaixo: 0
 --- !u!1 &367028169
 GameObject:
   m_ObjectHideFlags: 0
@@ -12268,6 +12381,50 @@ RectTransform:
   m_AnchoredPosition: {x: 65.33008, y: 879.2}
   m_SizeDelta: {x: 130.35, y: -1759.36}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1316942991
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1316942992}
+  - component: {fileID: 1316942993}
+  m_Layer: 0
+  m_Name: Vibracao_Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1316942992
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316942991}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 260527539}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1316942993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316942991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 294c031769ad73c479a1904dd7cf0eb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorVibracao
 --- !u!1 &1338824217
 GameObject:
   m_ObjectHideFlags: 0
@@ -12352,6 +12509,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1350656553}
+  - component: {fileID: 1350656554}
   m_Layer: 0
   m_Name: Save_Adapter
   m_TagString: Untagged
@@ -12374,6 +12532,79 @@ Transform:
   m_Children: []
   m_Father: {fileID: 260527539}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1350656554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1350656552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f4c0d8e1a3f4c1ab92757f3950da61b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveAdapter
+  _idJogo: PV0004
+  _versaoEstruturaSave: 1
+  _usarVersaoAutomatica: 1
+  _versaoJogoManual: 1.0.0
+  _usarDeteccaoAutomatica: 1
+  _plataformaManual: Desktop
+  _chaveCriptografia: i7mNJCXERrWps1wCbkg6KrqEz6z0b7uG
+  _usarCompressao: 1
+  _limitePayloadBytes: 4194304
+  _limiteDescomprimidoBytes: 8388608
+  _permitirLegadoLocalSemHmac: 0
+  _chavesLegadas: []
+  _storageMode: 1
+  _forcarPlayerPrefsNoWebGL: 1
+  _storageFolderName: CassinaxUnitySystemSave
+  _mainSaveFileName: main.save
+  _usarPastaLegadaExclusiva: 0
+  _inicializarNoAwake: 1
+  _processarFilaAutomaticamente: 1
+  _intervaloProcessamento: 0.1
+  _dadosPadrao:
+  - comando: CONFIG
+    chave: volume_geral
+    valor: 1
+    prioridade: 2
+  - comando: CONFIG
+    chave: volume_efeitos
+    valor: 1
+    prioridade: 2
+  - comando: CONFIG
+    chave: vibracao
+    valor: 1
+    prioridade: 2
+  - comando: CONFIG
+    chave: idioma
+    valor: 
+    prioridade: 2
+  - comando: CONFIG
+    chave: qualidade_grafica
+    valor: Medio
+    prioridade: 2
+  - comando: CONFIG
+    chave: ajuste_automatico_grafico
+    valor: 1
+    prioridade: 2
+  _escopos:
+  - prefixo: '[SLG0002],'
+    escopo: 1
+  - prefixo: '[SLG0200],'
+    escopo: 4
+  _recursosAtivos: 7
+  _modoVinculoConta: 1
+  _modoIdentidadeConta: 1
+  _resetarSaveComConteudoSemContaAoVincular: 1
+  _trocaDeConta: 0
+  _politicaReset: 0
+  _slotSitePadrao: main
+  _timeoutNuvemSegundos: 30
+  _intervaloAutoSyncSegundos: 60
+  _sincronizarAutomaticamente: 0
+  _siteApi: {fileID: 0}
 --- !u!1 &1351969948
 GameObject:
   m_ObjectHideFlags: 0
@@ -14035,7 +14266,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 20
+  m_SortingOrder: 1000
   m_TargetDisplay: 0
 --- !u!1 &1646114763
 GameObject:
@@ -14393,6 +14624,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1696499536}
+  - component: {fileID: 1696499537}
   m_Layer: 0
   m_Name: Audio_Controller
   m_TagString: Untagged
@@ -14415,6 +14647,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 260527539}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1696499537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696499535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 756dadb6ac5115a4db3f90be7795843b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorAudio
 --- !u!1 &1697448665
 GameObject:
   m_ObjectHideFlags: 0
@@ -16521,6 +16765,7 @@ GameObject:
   - component: {fileID: 1850990654}
   - component: {fileID: 1850990657}
   - component: {fileID: 1850990653}
+  - component: {fileID: 1850990658}
   m_Layer: 5
   m_Name: Card_Tamplete
   m_TagString: Untagged
@@ -16667,6 +16912,23 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1850990658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850990651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fee252c51c2cb424780efaf3b8b6157d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardJogo
+  capa: {fileID: 1766293190}
+  nome: {fileID: 1260517041}
+  preco: {fileID: 1845081091}
+  textoPreco: {fileID: 1058928076}
+  botaoDecorativo: {fileID: 146434160}
 --- !u!1 &1853258310
 GameObject:
   m_ObjectHideFlags: 0
@@ -16889,6 +17151,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1870176362}
+  - component: {fileID: 1870176363}
   m_Layer: 5
   m_Name: Area_Cards
   m_TagString: Untagged
@@ -16916,6 +17179,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -0.030273438}
   m_SizeDelta: {x: -0.5999756, y: 0.10998535}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1870176363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1870176361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e0a37f61c949641b9d60ad957c4f67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuCards
+  conteudo: {fileID: 1065223503}
+  modelo: {fileID: 1850990658}
+  cardEmBreve: {fileID: 133810502}
+  jogos:
+  - {fileID: 11400000, guid: 2cc1ad7119b33c84ead757fa7e4378ea, type: 2}
 --- !u!1 &1874700070
 GameObject:
   m_ObjectHideFlags: 0
@@ -16925,6 +17205,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1874700071}
+  - component: {fileID: 1874700072}
   m_Layer: 5
   m_Name: Painel_Configuracoes
   m_TagString: Untagged
@@ -16955,6 +17236,40 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1874700072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874700070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbbee985bebc04045b0e78a5d0811ab5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuConfiguracoes
+  volumeGeral: {fileID: 1557794227}
+  porcentagemGeral: {fileID: 383748484}
+  volumeEfeitos: {fileID: 665770203}
+  porcentagemEfeitos: {fileID: 1120871528}
+  vibracao: {fileID: 864338006}
+  idioma: {fileID: 99175005}
+  codigosIdioma:
+  - en
+  - pt
+  - es
+  - hi
+  graficos: {fileID: 1240641690}
+  ajusteAutomaticoGraficos: {fileID: 1679040376}
+  botaoPoliticas: {fileID: 1027273527}
+  linkPoliticas: 
+  botaoTermos: {fileID: 1119755941}
+  linkTermos: 
+  botaoApagarDados: {fileID: 587154817}
+  painelApagarDados: {fileID: 397056185}
+  confirmarApagar: {fileID: 422191058}
+  cancelarApagar: {fileID: 864264254}
+  botaoVoltar: {fileID: 2050266607}
 --- !u!1 &1890334488
 GameObject:
   m_ObjectHideFlags: 0
@@ -18480,6 +18795,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1874700072}
+        m_TargetAssemblyTypeName: MenuConfiguracoes, Assembly-CSharp
+        m_MethodName: Abrir
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2088328502
 MonoBehaviour:

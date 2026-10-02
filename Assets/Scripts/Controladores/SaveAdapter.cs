@@ -32,15 +32,16 @@ public partial class SaveAdapter : MonoBehaviour
         public SaveScope escopo;
     }
 
+    // Lumera Miniverse: ID e chave definitivos. Nao trocar depois de publicado (exige migracao autenticada).
     [Header("Identificacao imutavel do jogo")]
-    [SerializeField] private string _idJogo = "CHANGE_ME";
+    [SerializeField] private string _idJogo = "PV0004";
     [SerializeField] private int _versaoEstruturaSave = 1;
     [SerializeField] private bool _usarVersaoAutomatica = true;
     [SerializeField] private string _versaoJogoManual = "1.0.0";
     [SerializeField] private bool _usarDeteccaoAutomatica = true;
     [SerializeField] private string _plataformaManual = "Desktop";
     [Header("Codec e limites")]
-    [SerializeField] private string _chaveCriptografia = "CHANGE_ME_16_BYTE";
+    [SerializeField] private string _chaveCriptografia = "i7mNJCXERrWps1wCbkg6KrqEz6z0b7uG";
     [SerializeField] private bool _usarCompressao = true;
     [SerializeField] private int _limitePayloadBytes = 4 * 1024 * 1024;
     [SerializeField] private int _limiteDescomprimidoBytes = 8 * 1024 * 1024;
@@ -58,7 +59,8 @@ public partial class SaveAdapter : MonoBehaviour
     [SerializeField] private bool _inicializarNoAwake = true;
     [SerializeField] private bool _processarFilaAutomaticamente = true;
     [SerializeField] private float _intervaloProcessamento = 0.1f;
-    [SerializeField] private List<DadoPadrao> _dadosPadrao = new List<DadoPadrao>();
+    // Padroes do Lumera em SaveAdapter.Lumera.cs.
+    [SerializeField] private List<DadoPadrao> _dadosPadrao = DadosPadraoLumera();
     [Tooltip("Prefixo mais longo vence. Chaves sem regra sao locais. Metadados e identidade sao reservados.")]
     [SerializeField] private List<EscopoDeChave> _escopos = new List<EscopoDeChave>
     {
