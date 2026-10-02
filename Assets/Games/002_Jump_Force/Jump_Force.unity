@@ -3740,7 +3740,9 @@ MonoBehaviour:
   startingGround: {fileID: 222424821302869639}
   platformPrefab: {fileID: 4569596513166003222, guid: 9964b68f8b77cbb4196b85480e2aef87, type: 3}
   pillarPrefab: {fileID: 8360736158262500850, guid: f0c5c0df8ddaffb4d8072fb93890300e, type: 3}
-  invisibleWalls: []
+  invisibleWalls:
+  - {fileID: 258961686}
+  - {fileID: 1595250949}
   settings:
     levelHeight: 4
     separation: 0.1
