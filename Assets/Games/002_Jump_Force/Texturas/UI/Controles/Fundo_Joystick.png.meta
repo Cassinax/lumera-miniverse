@@ -1,0 +1,1599 @@
+fileFormatVersion: 2
+guid: 40e7bed8e537d59478d37c6ff0582eeb
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2440932685574467808
+    second: Quadro_Controle_Personagem_0
+  - first:
+      213: 302478132657593149
+    second: Quadro_Controle_Personagem_1
+  - first:
+      213: 5446539916477462820
+    second: Quadro_Controle_Personagem_2
+  - first:
+      213: -3944717336971168357
+    second: Quadro_Controle_Personagem_3
+  - first:
+      213: -1506891635297375240
+    second: Quadro_Controle_Personagem_4
+  - first:
+      213: 3392217535875789483
+    second: Quadro_Controle_Personagem_5
+  - first:
+      213: 3075002638003306646
+    second: Quadro_Controle_Personagem_6
+  - first:
+      213: -4397413390654980995
+    second: Quadro_Controle_Personagem_7
+  - first:
+      213: -930976236551799895
+    second: Quadro_Controle_Personagem_8
+  - first:
+      213: 5966202696364763771
+    second: Quadro_Controle_Personagem_9
+  - first:
+      213: 4315989276260303851
+    second: Quadro_Controle_Personagem_10
+  - first:
+      213: -4062338020185239822
+    second: Quadro_Controle_Personagem_11
+  - first:
+      213: -3523135721222988724
+    second: Quadro_Controle_Personagem_12
+  - first:
+      213: 5139067207694824661
+    second: Quadro_Controle_Personagem_13
+  - first:
+      213: -2565499171035519369
+    second: Quadro_Controle_Personagem_14
+  - first:
+      213: 3962093103181812006
+    second: Quadro_Controle_Personagem_15
+  - first:
+      213: -5456208452464895963
+    second: Quadro_Controle_Personagem_16
+  - first:
+      213: -7197291135070595949
+    second: Quadro_Controle_Personagem_17
+  - first:
+      213: -1950073351199718502
+    second: Quadro_Controle_Personagem_18
+  - first:
+      213: 4272974736044267675
+    second: Quadro_Controle_Personagem_19
+  - first:
+      213: -2615598094996807769
+    second: Quadro_Controle_Personagem_20
+  - first:
+      213: -8542897554809956105
+    second: Quadro_Controle_Personagem_21
+  - first:
+      213: 6529224120669993431
+    second: Quadro_Controle_Personagem_22
+  - first:
+      213: 5701691050759753995
+    second: Quadro_Controle_Personagem_23
+  - first:
+      213: 3512301549498057566
+    second: Quadro_Controle_Personagem_24
+  - first:
+      213: -1117091263198716837
+    second: Quadro_Controle_Personagem_25
+  - first:
+      213: -6152763517650270969
+    second: Quadro_Controle_Personagem_26
+  - first:
+      213: -5359024257878983909
+    second: Quadro_Controle_Personagem_27
+  - first:
+      213: -5969537755240261175
+    second: Quadro_Controle_Personagem_28
+  - first:
+      213: 5524309734628032578
+    second: Quadro_Controle_Personagem_29
+  - first:
+      213: 7840021589526484243
+    second: Quadro_Controle_Personagem_30
+  - first:
+      213: 7094679847576721362
+    second: Quadro_Controle_Personagem_31
+  - first:
+      213: -3617344977570290370
+    second: Quadro_Controle_Personagem_32
+  - first:
+      213: -8840381375267349560
+    second: Quadro_Controle_Personagem_33
+  - first:
+      213: -5789669628527668299
+    second: Quadro_Controle_Personagem_34
+  - first:
+      213: 2444329041085425076
+    second: Quadro_Controle_Personagem_35
+  - first:
+      213: -4249540414321940360
+    second: Quadro_Controle_Personagem_36
+  - first:
+      213: 3192453201748827485
+    second: Quadro_Controle_Personagem_37
+  - first:
+      213: 5159754983793988921
+    second: Quadro_Controle_Personagem_38
+  - first:
+      213: -7040889286599491429
+    second: Quadro_Controle_Personagem_39
+  - first:
+      213: -2321231960581748531
+    second: Quadro_Controle_Personagem_40
+  - first:
+      213: -3529424650004162830
+    second: Quadro_Controle_Personagem_41
+  - first:
+      213: 4375672540003018443
+    second: Quadro_Controle_Personagem_42
+  - first:
+      213: 3801936585667752930
+    second: Quadro_Controle_Personagem_43
+  - first:
+      213: 5382562633339981555
+    second: Quadro_Controle_Personagem_44
+  - first:
+      213: 4302428880039736349
+    second: Quadro_Controle_Personagem_45
+  - first:
+      213: -5719436927320218218
+    second: Quadro_Controle_Personagem_46
+  - first:
+      213: 3673737368611870536
+    second: Quadro_Controle_Personagem_47
+  - first:
+      213: -1381512574017494898
+    second: Quadro_Controle_Personagem_48
+  - first:
+      213: -1077311645196289823
+    second: Quadro_Controle_Personagem_49
+  - first:
+      213: -6354529576156883042
+    second: Quadro_Controle_Personagem_50
+  - first:
+      213: 1465165759134790440
+    second: Quadro_Controle_Personagem_51
+  - first:
+      213: -6864830478648660278
+    second: Quadro_Controle_Personagem_52
+  - first:
+      213: 8816373145850806930
+    second: Quadro_Controle_Personagem_53
+  - first:
+      213: -3316166831008391765
+    second: Quadro_Controle_Personagem_54
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 512
+    resizeAlgorithm: 0
+    textureFormat: 49
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1241
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02f81b3b7a0102ed0800000000000000
+      internalID: -2440932685574467808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1212
+        width: 5
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3b1161524e923400800000000000000
+      internalID: 302478132657593149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_2
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 0
+        width: 1218
+        height: 1254
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 429ff90723ff59b40800000000000000
+      internalID: 5446539916477462820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_3
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 1221
+        width: 11
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9532866b7c8149c0800000000000000
+      internalID: -3944717336971168357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_4
+      rect:
+        serializedVersion: 2
+        x: 1206
+        y: 1165
+        width: 37
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fba713aa02761be0800000000000000
+      internalID: -1506891635297375240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_5
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 1194
+        width: 11
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba23aba40e3931f20800000000000000
+      internalID: 3392217535875789483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1155
+        width: 31
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69083917b9a9caa20800000000000000
+      internalID: 3075002638003306646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_7
+      rect:
+        serializedVersion: 2
+        x: 28
+        y: 1172
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7cb677d1df39f2c0800000000000000
+      internalID: -4397413390654980995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1034
+        width: 63
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9abfffd9b028413f0800000000000000
+      internalID: -930976236551799895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_9
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 1115
+        width: 15
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7aacc6fdb53cc250800000000000000
+      internalID: 5966202696364763771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_10
+      rect:
+        serializedVersion: 2
+        x: 1192
+        y: 1077
+        width: 47
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be304e1316975eb30800000000000000
+      internalID: 4315989276260303851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_11
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 917
+        width: 56
+        height: 125
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fe8b45081daf97c0800000000000000
+      internalID: -4062338020185239822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_12
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 921
+        width: 12
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4c93095abe4b1fc0800000000000000
+      internalID: -3523135721222988724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_13
+      rect:
+        serializedVersion: 2
+        x: 1238
+        y: 932
+        width: 16
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d4328fb562a15740800000000000000
+      internalID: 5139067207694824661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 833
+        width: 37
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7766ed6b814856cd0800000000000000
+      internalID: -2565499171035519369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_15
+      rect:
+        serializedVersion: 2
+        x: 1216
+        y: 886
+        width: 38
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6215d2e6fae2cf630800000000000000
+      internalID: 3962093103181812006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_16
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 823
+        width: 37
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 528985a1257a744b0800000000000000
+      internalID: -5456208452464895963
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_17
+      rect:
+        serializedVersion: 2
+        x: 1230
+        y: 845
+        width: 24
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3949c0578d51e1c90800000000000000
+      internalID: -7197291135070595949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 754
+        width: 9
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9309c77e92ffe4e0800000000000000
+      internalID: -1950073351199718502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_19
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 814
+        width: 8
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b98132c12e7ac4b30800000000000000
+      internalID: 4272974736044267675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_20
+      rect:
+        serializedVersion: 2
+        x: 1238
+        y: 805
+        width: 7
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7afd680046783bbd0800000000000000
+      internalID: -2615598094996807769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_21
+      rect:
+        serializedVersion: 2
+        x: 1236
+        y: 777
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f8dff4afe7817980800000000000000
+      internalID: -8542897554809956105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_22
+      rect:
+        serializedVersion: 2
+        x: 1246
+        y: 779
+        width: 8
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d972739eb67c9a50800000000000000
+      internalID: 6529224120669993431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_23
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 644
+        width: 33
+        height: 108
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b011f834dc9702f40800000000000000
+      internalID: 5701691050759753995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_24
+      rect:
+        serializedVersion: 2
+        x: 1221
+        y: 725
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e53c2e976a33eb030800000000000000
+      internalID: 3512301549498057566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_25
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 679
+        width: 23
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5c195b2a6b4f70f0800000000000000
+      internalID: -1117091263198716837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_26
+      rect:
+        serializedVersion: 2
+        x: 1243
+        y: 671
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 705097fed2efc9aa0800000000000000
+      internalID: -6152763517650270969
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_27
+      rect:
+        serializedVersion: 2
+        x: 1238
+        y: 635
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1bfb6ea4dbe0a5b0800000000000000
+      internalID: -5359024257878983909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_28
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 592
+        width: 17
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c91f912a01f72da0800000000000000
+      internalID: -5969537755240261175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_29
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 588
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2408cb14f6a4aac40800000000000000
+      internalID: 5524309734628032578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_30
+      rect:
+        serializedVersion: 2
+        x: 1229
+        y: 594
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3159e13f81a5dcc60800000000000000
+      internalID: 7840021589526484243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_31
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 562
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d7deed6bbd557260800000000000000
+      internalID: 7094679847576721362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_32
+      rect:
+        serializedVersion: 2
+        x: 1238
+        y: 555
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3521ed88eb9ccdc0800000000000000
+      internalID: -3617344977570290370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_33
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 485
+        width: 35
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8cbd5304af7a05580800000000000000
+      internalID: -8840381375267349560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_34
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 537
+        width: 11
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b39db8d526f6afa0800000000000000
+      internalID: -5789669628527668299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_35
+      rect:
+        serializedVersion: 2
+        x: 1243
+        y: 536
+        width: 11
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b56110ff400ce120800000000000000
+      internalID: 2444329041085425076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_36
+      rect:
+        serializedVersion: 2
+        x: 1213
+        y: 497
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 878aca912899605c0800000000000000
+      internalID: -4249540414321940360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_37
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 397
+        width: 41
+        height: 89
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5d1c4cc54fdd4c20800000000000000
+      internalID: 3192453201748827485
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_38
+      rect:
+        serializedVersion: 2
+        x: 1213
+        y: 477
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9359719f1d12b9740800000000000000
+      internalID: 5159754983793988921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_39
+      rect:
+        serializedVersion: 2
+        x: 1221
+        y: 402
+        width: 33
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9042618f7cb94e90800000000000000
+      internalID: -7040889286599491429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_40
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 384
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc8cd3c84d359cfd0800000000000000
+      internalID: -2321231960581748531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_41
+      rect:
+        serializedVersion: 2
+        x: 1222
+        y: 362
+        width: 32
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f69ef20bf6f40fc0800000000000000
+      internalID: -3529424650004162830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_42
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 330
+        width: 5
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc6af48edf289bc30800000000000000
+      internalID: 4375672540003018443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_43
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 351
+        width: 23
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e3b94f5e2133c430800000000000000
+      internalID: 3801936585667752930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_44
+      rect:
+        serializedVersion: 2
+        x: 1237
+        y: 322
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3fe458d6234b2ba40800000000000000
+      internalID: 5382562633339981555
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_45
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 300
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d14762a654c45bb30800000000000000
+      internalID: 4302428880039736349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_46
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 250
+        width: 11
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 695a3dfda6a70a0b0800000000000000
+      internalID: -5719436927320218218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_47
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 184
+        width: 17
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84750362cacbbf230800000000000000
+      internalID: 3673737368611870536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_48
+      rect:
+        serializedVersion: 2
+        x: 1204
+        y: 163
+        width: 15
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e80a3fc22a1e3dce0800000000000000
+      internalID: -1381512574017494898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_49
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 99
+        width: 7
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e8feab34ce9c01f0800000000000000
+      internalID: -1077311645196289823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_50
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 107
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e97947aa40d20d7a0800000000000000
+      internalID: -6354529576156883042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_51
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 33
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8237b42ce70555410800000000000000
+      internalID: 1465165759134790440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_52
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 31
+        width: 23
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ace2fd41d093bb0a0800000000000000
+      internalID: -6864830478648660278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_53
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 47
+        width: 46
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2920bbd3aac0a5a70800000000000000
+      internalID: 8816373145850806930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Quadro_Controle_Personagem_54
+      rect:
+        serializedVersion: 2
+        x: 1230
+        y: 16
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: baddfc546db9af1d0800000000000000
+      internalID: -3316166831008391765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Quadro_Controle_Personagem_0: -2440932685574467808
+      Quadro_Controle_Personagem_1: 302478132657593149
+      Quadro_Controle_Personagem_10: 4315989276260303851
+      Quadro_Controle_Personagem_11: -4062338020185239822
+      Quadro_Controle_Personagem_12: -3523135721222988724
+      Quadro_Controle_Personagem_13: 5139067207694824661
+      Quadro_Controle_Personagem_14: -2565499171035519369
+      Quadro_Controle_Personagem_15: 3962093103181812006
+      Quadro_Controle_Personagem_16: -5456208452464895963
+      Quadro_Controle_Personagem_17: -7197291135070595949
+      Quadro_Controle_Personagem_18: -1950073351199718502
+      Quadro_Controle_Personagem_19: 4272974736044267675
+      Quadro_Controle_Personagem_2: 5446539916477462820
+      Quadro_Controle_Personagem_20: -2615598094996807769
+      Quadro_Controle_Personagem_21: -8542897554809956105
+      Quadro_Controle_Personagem_22: 6529224120669993431
+      Quadro_Controle_Personagem_23: 5701691050759753995
+      Quadro_Controle_Personagem_24: 3512301549498057566
+      Quadro_Controle_Personagem_25: -1117091263198716837
+      Quadro_Controle_Personagem_26: -6152763517650270969
+      Quadro_Controle_Personagem_27: -5359024257878983909
+      Quadro_Controle_Personagem_28: -5969537755240261175
+      Quadro_Controle_Personagem_29: 5524309734628032578
+      Quadro_Controle_Personagem_3: -3944717336971168357
+      Quadro_Controle_Personagem_30: 7840021589526484243
+      Quadro_Controle_Personagem_31: 7094679847576721362
+      Quadro_Controle_Personagem_32: -3617344977570290370
+      Quadro_Controle_Personagem_33: -8840381375267349560
+      Quadro_Controle_Personagem_34: -5789669628527668299
+      Quadro_Controle_Personagem_35: 2444329041085425076
+      Quadro_Controle_Personagem_36: -4249540414321940360
+      Quadro_Controle_Personagem_37: 3192453201748827485
+      Quadro_Controle_Personagem_38: 5159754983793988921
+      Quadro_Controle_Personagem_39: -7040889286599491429
+      Quadro_Controle_Personagem_4: -1506891635297375240
+      Quadro_Controle_Personagem_40: -2321231960581748531
+      Quadro_Controle_Personagem_41: -3529424650004162830
+      Quadro_Controle_Personagem_42: 4375672540003018443
+      Quadro_Controle_Personagem_43: 3801936585667752930
+      Quadro_Controle_Personagem_44: 5382562633339981555
+      Quadro_Controle_Personagem_45: 4302428880039736349
+      Quadro_Controle_Personagem_46: -5719436927320218218
+      Quadro_Controle_Personagem_47: 3673737368611870536
+      Quadro_Controle_Personagem_48: -1381512574017494898
+      Quadro_Controle_Personagem_49: -1077311645196289823
+      Quadro_Controle_Personagem_5: 3392217535875789483
+      Quadro_Controle_Personagem_50: -6354529576156883042
+      Quadro_Controle_Personagem_51: 1465165759134790440
+      Quadro_Controle_Personagem_52: -6864830478648660278
+      Quadro_Controle_Personagem_53: 8816373145850806930
+      Quadro_Controle_Personagem_54: -3316166831008391765
+      Quadro_Controle_Personagem_6: 3075002638003306646
+      Quadro_Controle_Personagem_7: -4397413390654980995
+      Quadro_Controle_Personagem_8: -930976236551799895
+      Quadro_Controle_Personagem_9: 5966202696364763771
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
