@@ -19,6 +19,8 @@ namespace Lumera.JumpForce
         public ToggleGroup toggleGroup;
         public Renderer characterRenderer;
         public JumpForcePaletteCatalog palettes;
+        [Tooltip("Guarda a paleta escolhida no save do jogo. Vazio: procura na cena.")]
+        public JumpForcePlataforma plataforma;
         [Header("Abertura")]
         public Vector3 openingCameraPosition = new Vector3(0.4f, 1.7f, -4);
         public bool reopenOnRetry = true;
@@ -37,6 +39,7 @@ namespace Lumera.JumpForce
         JumpForcePlatformVisibility visibility;
         bool restoreVisibility;
         int openedFrame;
+        string paletaGravada;
 
         void Start()
         {
@@ -47,6 +50,7 @@ namespace Lumera.JumpForce
                 enabled = false;
                 return;
             }
+            if (!plataforma) plataforma = FindAnyObjectByType<JumpForcePlataforma>();
             BuildOptions();
             visibility = hud.followCamera.GetComponent<JumpForcePlatformVisibility>();
             Begin();
@@ -77,7 +81,10 @@ namespace Lumera.JumpForce
                 navigation.selectOnDown = toggles[(i + 1) % toggles.Count];
                 toggles[i].navigation = navigation;
             }
-            SelectedPalette = Mathf.Clamp(palettes.defaultIndex, 0, toggles.Count - 1);
+            // A ultima paleta escolhida (save do jogo); sem save ou paleta removida, a padrao.
+            paletaGravada = plataforma ? plataforma.PaletaSalva : "";
+            int salva = System.Array.FindIndex(palettes.options, o => !string.IsNullOrEmpty(paletaGravada) && o.name == paletaGravada);
+            SelectedPalette = salva >= 0 ? salva : Mathf.Clamp(palettes.defaultIndex, 0, toggles.Count - 1);
             SelectPalette(SelectedPalette);
         }
 
@@ -127,7 +134,21 @@ namespace Lumera.JumpForce
             hud.followCamera.ReleaseFromWardrobe();
             if (visibility) visibility.enabled = restoreVisibility;
             hud.MostrarControles(true);
+            GravarPaleta();
         }
+
+        // Grava so quando muda: ao comecar a partida, ao sair da cena e ao ir para o fundo.
+        void GravarPaleta()
+        {
+            // Ao sair da cena a Plataforma pode ja ter sido destruida: SalvarPaleta so usa o id e o save do
+            // Objeto Mestre, entao vale a referencia C# (nao a checagem de objeto vivo da Unity).
+            if (ReferenceEquals(plataforma, null) || !palettes || SelectedPalette < 0 || SelectedPalette >= palettes.options.Length) return;
+            string nome = palettes.options[SelectedPalette].name;
+            if (nome == paletaGravada) return;
+            plataforma.SalvarPaleta(nome);
+            paletaGravada = nome;
+        }
+        void OnApplicationPause(bool pausado) { if (pausado) GravarPaleta(); }
 
         void Update()
         {
@@ -215,6 +236,10 @@ namespace Lumera.JumpForce
             wardrobeSubmit = null;
             wardrobeSubmitReference = null;
         }
-        void OnDestroy() => RestoreSubmit();
+        void OnDestroy()
+        {
+            RestoreSubmit();
+            GravarPaleta();
+        }
     }
 }

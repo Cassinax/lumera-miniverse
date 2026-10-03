@@ -305,7 +305,7 @@ namespace Lumera.JumpForce
                 var contact = collision.GetContact(i);
                 var other = contact.otherCollider;
                 if (!other) continue;
-                if (other.TryGetComponent(out JumpForceTrampolim trampolim) && trampolim.Impulsionar(this, other, contact.point)) return;
+                if (other.TryGetComponent(out JumpForceTrampolim trampolim)) { trampolim.Impulsionar(this); return; }
                 if (other.TryGetComponent(out JumpForceVentilador ventilador)) { ventilador.Empurrar(this); return; }
             }
         }
@@ -313,7 +313,7 @@ namespace Lumera.JumpForce
         {
             if (Dead || !GameplayEnabled) return;
             if (other.TryGetComponent(out JumpForceCoin coin)) { coin.Collect(this); return; }
-            if (other.TryGetComponent(out JumpForceTrampolim trampolim)) trampolim.Impulsionar(this, other, capsule);
+            if (other.TryGetComponent(out JumpForceTrampolim trampolim)) trampolim.Impulsionar(this);
             else if (other.TryGetComponent(out JumpForceVentilador ventilador)) ventilador.Empurrar(this);
         }
         void OnApplicationFocus(bool focus) { if (!focus) CancelCharge(); }

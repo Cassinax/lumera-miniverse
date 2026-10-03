@@ -42,7 +42,7 @@ namespace Lumera.JumpForce
         [Tooltip("Tempo de uma partida para a conquista de sobrevivencia, em segundos.")]
         [SerializeField, Min(1)] float segundosSobreviver = 300;
 
-        const string ChaveRecorde = "recorde_m";
+        const string ChaveRecorde = "recorde_m", ChavePaleta = "paleta";
         float recordeSalvo, inicioPartida, pulsoAte;
         bool partidaAtiva, recordeBatido, sobreviveu;
         int moedasPartida, ultimaFaixa, ultimoNivelConquista;
@@ -193,6 +193,16 @@ namespace Lumera.JumpForce
             if (!textoRecorde) return;
             float restante = duracaoPulso > 0 ? Mathf.Clamp01((pulsoAte - Time.unscaledTime) / duracaoPulso) : 0;
             textoRecorde.rectTransform.localScale = escalaOriginal * Mathf.Lerp(1, escalaPulso, Mathf.Sin(restante * Mathf.PI));
+        }
+
+        // Paleta (roupa) escolhida no vestiario, pelo nome: continua certa se a lista de paletas mudar de ordem.
+        public string PaletaSalva => Save ? Save.ObterDadoJogo(idJogo, ChavePaleta, "") : "";
+
+        public void SalvarPaleta(string nome)
+        {
+            if (!Save || string.IsNullOrEmpty(nome)) return;
+            Save.SalvarDadoJogo(idJogo, ChavePaleta, nome);
+            Save.SalvarAgora();
         }
 
         void Registrar(string evento, params (string, object)[] valores)
