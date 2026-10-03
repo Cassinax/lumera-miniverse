@@ -2,8 +2,6 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-public enum CarlosPaletteId { Solar, LumeraAqua, CeuAventureiro, ArcadeSuave }
-
 [Serializable]
 public sealed class CarlosPaletteDefinition
 {
@@ -28,7 +26,9 @@ public sealed class CarlosPaletteDefinition
 public sealed class CarlosPalettes : ScriptableObject
 {
     public const string AssetPath = CarlosPaletteImporter.Root + "Editor/Carlos_Paletas.asset";
-    public CarlosPaletteId selecionada = CarlosPaletteId.LumeraAqua;
+    [Tooltip("Indice da paleta padrao do vestiario (0 = primeira da lista).")]
+    [Min(0)] public int selecionada = 1;
+    [Tooltip("Quantidade livre: cada paleta vira uma linha da textura e uma opcao do vestiario.")]
     public CarlosPaletteDefinition[] paletas;
 
     public static CarlosPalettes LoadOrCreate()

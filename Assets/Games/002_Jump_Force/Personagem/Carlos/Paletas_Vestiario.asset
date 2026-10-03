@@ -21,4 +21,32 @@ MonoBehaviour:
     swatch: {r: 0.2627451, g: 0.53333336, b: 0.81960785, a: 1}
   - name: Arcade suave
     swatch: {r: 0.8509804, g: 0.4117647, b: 0.5686275, a: 1}
+  - name: "C\xE9u Dourado"
+    swatch: {r: 0.29803923, g: 0.5372549, b: 0.8509804, a: 1}
+  - name: Coral Urbano
+    swatch: {r: 0.9019608, g: 0.41960785, b: 0.35686275, a: 1}
+  - name: Verde Tranquilo
+    swatch: {r: 0.40784314, g: 0.72156864, b: 0.41960785, a: 1}
+  - name: Solar Azul
+    swatch: {r: 0.22352941, g: 0.43529412, b: 0.70980394, a: 1}
+  - name: Laranja Grafite
+    swatch: {r: 0.84313726, g: 0.54509807, b: 0.23137255, a: 1}
+  - name: Violeta Noturno
+    swatch: {r: 0.52156866, g: 0.36862746, b: 0.7176471, a: 1}
+  - name: Ruivo Oceano
+    swatch: {r: 0.23529412, g: 0.6156863, b: 0.63529414, a: 1}
+  - name: "Rosa \xCDndigo"
+    swatch: {r: 0.7882353, g: 0.32156864, b: 0.4392157, a: 1}
+  - name: "Mostarda Carv\xE3o"
+    swatch: {r: 0.8509804, g: 0.7019608, b: 0.24313726, a: 1}
+  - name: Verde Natural
+    swatch: {r: 0.34117648, g: 0.60784316, b: 0.39607844, a: 1}
+  - name: Azul Neblina
+    swatch: {r: 0.3137255, g: 0.4862745, b: 0.7490196, a: 1}
+  - name: Terracota
+    swatch: {r: 0.7882353, g: 0.37254903, b: 0.28235295, a: 1}
+  - name: Aurora Verde
+    swatch: {r: 0.28627452, g: 0.64705884, b: 0.54901963, a: 1}
+  - name: Violeta Urbano
+    swatch: {r: 0.3882353, g: 0.45882353, b: 0.76862746, a: 1}
   defaultIndex: 1

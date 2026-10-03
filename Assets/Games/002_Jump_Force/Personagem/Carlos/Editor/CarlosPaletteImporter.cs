@@ -18,7 +18,7 @@ public sealed class CarlosPaletteImporter : AssetPostprocessor
         "Material_Cabelo", "Material_Casaco", "Material_Olho",
         "Material_Pele", "Material_Short", "Material_Sombrancelhas"
     };
-    public override uint GetVersion() => 2;
+    public override uint GetVersion() => 3;
     public override int GetPostprocessOrder() => 100;
 
     void OnPreprocessTexture()
@@ -35,7 +35,23 @@ public sealed class CarlosPaletteImporter : AssetPostprocessor
         importer.textureCompression = TextureImporterCompression.Uncompressed;
         importer.npotScale = TextureImporterNPOTScale.None;
         importer.isReadable = false;
-        importer.maxTextureSize = 32;
+        // Uma linha por paleta, sem limite de quantidade: o tamanho maximo acompanha a altura real,
+        // para nenhuma linha ser reduzida (o que misturaria as cores de paletas vizinhas).
+        importer.maxTextureSize = Mathf.Clamp(Mathf.NextPowerOfTwo(Mathf.Max(32, AlturaPng(assetPath))), 32, 16384);
+    }
+
+    // Altura gravada no cabecalho IHDR do PNG (bytes 20 a 23).
+    static int AlturaPng(string caminho)
+    {
+        try
+        {
+            using var arquivo = File.OpenRead(caminho);
+            var cabecalho = new byte[24];
+            if (arquivo.Read(cabecalho, 0, 24) == 24)
+                return (cabecalho[20] << 24) | (cabecalho[21] << 16) | (cabecalho[22] << 8) | cabecalho[23];
+        }
+        catch (IOException) { }
+        return 32;
     }
 
     void OnPostprocessModel(GameObject root)
@@ -175,9 +191,10 @@ public static class CarlosPaletteTools
     public static void Rebuild()
     {
         var settings = CarlosPalettes.LoadOrCreate();
-        if (settings.paletas == null || settings.paletas.Length != 4 ||
-            (int)settings.selecionada < 0 || (int)settings.selecionada >= settings.paletas.Length)
-            throw new InvalidOperationException("Carlos: configure as quatro paletas e uma selecao valida.");
+        // Quantidade livre de paletas; so precisa de pelo menos uma e de uma selecao existente.
+        if (settings.paletas == null || settings.paletas.Length == 0 ||
+            settings.selecionada < 0 || settings.selecionada >= settings.paletas.Length)
+            throw new InvalidOperationException("Carlos: configure pelo menos uma paleta e uma selecao valida.");
         int rows = settings.paletas.Length;
         var texture = new Texture2D(16, rows, TextureFormat.RGBA32, false);
         for (int row = 0; row < rows; row++)
@@ -211,7 +228,7 @@ public static class CarlosPaletteTools
         material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(CarlosPaletteImporter.Palette));
         material.SetColor("_BaseColor", Color.white);
         material.SetTextureScale("_BaseMap", new Vector2(1f, 1f / rows));
-        material.SetTextureOffset("_BaseMap", new Vector2(0f, (int)settings.selecionada / (float)rows));
+        material.SetTextureOffset("_BaseMap", new Vector2(0f, settings.selecionada / (float)rows));
         material.SetFloat("_SpecularHighlights", 1);
         material.SetFloat("_Smoothness", 1);
         material.SetFloat("_SmoothnessSource", 1);
@@ -236,7 +253,7 @@ public static class CarlosPaletteTools
             AssetDatabase.CreateAsset(catalog, path);
         }
         catalog.options = settings.paletas.Select(p => new Lumera.JumpForce.JumpForcePaletteCatalog.Option { name = p.nome, swatch = p.camisa }).ToArray();
-        catalog.defaultIndex = (int)settings.selecionada;
+        catalog.defaultIndex = settings.selecionada;
         EditorUtility.SetDirty(catalog);
         AssetDatabase.SaveAssetIfDirty(catalog);
         return catalog;
