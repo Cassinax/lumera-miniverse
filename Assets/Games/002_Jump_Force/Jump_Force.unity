@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 91972559}
   - component: {fileID: 91972561}
   - component: {fileID: 91972560}
+  - component: {fileID: 632096137}
   m_Layer: 0
   m_Name: Joystick_Virtual
   m_TagString: Untagged
@@ -666,6 +667,7 @@ GameObject:
   - component: {fileID: 465677672}
   - component: {fileID: 465677671}
   - component: {fileID: 465677670}
+  - component: {fileID: 1874095660}
   m_Layer: 0
   m_Name: Button_Pular
   m_TagString: Untagged
@@ -2019,7 +2021,10 @@ Transform:
   m_LocalPosition: {x: 0.13106, y: 1.32122, z: -1.06219}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 399610090}
+  - {fileID: 1890589369}
+  - {fileID: 1536469541}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &896773394
@@ -4092,6 +4097,8 @@ GameObject:
   - component: {fileID: 1786819751}
   - component: {fileID: 1786819753}
   - component: {fileID: 1786819752}
+  - component: {fileID: 391142153}
+  - component: {fileID: 1548108170}
   m_Layer: 0
   m_Name: Panel_Volta_Menu
   m_TagString: Untagged
@@ -4917,6 +4924,7 @@ GameObject:
   - component: {fileID: 2130574727}
   - component: {fileID: 2130574732}
   - component: {fileID: 2130574733}
+  - component: {fileID: 1426262122}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -4945,6 +4953,9 @@ MonoBehaviour:
   deathPanel: {fileID: 538034041}
   restartButton: {fileID: 1173104070}
   touchControls: {fileID: 0}
+  controlesToque:
+  - {fileID: 91972558}
+  - {fileID: 465677668}
 --- !u!114 &2130574728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5163,6 +5174,222 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73329f6bf7a3c6a4691d09b61a956f25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatform
+--- !u!1 &412778816
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 399610090}
+  - component: {fileID: 867830672}
+  m_Layer: 0
+  m_Name: Audio_Cena
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &399610090
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 412778816}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 867708862}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &867830672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 412778816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd900418b1244836825c2e171ed9e7f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceAudio
+--- !u!1 &438253004
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1890589369}
+  - component: {fileID: 549732721}
+  m_Layer: 0
+  m_Name: Feedback
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1890589369
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 438253004}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 867708862}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &549732721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 438253004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6f198a2f64b4c6fb972231504aca320, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceFeedback
+  cameraJogo: {fileID: 2065248609}
+--- !u!1 &1550420908
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1536469541}
+  - component: {fileID: 1007123539}
+  m_Layer: 0
+  m_Name: Plataforma
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1536469541
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550420908}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 867708862}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1007123539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550420908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3540a773c5e4412a39823c8aecffd9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlataforma
+  idJogo: 002_Jump_Force
+  player: {fileID: 896773395}
+  placar: {fileID: 2130574733}
+  spawner: {fileID: 1452426269}
+  audioCena: {fileID: 867830672}
+  textoRecorde: {fileID: 977754168}
+--- !u!114 &632096137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 91972558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4238974a37af47ac9266fe213837c102, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceJoystick
+  player: {fileID: 896773395}
+  area: {fileID: 1721685621}
+  controle: {fileID: 1818633927}
+--- !u!114 &1874095660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 465677668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a696cecf30d842928effeb8ae365504f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceBotaoPulo
+  player: {fileID: 896773395}
+--- !u!114 &391142153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786819750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edd5a85265c846759c7125fa2530ad75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceVoltarMenu
+  confirmar: {fileID: 1083806147}
+  negar: {fileID: 1127442128}
+  plataforma: {fileID: 1007123539}
+--- !u!114 &1426262122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2130574726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: -1
+  botao: {fileID: 1713059760}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1548108170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786819750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 10
+  botao: {fileID: 1127442128}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

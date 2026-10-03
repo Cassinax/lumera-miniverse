@@ -27,6 +27,7 @@ namespace Lumera.JumpForce
             collected = true;
             if (node != null) node.coinCollected = true;
             counter.CollectCoin();
+            JumpForceEventos.AvisarMoeda();
             gameObject.SetActive(false);
         }
         void OnTriggerEnter(Collider other) => Collect(other.GetComponentInParent<JumpForcePlayer>());

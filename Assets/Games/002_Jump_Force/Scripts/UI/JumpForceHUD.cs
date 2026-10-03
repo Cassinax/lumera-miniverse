@@ -11,10 +11,10 @@ namespace Lumera.JumpForce
         public JumpForcePlayer player;
         public JumpForceCamera followCamera;
         public Text status;
-        public Slider charge;
         public GameObject deathPanel;
         public Button restartButton;
-        public GameObject touchControls;
+        [Tooltip("Controles de toque (Joystick_Virtual, Button_Pular): ocultos no vestiario e apos a morte.")]
+        public GameObject[] controlesToque = System.Array.Empty<GameObject>();
         bool showedDeath;
         int restartFrame = -1;
         void Update()
@@ -22,23 +22,26 @@ namespace Lumera.JumpForce
             if (!player) return;
             if (wardrobe && wardrobe.IsOpen)
             {
-                if (touchControls) touchControls.SetActive(false);
-                if (charge) charge.gameObject.SetActive(false);
+                MostrarControles(false);
                 if (status) status.text = "Escolha sua cor. Toque fora para jogar.\nControle: quadrado escolhe, X inicia. Teclado: Espaco ou Enter inicia.";
                 return;
             }
             if (player.Dead && showedDeath && player.input.AnyPressed) { Restart(); return; }
-            if (touchControls) touchControls.SetActive(!player.Dead);
-            charge.gameObject.SetActive(player.Charging);
-            charge.value = player.Charge01;
-            status.text = player.Dead ? "" : player.Grounded
-                ? "Mova para andar. Segure PULAR e solte para saltar."
-                : "Controle a direcao no ar";
+            MostrarControles(!player.Dead);
+            if (status) status.text = player.Dead ? "" : player.Charging
+                ? "Use a direcao para mirar o salto e solte PULAR."
+                : player.Grounded ? "Mova para andar. Segure PULAR para carregar o salto." : "Controle a direcao no ar";
             deathPanel.SetActive(player.Dead);
             if (player.Dead && !showedDeath && EventSystem.current)
                 EventSystem.current.SetSelectedGameObject(restartButton.gameObject);
             showedDeath = player.Dead;
         }
+        public void MostrarControles(bool visiveis)
+        {
+            foreach (var controle in controlesToque)
+                if (controle && controle.activeSelf != visiveis) controle.SetActive(visiveis);
+        }
+
         public void Restart()
         {
             if (restartFrame == Time.frameCount) return;

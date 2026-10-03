@@ -90,6 +90,8 @@ namespace Lumera.JumpForce
             characterRenderer.GetPropertyBlock(properties);
             properties.SetVector(BaseMapST, new Vector4(1, 1f / palettes.options.Length, 0, index / (float)palettes.options.Length));
             characterRenderer.SetPropertyBlock(properties);
+            // A seta da mira do salto usa a cor da camisa.
+            if (hud && hud.player) hud.player.DefinirCorSeta(palettes.options[index].swatch);
             for (int i = 0; i < toggles.Count; i++) toggles[i].SetIsOnWithoutNotify(i == index);
         }
 
@@ -105,7 +107,7 @@ namespace Lumera.JumpForce
             hud.player.animationDriver.ResetIntro();
             hud.followCamera.HoldForWardrobe(openingCameraPosition);
             if (visibility) { restoreVisibility = visibility.enabled; visibility.enabled = false; }
-            if (hud.touchControls) hud.touchControls.SetActive(false);
+            hud.MostrarControles(false);
             if (hud.deathPanel) hud.deathPanel.SetActive(false);
             ConfigureSubmit();
             if (EventSystem.current) EventSystem.current.SetSelectedGameObject(toggles[SelectedPalette].gameObject);
@@ -124,7 +126,7 @@ namespace Lumera.JumpForce
             hud.player.SetGameplayEnabled(true);
             hud.followCamera.ReleaseFromWardrobe();
             if (visibility) visibility.enabled = restoreVisibility;
-            if (hud.touchControls) hud.touchControls.SetActive(true);
+            hud.MostrarControles(true);
         }
 
         void Update()

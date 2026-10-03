@@ -40,6 +40,7 @@ namespace Lumera.JumpForce
             if (!colisor || outro != colisor || !CalcularImpulso(pontoContato, out Vector2 velocidade))
                 return false;
             jogador.Launch(velocidade);
+            JumpForceEventos.AvisarTrampolim();
             return true;
         }
 

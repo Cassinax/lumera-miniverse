@@ -58,6 +58,41 @@ public sealed class ControladorPlayGames : MonoBehaviour
         PerfilAlterado?.Invoke();
     }
 
+    //---------- Placar e conquistas
+    // Os ids vem do Play Console (Leaderboards / Achievements). Id vazio ou jogador desconectado: nada e enviado,
+    // so registrado no log. O Play Games guarda o progresso das conquistas incrementais.
+
+    public void EnviarPlacar(string idPlacar, long valor)
+    {
+        if (!PodeEnviar(idPlacar, "placar " + valor)) return;
+#if UNITY_ANDROID && !UNITY_EDITOR
+        PlayGamesPlatform.Instance.ReportScore(valor, idPlacar, ok => { if (!ok) Debug.LogWarning("[Play Games] Placar nao enviado.", this); });
+#endif
+    }
+
+    public void DesbloquearConquista(string idConquista)
+    {
+        if (!PodeEnviar(idConquista, "conquista")) return;
+#if UNITY_ANDROID && !UNITY_EDITOR
+        PlayGamesPlatform.Instance.ReportProgress(idConquista, 100.0, ok => { if (!ok) Debug.LogWarning("[Play Games] Conquista nao enviada.", this); });
+#endif
+    }
+
+    public void IncrementarConquista(string idConquista, int passos)
+    {
+        if (passos <= 0 || !PodeEnviar(idConquista, "+" + passos)) return;
+#if UNITY_ANDROID && !UNITY_EDITOR
+        PlayGamesPlatform.Instance.IncrementAchievement(idConquista, passos, ok => { if (!ok) Debug.LogWarning("[Play Games] Incremento nao enviado.", this); });
+#endif
+    }
+
+    bool PodeEnviar(string id, string descricao)
+    {
+        if (!string.IsNullOrEmpty(id) && Conectado) return true;
+        Debug.Log($"[Play Games] Nao enviado ({(Conectado ? "id vazio" : "desconectado")}): {id} {descricao}", this);
+        return false;
+    }
+
     IEnumerator CarregarFoto(string url)
     {
         // So endereco web: o Android pode devolver URIs locais que o UnityWebRequest nao le.

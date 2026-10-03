@@ -33,6 +33,21 @@ namespace Lumera.JumpForce
         public AnimationCurve chargeCurve = AnimationCurve.Linear(0, 0, 1, 1);
         [Min(0.1f)] public float gravityMultiplier = 1.8f;
         [Min(1)] public float maximumFallSpeed = 28;
+        [Header("Direcao do salto")]
+        [Tooltip("Direcao_Pulo: aparece durante a carga no chao e aponta para onde o salto vai. Rotacao global, so no eixo Z.")]
+        public Transform direcaoPulo;
+        [Tooltip("Seta dentro de Direcao_Pulo: recebe a cor da camisa e cresce com a carga.")]
+        public Renderer seta;
+        [Tooltip("Limite da mira para cada lado, em graus, a partir do alto do personagem.")]
+        [Range(0, 89)] public float anguloMaximo = 70;
+        [Tooltip("Graus por segundo ao girar a mira com setas ou direcional.")]
+        [Min(0)] public float velocidadeGiroMira = 120;
+        [Tooltip("Escala da seta sem carga (multiplica a escala original da Seta).")]
+        [Min(0)] public float tamanhoSetaMinimo = 0.6f;
+        [Tooltip("Escala da seta com a carga cheia (multiplica a escala original da Seta).")]
+        [Min(0)] public float tamanhoSetaMaximo = 1.2f;
+        // Graus: 0 = para cima, positivo = para a direita da tela.
+        public float AnguloMira { get; private set; }
         [Header("Toque duplo para carga rapida")]
         [Tooltip("Janela a partir do primeiro pressionamento. Um toque breve aguarda esta janela antes de saltar.")]
         [Min(0)] public float doubleTapWindow = 0.25f;
@@ -83,6 +98,11 @@ namespace Lumera.JumpForce
         CapsuleCollider capsule;
         float feetOffset, playerRadius, chargeTime, previousFeet, takeoffGrace, planeZ, externalSpeedX;
         float? pendingJumpHeight, deferredTapHeight;
+        // Angulo da mira guardado ao soltar o pulo; a parte horizontal do salto dura o voo todo.
+        float pendingJumpAngle, deferredTapAngle, jumpSpeedX;
+        Vector3 escalaSetaOriginal = Vector3.one;
+        MaterialPropertyBlock blocoSeta;
+        static readonly int CorBase = Shader.PropertyToID("_BaseColor"), CorLegada = Shader.PropertyToID("_Color");
         float pressStartedAt, secondTapDeadline, chargeMultiplier = 1;
         JumpForcePlatform launchPlatform;
         Vector3 facing = Vector3.forward;
@@ -131,19 +151,66 @@ namespace Lumera.JumpForce
             initialRotation = visual ? visual.localRotation : Quaternion.identity;
             previousFeet = FeetY;
             facing = visual ? visual.forward : Vector3.forward;
+            if (seta) escalaSetaOriginal = seta.transform.localScale;
+            MostrarMira(false);
             initialized = true;
         }
         void Update()
         {
             if (Dead || !GameplayEnabled || !input) return;
             if (input.JumpPressed) BeginCharge();
-            if (Charging) chargeTime += Time.deltaTime * chargeMultiplier;
+            if (Charging)
+            {
+                chargeTime += Time.deltaTime * chargeMultiplier;
+                AtualizarMira(Time.deltaTime);
+            }
             if (input.JumpReleased) ReleaseJump();
             if (deferredTapHeight.HasValue && Time.time >= secondTapDeadline)
             {
-                if (Grounded) pendingJumpHeight = deferredTapHeight;
+                if (Grounded) { pendingJumpHeight = deferredTapHeight; pendingJumpAngle = deferredTapAngle; }
                 deferredTapHeight = null;
             }
+        }
+
+        // Segurando o pulo no chao, a direcao mira o salto. Absoluta (joystick, analogico, inclinacao) ou girando
+        // (setas, direcional). Soltar a direcao mantem a mira.
+        void AtualizarMira(float dt)
+        {
+            if (!Grounded || !input) return;
+            float limite = Mathf.Clamp(anguloMaximo, 0, 89);
+            float angulo = input.AimAbsolute ? input.Aim * limite : AnguloMira + input.Aim * velocidadeGiroMira * dt;
+            AnguloMira = Mathf.Clamp(angulo, -limite, limite);
+        }
+
+        void LateUpdate()
+        {
+            if (!direcaoPulo || !direcaoPulo.gameObject.activeSelf) return;
+            // Rotacao global: so Z muda, x e y ficam 0 mesmo com o personagem virado.
+            direcaoPulo.rotation = Quaternion.Euler(0, 0, -AnguloMira * DireitaDaTela().x);
+            if (seta) seta.transform.localScale = escalaSetaOriginal * Mathf.Lerp(tamanhoSetaMinimo, tamanhoSetaMaximo, Charge01);
+        }
+
+        void MostrarMira(bool visivel)
+        {
+            if (direcaoPulo && direcaoPulo.gameObject.activeSelf != visivel) direcaoPulo.gameObject.SetActive(visivel);
+        }
+
+        // Cor da camisa da paleta escolhida (vestiario).
+        public void DefinirCorSeta(Color cor)
+        {
+            if (!seta) return;
+            blocoSeta ??= new MaterialPropertyBlock();
+            seta.GetPropertyBlock(blocoSeta);
+            blocoSeta.SetColor(CorBase, cor);
+            blocoSeta.SetColor(CorLegada, cor);
+            seta.SetPropertyBlock(blocoSeta);
+        }
+
+        Vector3 DireitaDaTela()
+        {
+            // Screen right mapped onto world X (flipped if the camera looks from the other side).
+            var camera = movementCamera ? movementCamera : Camera.main;
+            return camera && camera.transform.right.x < 0 ? Vector3.left : Vector3.right;
         }
         // Public commands also serve future UI buttons, upgrades and deterministic validation.
         public void BeginCharge()
@@ -162,12 +229,15 @@ namespace Lumera.JumpForce
             Charging = true;
             chargeTime = 0;
             pressStartedAt = Time.time;
+            AnguloMira = 0;
+            MostrarMira(true);
             animationDriver?.BeginCharge();
         }
         public void ReleaseJump()
         {
             if (!Charging) return;
             Charging = false;
+            MostrarMira(false);
             if ((!Grounded && !CanWallJump) || Dead) { animationDriver?.Land(); return; }
             float factor = Mathf.Clamp01(chargeCurve.Evaluate(Charge01));
             float height = Mathf.Lerp(minimumJumpHeight, Mathf.Max(minimumJumpHeight, maximumJumpHeight), factor);
@@ -175,9 +245,14 @@ namespace Lumera.JumpForce
                 Time.time - pressStartedAt <= quickTapDuration && Time.time < pressStartedAt + doubleTapWindow)
             {
                 deferredTapHeight = height;
+                deferredTapAngle = AnguloMira;
                 secondTapDeadline = pressStartedAt + doubleTapWindow;
             }
-            else pendingJumpHeight = height;
+            else
+            {
+                pendingJumpHeight = height;
+                pendingJumpAngle = AnguloMira;
+            }
         }
         public void CancelCharge()
         {
@@ -185,6 +260,7 @@ namespace Lumera.JumpForce
             pendingJumpHeight = deferredTapHeight = null;
             chargeMultiplier = 1;
             chargeTime = 0;
+            MostrarMira(false);
             animationDriver?.Land();
         }
         // Velocity in m/s, independent of the Rigidbody mass. Used by the trampoline, the fan and other launchers.
@@ -192,6 +268,7 @@ namespace Lumera.JumpForce
         {
             if (Dead || !GameplayEnabled) return;
             externalSpeedX = velocity.x;
+            jumpSpeedX = 0;
             if (Grounded)
             {
                 // A push too weak to clear the floor during the takeoff grace would sink through it: slide instead.
@@ -260,14 +337,19 @@ namespace Lumera.JumpForce
                     }
                     launchPlatform = Support;
                     float speed = Mathf.Sqrt(2 * Gravity * pendingJumpHeight.Value);
-                    body.linearVelocity = Vector3.up * speed;
+                    // A carga define a forca total; a mira divide entre altura e distancia. Salto de parede: vertical.
+                    float angulo = (Grounded ? pendingJumpAngle : 0) * Mathf.Deg2Rad;
+                    body.linearVelocity = Vector3.up * speed * Mathf.Cos(angulo);
+                    jumpSpeedX = speed * Mathf.Sin(angulo) * DireitaDaTela().x;
                     Grounded = false;
                     Support = null;
                     takeoffGrace = TakeoffGrace;
                     animationDriver?.Release();
                     onJump.Invoke();
+                    JumpForceEventos.AvisarPulo();
                 }
                 pendingJumpHeight = null;
+                pendingJumpAngle = 0;
             }
             if (!Grounded)
             {
@@ -340,6 +422,7 @@ namespace Lumera.JumpForce
 
         void FindSupport()
         {
+            float impacto = Mathf.Max(0, -body.linearVelocity.y);
             JumpForcePlatform found = null;
             if (takeoffGrace <= 0 && body.linearVelocity.y <= 0.5f)
             {
@@ -368,7 +451,12 @@ namespace Lumera.JumpForce
                 body.linearVelocity = Vector3.zero;
                 Target = null;
                 launchPlatform = null;
-                if (!wasGrounded) animationDriver?.Land();
+                jumpSpeedX = 0;
+                if (!wasGrounded)
+                {
+                    animationDriver?.Land();
+                    JumpForceEventos.AvisarPouso(impacto);
+                }
                 if (!found.startingGround && !ReachedPlatform)
                 {
                     ReachedPlatform = true;
@@ -405,10 +493,7 @@ namespace Lumera.JumpForce
             bool holdOnGround = Grounded && (Charging || (input && input.JumpHeld));
             float command = !holdOnGround && input ? Mathf.Clamp(input.Movement.x, -1, 1) : 0;
             MoveAmount = Mathf.Abs(command);
-            // Screen right mapped onto world X (flipped if the camera looks from the other side).
-            Vector3 right = Vector3.right;
-            var camera = movementCamera ? movementCamera : Camera.main;
-            if (camera && camera.transform.right.x < 0) right = Vector3.left;
+            Vector3 right = DireitaDaTela();
             Vector3 desired = right * command * (Grounded ? groundSpeed : airSpeed);
             Vector3 help = Vector3.zero;
             if (!Grounded && !wallContact && assistanceEnabled && Target)
@@ -440,7 +525,7 @@ namespace Lumera.JumpForce
                 facing = desired.normalized;
                 if (visual) visual.rotation = Quaternion.RotateTowards(visual.rotation, Quaternion.LookRotation(facing), visualTurnSpeed * dt);
             }
-            Vector3 posicaoAlvo = (desired + help + Vector3.right * externalSpeedX) * dt;
+            Vector3 posicaoAlvo = (desired + help + Vector3.right * (externalSpeedX + jumpSpeedX)) * dt;
             if (lockZ) posicaoAlvo.z = 0f;
             posicaoAlvo = StopAtObstacles(posicaoAlvo);
             if (posicaoAlvo != Vector3.zero) body.position += posicaoAlvo;
@@ -467,6 +552,7 @@ namespace Lumera.JumpForce
             }
             // Hitting a wall also ends a trampoline or fan slide in that direction.
             if (allowed < distance && externalSpeedX * direction.x > 0) externalSpeedX = 0;
+            if (allowed < distance && jumpSpeedX * direction.x > 0) jumpSpeedX = 0;
             return direction * allowed;
         }
         void CapsulePoints(out Vector3 bottom, out Vector3 top)
@@ -534,9 +620,11 @@ namespace Lumera.JumpForce
             CancelCharge();
             score?.ObserveHeight(body.position.y);
             Dead = true;
+            jumpSpeedX = 0;
             body.linearVelocity = Vector3.zero;
             body.isKinematic = true;
             onDeath.Invoke();
+            JumpForceEventos.AvisarMorte();
             body.position = Vector3.zero;
             transform.position = Vector3.zero;
             Grounded = false;
@@ -558,7 +646,7 @@ namespace Lumera.JumpForce
             wallJumpReady = false;
             body.linearVelocity = Vector3.zero;
             previousFeet = FeetY;
-            takeoffGrace = externalSpeedX = 0;
+            takeoffGrace = externalSpeedX = jumpSpeedX = AnguloMira = 0;
             facing = Vector3.forward;
             if (visual) visual.localRotation = initialRotation;
             animationDriver?.ResetIntro();

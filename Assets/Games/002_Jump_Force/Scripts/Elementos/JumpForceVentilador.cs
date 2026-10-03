@@ -25,7 +25,10 @@ namespace Lumera.JumpForce
         {
             Vector2 empurrao = Empurrao;
             if (empurrao != Vector2.zero)
+            {
                 jogador.Launch(empurrao);
+                JumpForceEventos.AvisarVento();
+            }
         }
 
         private void OnDrawGizmosSelected()

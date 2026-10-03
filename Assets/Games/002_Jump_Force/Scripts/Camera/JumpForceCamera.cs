@@ -89,8 +89,23 @@ namespace Lumera.JumpForce
                 }
             }
         }
+        // Tremor leve (feedback de pouso forte, trampolim). Desfeito antes do seguimento, para nao contaminar a
+        // suavizacao nem a regra do piso.
+        public void Tremer(float intensidade, float duracao)
+        {
+            if (intensidade <= 0 || duracao <= 0) return;
+            tremorIntensidade = Mathf.Max(tremorIntensidade * TremorRestante, intensidade);
+            tremorDuracao = duracao;
+            tremorFim = Time.unscaledTime + duracao;
+        }
+        float tremorIntensidade, tremorDuracao, tremorFim;
+        Vector3 tremorAplicado;
+        float TremorRestante => tremorDuracao > 0 ? Mathf.Clamp01((tremorFim - Time.unscaledTime) / tremorDuracao) : 0;
+
         void LateUpdate()
         {
+            transform.position -= tremorAplicado;
+            tremorAplicado = Vector3.zero;
             if (!InWardrobe && (!player || player.Dead)) return;
             Vector3 target = wardrobePosition;
             if (!InWardrobe)
@@ -111,6 +126,13 @@ namespace Lumera.JumpForce
                 velocity.y = Mathf.Max(0, velocity.y);
             }
             transform.position = position;
+            float restante = TremorRestante;
+            if (restante > 0 && !InWardrobe)
+            {
+                var deslocamento = Random.insideUnitCircle * tremorIntensidade * restante;
+                tremorAplicado = new Vector3(deslocamento.x, deslocamento.y, 0);
+                transform.position += tremorAplicado;
+            }
             // The walls follow height only. Wardrobe X/Z transitions must not move the gameplay corridor.
             if (wallTransforms != null)
                 for (int i = 0; i < wallTransforms.Length; i++)

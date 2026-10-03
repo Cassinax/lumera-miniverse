@@ -29,6 +29,7 @@ public sealed partial class ObjetoMestre : MonoBehaviour
     public ControladorVibracao Vibracao { get; private set; }
     public ControladorGraficos Graficos { get; private set; }
     public ControladorPlayGames PlayGames { get; private set; }
+    public ControladorMetricas Metricas { get; private set; }
     public IdiomaLumera Idioma { get; private set; } = IdiomaLumera.Portugues;
     public bool CarregandoCena { get; private set; }
 
@@ -51,6 +52,7 @@ public sealed partial class ObjetoMestre : MonoBehaviour
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
         Save = GetComponentInChildren<SaveAdapter>(true);
         PlayGames = GetComponentInChildren<ControladorPlayGames>(true);
+        Metricas = GetComponentInChildren<ControladorMetricas>(true);
         Audio = GetComponentInChildren<ControladorAudio>(true);
         Vibracao = GetComponentInChildren<ControladorVibracao>(true);
         Graficos = GetComponentInChildren<ControladorGraficos>(true);
@@ -75,10 +77,29 @@ public sealed partial class ObjetoMestre : MonoBehaviour
     {
         if (Audio) Audio.Configurar(Save);
         if (Vibracao) Vibracao.Configurar(Save);
-        if (Graficos) Graficos.Configurar(Save);
+        if (Graficos)
+        {
+            Graficos.NivelAlterado -= AoMudarGraficos;
+            Graficos.NivelAlterado += AoMudarGraficos;
+            Graficos.Configurar(Save);
+        }
         var monitor = GetComponentInChildren<MonitorDesempenho>(true);
         if (monitor) monitor.Configurar(this, Graficos);
         PrepararIdioma();
+    }
+
+    // Metricas sem quebrar quando o filho Metricas nao existe na cena.
+    public void RegistrarMetrica(string evento, params (string nome, object valor)[] valores)
+    {
+        if (Metricas) Metricas.Registrar(evento, valores);
+    }
+
+    int nivelGraficoAnterior = -1;
+    void AoMudarGraficos(int nivel, bool automatico)
+    {
+        if (automatico && nivelGraficoAnterior >= 0)
+            RegistrarMetrica("graficos_reduzidos", ("de", ControladorGraficos.Niveis[nivelGraficoAnterior]), ("para", ControladorGraficos.Niveis[nivel]));
+        nivelGraficoAnterior = nivel;
     }
 
     //---------- Idioma
@@ -122,8 +143,15 @@ public sealed partial class ObjetoMestre : MonoBehaviour
             Debug.LogError($"[Objeto Mestre] A cena '{jogo.cena}' de '{jogo.id}' nao esta no Build Profile.", this);
             return ResultadoEntrada.CenaIndisponivel;
         }
-        if (!jogo.Gratis && (!Save || !Save.GastarMoedas(jogo.preco, "entrada", jogo.id)))
-            return ResultadoEntrada.MoedasInsuficientes;
+        if (!jogo.Gratis)
+        {
+            if (!Save || !Save.GastarMoedas(jogo.preco, "entrada", jogo.id))
+            {
+                RegistrarMetrica("moedas_insuficientes", ("jogo", jogo.id), ("preco", jogo.preco));
+                return ResultadoEntrada.MoedasInsuficientes;
+            }
+            RegistrarMetrica("entrada_paga", ("jogo", jogo.id), ("preco", jogo.preco));
+        }
         CarregarCena(jogo.cena);
         return ResultadoEntrada.Ok;
     }

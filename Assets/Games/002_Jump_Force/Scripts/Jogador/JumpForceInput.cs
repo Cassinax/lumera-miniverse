@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
@@ -14,19 +13,24 @@ namespace Lumera.JumpForce
         [Min(0.1f)] public float tiltSensitivity = 2.5f;
         [Min(0)] public float tiltSmoothing = 8;
         public bool invertTilt;
-        public bool mouseAsTouch = true;
+        [Tooltip("Abaixo disto o analogico do controle e ignorado (movimento e mira).")]
+        [Range(0, 0.9f)] public float stickDeadZone = 0.2f;
         public bool JumpPressed { get; private set; }
         public bool JumpReleased { get; private set; }
         public bool JumpHeld { get; private set; }
         public bool AnyPressed { get; private set; }
         public Vector2 Movement { get; private set; }
         public float Direction => Movement.x;
-        readonly HashSet<int> acceptedTouches = new();
+        // Joystick virtual: enquanto pressionado, a inclinacao do aparelho e ignorada.
+        public bool JoystickHeld { get; private set; }
+        // Mira do salto. Absoluta (-1 a 1, lado todo = angulo maximo): joystick, analogico e inclinacao.
+        // Giro (-1, 0 ou 1): setas e direcional giram a mira, que fica onde parar. Sem fonte: giro 0 (mantem).
+        public bool AimAbsolute { get; private set; }
+        public float Aim { get; private set; }
         readonly HashSet<object> jumpSources = new();
-        readonly Dictionary<object, Vector2> moveSources = new();
-        readonly List<RaycastResult> uiHits = new();
-        bool mouseAccepted, previousHeld, sensorEnabledByUs, uiJumpPulse;
+        bool previousHeld, sensorEnabledByUs, uiJumpPulse;
         float tilt, tiltNeutral;
+        Vector2 joystick;
         bool gameplayEnabled = true, waitingForRelease;
         public void SetGameplayEnabled(bool value)
         {
@@ -49,11 +53,12 @@ namespace Lumera.JumpForce
             return false;
         }
 
-        public void SetMoveSource(object id, Vector2 value)
+        // Chamado pelo JumpForceJoystick. valor: deslocamento do controle, de -1 a 1 em cada eixo.
+        public void SetJoystick(Vector2 value, bool held)
         {
-            if (!gameplayEnabled || waitingForRelease) return;
-            if (value == Vector2.zero) moveSources.Remove(id);
-            else moveSources[id] = value;
+            if (!gameplayEnabled || waitingForRelease) { joystick = Vector2.zero; JoystickHeld = false; return; }
+            joystick = held ? Vector2.ClampMagnitude(value, 1) : Vector2.zero;
+            JoystickHeld = held;
         }
         public void SetJumpSource(object id, bool held)
         {
@@ -70,13 +75,6 @@ namespace Lumera.JumpForce
             }
         }
         public void CalibrateTilt() => tiltNeutral = Accelerometer.current?.acceleration.ReadValue().x ?? 0;
-        bool OverUI(Vector2 position)
-        {
-            if (!EventSystem.current) return false;
-            uiHits.Clear();
-            EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current) { position = position }, uiHits);
-            return uiHits.Count > 0;
-        }
         void Update()
         {
             if (!gameplayEnabled) { Clear(); return; }
@@ -89,9 +87,7 @@ namespace Lumera.JumpForce
             bool held = jumpSources.Count > 0, pressed = uiJumpPulse;
             uiJumpPulse = false;
             AnyPressed = pressed;
-            Vector2 direction = Vector2.zero, virtualMove = Vector2.zero;
-            foreach (var value in moveSources.Values) virtualMove.x += value.x;
-            float touchDirection = 0;
+            float digital = 0, stick = 0;
             var keyboard = Keyboard.current;
             if (keyboard != null)
             {
@@ -99,8 +95,7 @@ namespace Lumera.JumpForce
                 pressed |= keyboard.spaceKey.wasPressedThisFrame;
                 AnyPressed |= keyboard.anyKey.wasPressedThisFrame;
                 // Horizontal only: up/down arrows are ignored on purpose (the game lives on the X/Y plane).
-                direction = new Vector2(
-                    (keyboard.rightArrowKey.isPressed ? 1 : 0) - (keyboard.leftArrowKey.isPressed ? 1 : 0), 0);
+                digital = (keyboard.rightArrowKey.isPressed ? 1 : 0) - (keyboard.leftArrowKey.isPressed ? 1 : 0);
             }
             var pad = Gamepad.current;
             if (pad != null)
@@ -108,43 +103,29 @@ namespace Lumera.JumpForce
                 held |= pad.buttonSouth.isPressed || pad.buttonWest.isPressed;
                 pressed |= pad.buttonSouth.wasPressedThisFrame || pad.buttonWest.wasPressedThisFrame;
                 float dpadX = pad.dpad.ReadValue().x;
-                var axis = new Vector2(Mathf.Abs(dpadX) > 0.1f ? dpadX : pad.leftStick.ReadValue().x, 0);
-                if (axis.sqrMagnitude > direction.sqrMagnitude) direction = axis;
+                if (Mathf.Abs(dpadX) > 0.1f) digital = Mathf.Sign(dpadX);
+                float x = pad.leftStick.ReadValue().x;
+                if (Mathf.Abs(x) > stickDeadZone) stick = x;
                 foreach (var control in pad.allControls)
                     if (control is ButtonControl button && button.wasPressedThisFrame) AnyPressed = true;
             }
             if (Touchscreen.current != null)
-            {
                 foreach (var touch in Touchscreen.current.touches)
-                {
-                    int id = touch.touchId.ReadValue();
-                    var pos = touch.position.ReadValue();
-                    if (touch.press.wasPressedThisFrame)
-                    {
-                        AnyPressed = true;
-                        acceptedTouches.Remove(id);
-                        if (!OverUI(pos)) acceptedTouches.Add(id);
-                    }
-                    if (touch.press.isPressed && acceptedTouches.Contains(id))
-                        touchDirection += pos.x < Screen.width * 0.5f ? -1 : 1;
-                    if (!touch.press.isPressed) acceptedTouches.Remove(id);
-                }
-            }
-            if (mouseAsTouch && Mouse.current != null)
-            {
-                var mouse = Mouse.current;
-                if (mouse.leftButton.wasPressedThisFrame) { AnyPressed = true; mouseAccepted = !OverUI(mouse.position.ReadValue()); }
-                if (mouse.leftButton.isPressed && mouseAccepted)
-                    touchDirection += mouse.position.ReadValue().x < Screen.width * 0.5f ? -1 : 1;
-                if (!mouse.leftButton.isPressed) mouseAccepted = false;
-            }
-            float raw = tiltEnabled && Accelerometer.current != null
+                    if (touch.press.wasPressedThisFrame) AnyPressed = true;
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) AnyPressed = true;
+            // Inclinar o aparelho so vale com o joystick solto.
+            float raw = tiltEnabled && !JoystickHeld && Accelerometer.current != null
                 ? (Accelerometer.current.acceleration.ReadValue().x - tiltNeutral) * (invertTilt ? -1 : 1) : 0;
             raw = Mathf.Abs(raw) < tiltDeadZone ? 0 : Mathf.Sign(raw) * (Mathf.Abs(raw) - tiltDeadZone) * tiltSensitivity;
-            tilt = Mathf.Lerp(tilt, Mathf.Clamp(raw, -1, 1), 1 - Mathf.Exp(-tiltSmoothing * Time.unscaledDeltaTime));
-            Movement = Vector2.ClampMagnitude(virtualMove.sqrMagnitude > 0 ? virtualMove :
-                touchDirection != 0 ? new Vector2(Mathf.Clamp(touchDirection, -1, 1), 0) :
-                direction.sqrMagnitude > 0.01f ? direction : new Vector2(tilt, 0), 1);
+            tilt = JoystickHeld ? 0 : Mathf.Lerp(tilt, Mathf.Clamp(raw, -1, 1), 1 - Mathf.Exp(-tiltSmoothing * Time.unscaledDeltaTime));
+            // Prioridade: joystick, setas/direcional, analogico, inclinacao.
+            float move = JoystickHeld ? joystick.x : digital != 0 ? digital : stick != 0 ? stick : tilt;
+            Movement = new Vector2(Mathf.Clamp(move, -1, 1), 0);
+            if (JoystickHeld) { AimAbsolute = true; Aim = Mathf.Clamp(joystick.x, -1, 1); }
+            else if (digital != 0) { AimAbsolute = false; Aim = digital; }
+            else if (stick != 0) { AimAbsolute = true; Aim = stick; }
+            else if (Mathf.Abs(tilt) > 0.01f) { AimAbsolute = true; Aim = tilt; }
+            else { AimAbsolute = false; Aim = 0; }
             JumpPressed = !previousHeld && (held || pressed);
             JumpReleased = (previousHeld || pressed) && !held;
             JumpHeld = held;
@@ -152,10 +133,10 @@ namespace Lumera.JumpForce
         }
         void Clear()
         {
-            JumpHeld = JumpPressed = JumpReleased = previousHeld = mouseAccepted = uiJumpPulse = AnyPressed = false;
-            Movement = Vector2.zero;
-            tilt = 0;
-            acceptedTouches.Clear(); jumpSources.Clear(); moveSources.Clear();
+            JumpHeld = JumpPressed = JumpReleased = previousHeld = uiJumpPulse = AnyPressed = JoystickHeld = AimAbsolute = false;
+            Movement = joystick = Vector2.zero;
+            tilt = Aim = 0;
+            jumpSources.Clear();
         }
         void OnApplicationFocus(bool focus) { if (!focus) Clear(); }
         void OnApplicationPause(bool paused) { if (paused) Clear(); }

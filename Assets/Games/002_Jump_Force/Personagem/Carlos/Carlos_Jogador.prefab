@@ -273,6 +273,8 @@ MonoBehaviour:
   onDeath:
     m_PersistentCalls:
       m_Calls: []
+  direcaoPulo: {fileID: 5483662344048922275}
+  seta: {fileID: 5773859761357117771}
 --- !u!1 &7971880307291355066
 GameObject:
   m_ObjectHideFlags: 0
