@@ -3074,6 +3074,7 @@ Transform:
   - {fileID: 1316942992}
   - {fileID: 249128359}
   - {fileID: 366195803}
+  - {fileID: 1307290770}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &260527540
@@ -4148,6 +4149,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 361539463}
+  - component: {fileID: 1907163762}
+  - component: {fileID: 611665075}
   m_Layer: 5
   m_Name: Painel_ApagarDados
   m_TagString: Untagged
@@ -5061,6 +5064,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 396467587}
+  - component: {fileID: 818973164}
   m_Layer: 5
   m_Name: Painel_Confirmar
   m_TagString: Untagged
@@ -5102,6 +5106,7 @@ GameObject:
   - component: {fileID: 397056189}
   - component: {fileID: 397056188}
   - component: {fileID: 397056187}
+  - component: {fileID: 1800843065}
   m_Layer: 5
   m_Name: Painel_Apagar_Tudo
   m_TagString: Untagged
@@ -7359,6 +7364,7 @@ GameObject:
   - component: {fileID: 621401297}
   - component: {fileID: 621401296}
   - component: {fileID: 621401295}
+  - component: {fileID: 990022874}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -10443,6 +10449,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 971258964}
+  - component: {fileID: 990185549}
+  - component: {fileID: 363197209}
   m_Layer: 5
   m_Name: Painel_Sair
   m_TagString: Untagged
@@ -13141,6 +13149,7 @@ GameObject:
   - component: {fileID: 1204223783}
   - component: {fileID: 1204223782}
   - component: {fileID: 1204223781}
+  - component: {fileID: 470838682}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -14371,6 +14380,7 @@ GameObject:
   - component: {fileID: 1309840348}
   - component: {fileID: 1309840350}
   - component: {fileID: 1309840349}
+  - component: {fileID: 1245812558}
   m_Layer: 5
   m_Name: Safe_Area
   m_TagString: Untagged
@@ -15406,6 +15416,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1459631361}
+  - component: {fileID: 260252037}
   m_Layer: 0
   m_Name: Google_Play_Services
   m_TagString: Untagged
@@ -17242,6 +17253,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1691696465}
+  - component: {fileID: 911326215}
   m_Layer: 5
   m_Name: Infos_Jogador
   m_TagString: Untagged
@@ -17900,6 +17912,7 @@ GameObject:
   - component: {fileID: 1730680950}
   - component: {fileID: 1730680949}
   - component: {fileID: 1730680948}
+  - component: {fileID: 720521296}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -19020,6 +19033,7 @@ GameObject:
   - component: {fileID: 1820606008}
   - component: {fileID: 1820606007}
   - component: {fileID: 1820606006}
+  - component: {fileID: 1805189711}
   m_Layer: 5
   m_Name: Apagar_Jogo_Tamplete
   m_TagString: Untagged
@@ -20368,6 +20382,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1874700071}
   - component: {fileID: 1874700072}
+  - component: {fileID: 1173011463}
   m_Layer: 5
   m_Name: Painel_Configuracoes
   m_TagString: Untagged
@@ -20841,6 +20856,7 @@ GameObject:
   - component: {fileID: 1920822418}
   - component: {fileID: 1920822417}
   - component: {fileID: 1920822416}
+  - component: {fileID: 1382187457}
   m_Layer: 5
   m_Name: Scroll_View_Configuracoes
   m_TagString: Untagged
@@ -22699,6 +22715,293 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2145516548}
   m_CullTransparentMesh: 1
+--- !u!1 &766175128
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1307290770}
+  - component: {fileID: 964709309}
+  m_Layer: 0
+  m_Name: Voltar_Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1307290770
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766175128}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 260527539}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &964709309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766175128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52471ec988ed4924eb2a6a888570f3db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorVoltar
+--- !u!114 &260252037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459631360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83a52ea969a829048be91a86b82b791c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorPlayGames
+  conectarAoIniciar: 1
+--- !u!114 &1245812558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309840347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad6afaaddcd979143b77b437b74d62aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AjustarAreaSegura
+  espacador: {fileID: 861272791}
+  margemExtra: 0
+--- !u!114 &911326215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691696464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2648091e77a8c749acb9d48445f4092, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuTopoJogador
+  textoMoedas: {fileID: 418530153}
+  textoNome: {fileID: 1853258312}
+  foto: {fileID: 491230654}
+--- !u!114 &1805189711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820606004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b9c719e914f85b468d4da2cf0a15bc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemApagarJogo
+  capa: {fileID: 234588420}
+  nome: {fileID: 56237347}
+  botaoApagar: {fileID: 1671152282}
+  painelConfirmar: {fileID: 396467586}
+  confirmar: {fileID: 196129765}
+--- !u!114 &1907163762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361539462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc98f31f7aef853449b42d45a657e10f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuApagarDados
+  conteudo: {fileID: 708730390}
+  modelo: {fileID: 1805189711}
+  catalogo: {fileID: 1870176363}
+  painelApagarTudo: {fileID: 397056185}
+  confirmarApagarTudo: {fileID: 422191058}
+--- !u!114 &990185549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971258963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc257f5008111b44fa973c8d65684ea9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuSair
+  confirmar: {fileID: 2003186857}
+  negar: {fileID: 894222036}
+--- !u!114 &990022874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621401294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: -1
+  botao: {fileID: 0}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 990185549}
+        m_TargetAssemblyTypeName: MenuSair, Assembly-CSharp
+        m_MethodName: Abrir
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &363197209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971258963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 10
+  botao: {fileID: 894222036}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1173011463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874700070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 0
+  botao: {fileID: 2050266607}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &611665075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361539462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 1
+  botao: {fileID: 1063556498}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1800843065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397056185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 2
+  botao: {fileID: 864264254}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &818973164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 396467586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 2
+  botao: {fileID: 874752124}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &470838682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1204223779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
+  posicaoInicial: {x: 0, y: 1}
+--- !u!114 &1382187457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920822414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
+  posicaoInicial: {x: 0, y: 1}
+--- !u!114 &720521296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730680946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
+  posicaoInicial: {x: 0, y: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

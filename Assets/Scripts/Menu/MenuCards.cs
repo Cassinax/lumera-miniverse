@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 // Area_Cards: cria um card por jogo a partir do Card_Tamplete (desativado ao iniciar).
 // O Card_EmBreve fica sempre por ultimo.
@@ -14,6 +15,8 @@ public sealed class MenuCards : MonoBehaviour
     [SerializeField] RectTransform cardEmBreve;
     [Tooltip("Jogos da plataforma. A posicao vem do campo Ordem de cada jogo.")]
     [SerializeField] List<JogoLumera> jogos = new List<JogoLumera>();
+    [Tooltip("Chamado quando o jogador toca num jogo sem moedas para a entrada (ex.: abrir oferta de anuncio).")]
+    [SerializeField] UnityEvent<JogoLumera> aoFaltarMoedas = new UnityEvent<JogoLumera>();
 
     readonly List<CardJogo> cards = new List<CardJogo>();
     ObjetoMestre mestre;
@@ -55,21 +58,20 @@ public sealed class MenuCards : MonoBehaviour
         foreach (var card in cards) card.Traduzir(idioma);
     }
 
+    // Cada abertura cobra a entrada da partida (preco do jogo).
     void AoEscolher(CardJogo card)
     {
         var jogo = card.Jogo;
         if (!jogo) return;
-        if (!jogo.Gratis)
-        {
-            // Compra com moedas ainda nao existe: jogos pagos so mostram o preco.
-            Debug.Log($"[Menu] '{jogo.id}' custa {jogo.preco} moedas; compra ainda nao implementada.", this);
-            return;
-        }
         if (!mestre)
         {
             Debug.LogWarning("[Menu] Sem Objeto Mestre: o jogo deve ser aberto a partir do Menu.", this);
             return;
         }
-        mestre.CarregarCena(jogo.cena);
+        if (mestre.EntrarNoJogo(jogo) == ObjetoMestre.ResultadoEntrada.MoedasInsuficientes)
+        {
+            Debug.Log($"[Menu] Moedas insuficientes para '{jogo.id}' ({jogo.preco}).", this);
+            aoFaltarMoedas.Invoke(jogo);
+        }
     }
 }

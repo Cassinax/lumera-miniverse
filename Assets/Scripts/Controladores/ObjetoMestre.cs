@@ -9,8 +9,10 @@ using UnityEngine.SceneManagement;
 // Graficos_Controller, Monitor_Desempenho... Cenas acessam tudo por ObjetoMestre.Instancia, nunca por
 // referencia serializada: ao voltar ao Menu, a copia da cena e descartada e a original continua.
 [DefaultExecutionOrder(-20000), DisallowMultipleComponent]
-public sealed class ObjetoMestre : MonoBehaviour
+public sealed partial class ObjetoMestre : MonoBehaviour
 {
+    public enum ResultadoEntrada { Ok, MoedasInsuficientes, Ocupado, CenaIndisponivel }
+
     public const string CenaMenu = "Menu";
 
     [Tooltip("Painel_Carregando, filho do Canvas deste objeto.")]
@@ -26,6 +28,7 @@ public sealed class ObjetoMestre : MonoBehaviour
     public ControladorAudio Audio { get; private set; }
     public ControladorVibracao Vibracao { get; private set; }
     public ControladorGraficos Graficos { get; private set; }
+    public ControladorPlayGames PlayGames { get; private set; }
     public IdiomaLumera Idioma { get; private set; } = IdiomaLumera.Portugues;
     public bool CarregandoCena { get; private set; }
 
@@ -44,7 +47,10 @@ public sealed class ObjetoMestre : MonoBehaviour
         }
         instancia = this;
         DontDestroyOnLoad(gameObject);
+        // Jogos por inclinacao e leitura: a tela nao pode apagar pelo tempo de inatividade do sistema.
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
         Save = GetComponentInChildren<SaveAdapter>(true);
+        PlayGames = GetComponentInChildren<ControladorPlayGames>(true);
         Audio = GetComponentInChildren<ControladorAudio>(true);
         Vibracao = GetComponentInChildren<ControladorVibracao>(true);
         Graficos = GetComponentInChildren<ControladorGraficos>(true);
@@ -62,6 +68,7 @@ public sealed class ObjetoMestre : MonoBehaviour
     {
         AplicarConfiguracoesSalvas();
         MostrarCarregando(false);
+        PrepararTelaCheiaAndroid();
     }
 
     void AplicarConfiguracoesSalvas()
@@ -104,6 +111,32 @@ public sealed class ObjetoMestre : MonoBehaviour
     }
 
     public void VoltarAoMenu() => CarregarCena(CenaMenu);
+
+    // Abre um jogo cobrando a entrada da partida (preco do JogoLumera; 0 = gratis). Nada e cobrado se a cena
+    // nao puder abrir ou ja houver um carregamento em andamento.
+    public ResultadoEntrada EntrarNoJogo(JogoLumera jogo)
+    {
+        if (!jogo || CarregandoCena) return ResultadoEntrada.Ocupado;
+        if (string.IsNullOrEmpty(jogo.cena) || !Application.CanStreamedLevelBeLoaded(jogo.cena))
+        {
+            Debug.LogError($"[Objeto Mestre] A cena '{jogo.cena}' de '{jogo.id}' nao esta no Build Profile.", this);
+            return ResultadoEntrada.CenaIndisponivel;
+        }
+        if (!jogo.Gratis && (!Save || !Save.GastarMoedas(jogo.preco, "entrada", jogo.id)))
+            return ResultadoEntrada.MoedasInsuficientes;
+        CarregarCena(jogo.cena);
+        return ResultadoEntrada.Ok;
+    }
+
+    public void FecharAplicacao()
+    {
+        if (Save) Save.SalvarAgora();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
 
     IEnumerator ExecutarCarregamento(string nome)
     {

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 // Filho "Graficos_Controller" do Objeto Mestre. Presets Baixo, Medio, Alto e Ultra = niveis de mesmo nome em
-// Project Settings > Quality (criados por Lumera > Preparar Menu e Graficos, cada um com seu asset do URP).
+// Project Settings > Quality, cada um com seu asset do URP em Assets/Settings/Graficos.
 // O save guarda o nome do nivel. Padrao: Medio.
 [DisallowMultipleComponent]
 public sealed class ControladorGraficos : MonoBehaviour
@@ -59,7 +59,7 @@ public sealed class ControladorGraficos : MonoBehaviour
         int qualidade = Array.IndexOf(QualitySettings.names, Niveis[nivel]);
         if (qualidade < 0)
             Debug.LogWarning($"[Graficos] O nivel '{Niveis[nivel]}' nao existe em Project Settings > Quality. " +
-                "Use Lumera > Preparar Menu e Graficos.", this);
+                "Confira os niveis Baixo, Medio, Alto e Ultra.", this);
         else if (qualidade != QualitySettings.GetQualityLevel())
             QualitySettings.SetQualityLevel(qualidade, true);
         // targetFrameRate so vale com o VSync desligado; no celular o padrao seria 30.

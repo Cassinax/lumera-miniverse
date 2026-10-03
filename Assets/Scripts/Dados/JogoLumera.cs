@@ -14,7 +14,7 @@ public sealed class JogoLumera : ScriptableObject
     public TextoLocalizado nome;
     [Tooltip("Posicao padrao no Menu (menor vem antes). Filtros da cena podem reordenar.")]
     public int ordem;
-    [Tooltip("Preco em moedas. 0 = gratis.")]
+    [Tooltip("Entrada da partida, em moedas, cobrada cada vez que o jogo e aberto. 0 = gratis.")]
     [Min(0)] public int preco;
 
     public bool Gratis => preco <= 0;

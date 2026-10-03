@@ -20,6 +20,11 @@ public partial class SaveAdapter
     public const string CHAVE_AJUSTE_AUTOMATICO_GRAFICO = "ajuste_automatico_grafico";
     public const string QUALIDADE_GRAFICA_PADRAO = "Medio";
 
+    // Carteira da plataforma: progresso (SLG0002), vale para todos os jogos. Ganha na loja ou na gameplay;
+    // cada jogo cobra a entrada da partida ao ser aberto.
+    public const string CMD_PROGRESSO = "SLG0002";
+    public const string CHAVE_MOEDAS = "moedas";
+
     // Valor que ObterDado devolve quando a chave nao existe.
     private const string SemDado = "BuscarDado erro";
 
@@ -31,7 +36,60 @@ public partial class SaveAdapter
         new DadoPadrao(CMD_CONFIG, CHAVE_IDIOMA, "", PriorityLevel.Normal),
         new DadoPadrao(CMD_CONFIG, CHAVE_QUALIDADE_GRAFICA, QUALIDADE_GRAFICA_PADRAO, PriorityLevel.Normal),
         new DadoPadrao(CMD_CONFIG, CHAVE_AJUSTE_AUTOMATICO_GRAFICO, "1", PriorityLevel.Normal),
+        new DadoPadrao(CMD_PROGRESSO, CHAVE_MOEDAS, "0", PriorityLevel.Alto),
     };
+
+    //---------- Moedas
+
+    public event Action<long> MoedasAlteradas;
+
+    public long ObterMoedas()
+    {
+        try
+        {
+            string valor = ObterDado(CMD_PROGRESSO, CHAVE_MOEDAS);
+            return long.TryParse(valor, NumberStyles.Integer, CultureInfo.InvariantCulture, out long saldo) ? Math.Max(0, saldo) : 0;
+        }
+        catch (Exception) { return 0; }
+    }
+
+    // origem: "loja", "gameplay", "anuncio"... referencia: id do jogo, produto ou anuncio.
+    public bool AdicionarMoedas(long quantidade, string origem, string referencia = "")
+    {
+        if (quantidade <= 0) return false;
+        long antes = ObterMoedas();
+        return AlterarMoedas(antes + quantidade, () => RegistrarGanho(CHAVE_MOEDAS, quantidade, antes, antes + quantidade, origem, referencia));
+    }
+
+    // Falso sem saldo suficiente; nada e debitado nesse caso.
+    public bool GastarMoedas(long quantidade, string origem, string referencia = "")
+    {
+        if (quantidade <= 0) return true;
+        long antes = ObterMoedas();
+        if (antes < quantidade) return false;
+        return AlterarMoedas(antes - quantidade, () => RegistrarGasto(CHAVE_MOEDAS, quantidade, antes, antes - quantidade, origem, referencia));
+    }
+
+    // Saldo e auditoria na mesma transacao: ou os dois ficam, ou nenhum.
+    private bool AlterarMoedas(long depois, Action auditoria)
+    {
+        bool ok;
+        try
+        {
+            Begin();
+            SalvarDados(CMD_PROGRESSO, CHAVE_MOEDAS, depois.ToString(CultureInfo.InvariantCulture));
+            auditoria();
+            ok = Commit();
+            if (!ok) Rollback();
+        }
+        catch (Exception)
+        {
+            Rollback();
+            ok = false;
+        }
+        if (ok) MoedasAlteradas?.Invoke(depois);
+        return ok;
+    }
 
     //---------- Configuracoes
 
