@@ -18,6 +18,9 @@ public sealed class MenuCards : MonoBehaviour
     readonly List<CardJogo> cards = new List<CardJogo>();
     ObjetoMestre mestre;
 
+    // Ordem padrao do catalogo (campo Ordem); um filtro futuro pode reordenar aqui. Tambem usada pela lista de saves.
+    public IEnumerable<JogoLumera> JogosOrdenados => jogos.Where(j => j).Distinct().OrderBy(j => j.ordem);
+
     void Start()
     {
         if (modelo) modelo.gameObject.SetActive(false);
@@ -35,8 +38,7 @@ public sealed class MenuCards : MonoBehaviour
     {
         if (!modelo || !conteudo) return;
         var idioma = LocalizacaoLumera.Atual;
-        // Ordem padrao do catalogo; um filtro futuro pode reordenar aqui.
-        foreach (var jogo in jogos.Where(j => j).Distinct().OrderBy(j => j.ordem))
+        foreach (var jogo in JogosOrdenados)
         {
             var card = Instantiate(modelo, conteudo);
             card.name = "Card_" + (string.IsNullOrEmpty(jogo.id) ? jogo.name : jogo.id);

@@ -31,11 +31,7 @@ public sealed class MenuConfiguracoes : MonoBehaviour
     [Tooltip("Documento aberto pelo botao Termos. Vazio desativa o botao.")]
     [SerializeField] string linkTermos = "";
 
-    [Header("Apagar dados")]
-    [SerializeField] Button botaoApagarDados;
-    [SerializeField] GameObject painelApagarDados;
-    [SerializeField] Button confirmarApagar;
-    [SerializeField] Button cancelarApagar;
+    // Apagar dados: o botao abre o Painel_ApagarDados (MenuApagarDados), configurado na cena.
 
     [Header("Navegacao")]
     [SerializeField] Button botaoVoltar;
@@ -65,9 +61,6 @@ public sealed class MenuConfiguracoes : MonoBehaviour
         if (ajusteAutomaticoGraficos) ajusteAutomaticoGraficos.onValueChanged.AddListener(AoMudarAjusteAutomatico);
         if (botaoPoliticas) botaoPoliticas.onClick.AddListener(() => AbrirLink(linkPoliticas));
         if (botaoTermos) botaoTermos.onClick.AddListener(() => AbrirLink(linkTermos));
-        if (botaoApagarDados) botaoApagarDados.onClick.AddListener(() => MostrarConfirmacao(true));
-        if (cancelarApagar) cancelarApagar.onClick.AddListener(() => MostrarConfirmacao(false));
-        if (confirmarApagar) confirmarApagar.onClick.AddListener(ConfirmarApagar);
         if (botaoVoltar) botaoVoltar.onClick.AddListener(Fechar);
     }
 
@@ -76,7 +69,6 @@ public sealed class MenuConfiguracoes : MonoBehaviour
         Configurar();
         mestre = ObjetoMestre.Instancia;
         if (mestre && mestre.Graficos) mestre.Graficos.NivelAlterado += AoGraficosMudarem;
-        MostrarConfirmacao(false);
         Sincronizar();
     }
 
@@ -165,23 +157,11 @@ public sealed class MenuConfiguracoes : MonoBehaviour
         if (graficos) graficos.SetValueWithoutNotify(nivel);
     }
 
-    //---------- Links e dados
+    //---------- Links
 
     void AbrirLink(string link)
     {
         if (!string.IsNullOrWhiteSpace(link)) Application.OpenURL(link.Trim());
-    }
-
-    void MostrarConfirmacao(bool visivel)
-    {
-        if (painelApagarDados) painelApagarDados.SetActive(visivel);
-    }
-
-    void ConfirmarApagar()
-    {
-        MostrarConfirmacao(false);
-        if (!mestre || !mestre.ApagarDados())
-            Debug.LogWarning("[Configuracoes] Nao foi possivel apagar os dados agora.", this);
     }
 
     //---------- Gravacao

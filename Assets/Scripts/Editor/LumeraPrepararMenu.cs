@@ -224,10 +224,6 @@ public static class LumeraPrepararMenu
             Definir(config, "ajusteAutomaticoGraficos", Componente<Toggle>(cena, itens + "/Auto_Ajuste_Graficos/Toggle", relatorio));
             Definir(config, "botaoPoliticas", Componente<Button>(cena, itens + "/Politicas/Button", relatorio));
             Definir(config, "botaoTermos", Componente<Button>(cena, itens + "/Termos/Button", relatorio));
-            Definir(config, "botaoApagarDados", Componente<Button>(cena, itens + "/Apagar_Dados/Button", relatorio));
-            Definir(config, "painelApagarDados", Achar(cena, itens + "/Painel_Apagar_Dados", relatorio)?.gameObject);
-            Definir(config, "confirmarApagar", Componente<Button>(cena, itens + "/Painel_Apagar_Dados/Button_Confirmar", relatorio));
-            Definir(config, "cancelarApagar", Componente<Button>(cena, itens + "/Painel_Apagar_Dados/Button_Cancelar", relatorio));
             Definir(config, "botaoVoltar", Componente<Button>(cena, painel + "/Button_Voltar", relatorio));
 
             // O painel comeca inativo: o botao do topo chama Abrir.
@@ -241,6 +237,40 @@ public static class LumeraPrepararMenu
             }
             relatorio.AppendLine("Configuracoes: MenuConfiguracoes em Painel_Configuracoes; Button_Configuracoes abre o painel.");
         }
+
+        // Lista de saves para apagar.
+        const string apagar = painel + "/Painel_ApagarDados";
+        const string listaSaves = apagar + "/Scroll View/Viewport/Content";
+        var painelApagar = Achar(cena, apagar, relatorio);
+        var modeloItem = Achar(cena, listaSaves + "/Apagar_Jogo_Tamplete", relatorio);
+        if (painelApagar && modeloItem)
+        {
+            var item = Garantir<ItemApagarJogo>(modeloItem.gameObject);
+            Definir(item, "capa", modeloItem.Find("Icone/Image_Capa")?.GetComponent<Image>());
+            Definir(item, "nome", modeloItem.Find("Text (TMP)")?.GetComponent<TMP_Text>());
+            Definir(item, "botaoApagar", modeloItem.Find("Button")?.gameObject);
+            Definir(item, "painelConfirmar", modeloItem.Find("Painel_Confirmar")?.gameObject);
+            Definir(item, "confirmar", modeloItem.Find("Painel_Confirmar/Button_Confirmar")?.GetComponent<Button>());
+
+            var menuApagar = Garantir<MenuApagarDados>(painelApagar.gameObject);
+            Definir(menuApagar, "conteudo", Achar(cena, listaSaves, relatorio));
+            Definir(menuApagar, "modelo", item);
+            Definir(menuApagar, "catalogo", Componente<MenuCards>(cena, "Canvas/Area_Cards", relatorio));
+            Definir(menuApagar, "painelApagarTudo", Achar(cena, listaSaves + "/Painel_Apagar_Tudo", relatorio)?.gameObject);
+            Definir(menuApagar, "confirmarApagarTudo", Componente<Button>(cena, listaSaves + "/Painel_Apagar_Tudo/Button_Confirmar", relatorio));
+            relatorio.AppendLine("Apagar dados: MenuApagarDados em Painel_ApagarDados, ItemApagarJogo no Apagar_Jogo_Tamplete.");
+        }
+
+        // Rolagem volta ao inicio sempre que um Scroll View aparece (menos os templates dos dropdowns).
+        int rolagens = 0;
+        foreach (var raiz in cena.GetRootGameObjects())
+            foreach (var rolagem in raiz.GetComponentsInChildren<ScrollRect>(true))
+            {
+                if (rolagem.GetComponentInParent<TMP_Dropdown>(true) || rolagem.GetComponentInParent<Dropdown>(true)) continue;
+                Garantir<ReiniciarRolagem>(rolagem.gameObject);
+                rolagens++;
+            }
+        relatorio.AppendLine($"Rolagem: ReiniciarRolagem em {rolagens} Scroll View(s).");
     }
 
     //---------- Utilitarios

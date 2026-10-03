@@ -66,6 +66,61 @@ public partial class SaveAdapter
 
     public void SalvarConfig(string chave, bool valor) => SalvarConfig(chave, valor ? "1" : "0");
 
+    //---------- Dados de cada jogo
+
+    // Cada jogo grava sob o proprio comando: [JOGO_<ID>],[chave]. Assim a lista de saves sabe quais jogos
+    // tem dados e consegue apagar so os de um. O id e o do JogoLumera (fixo depois de publicado).
+    public static string ComandoDoJogo(string idJogo) => "JOGO_" + (idJogo ?? "").Trim().ToUpperInvariant();
+
+    public string ObterDadoJogo(string idJogo, string chave, string padrao)
+    {
+        try
+        {
+            string valor = ObterDado(ComandoDoJogo(idJogo), chave);
+            return valor == null || valor == SemDado ? padrao : valor;
+        }
+        catch (Exception) { return padrao; }
+    }
+
+    public void SalvarDadoJogo(string idJogo, string chave, string valor)
+    {
+        try { SalvarDados(ComandoDoJogo(idJogo), chave, valor ?? ""); }
+        catch (Exception) { }
+    }
+
+    public bool TemDadosDoJogo(string idJogo) => ChavesDoJogo(idJogo).Count > 0;
+
+    public bool ApagarDadosDoJogo(string idJogo)
+    {
+        var chaves = ChavesDoJogo(idJogo);
+        if (chaves.Count == 0) return true;
+        try
+        {
+            foreach (string chave in chaves) _saveSystem.EnqueueRemove(chave, PriorityLevel.Alto);
+            _saveSystem.ProcessQueues();
+            _saveSystem.ForceSave();
+            return !TemDadosDoJogo(idJogo);
+        }
+        catch (Exception) { return false; }
+    }
+
+    // O snapshot le o ultimo commit, nao a fila: grava antes de procurar.
+    private List<string> ChavesDoJogo(string idJogo)
+    {
+        var chaves = new List<string>();
+        if (string.IsNullOrWhiteSpace(idJogo)) return chaves;
+        try
+        {
+            GarantirInicializacao();
+            SalvarAgora();
+            string prefixo = "[" + ComandoDoJogo(idJogo) + "],";
+            foreach (var par in CapturarSnapshot().Data)
+                if (par.Key.StartsWith(prefixo, StringComparison.Ordinal)) chaves.Add(par.Key);
+        }
+        catch (Exception) { }
+        return chaves;
+    }
+
     //---------- Apagar dados
 
     // "Apagar dados" das configuracoes. O Lumera e local e sem conta: apaga fisicamente o save e grava os
