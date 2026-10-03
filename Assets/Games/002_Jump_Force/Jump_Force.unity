@@ -222,6 +222,7 @@ GameObject:
   - component: {fileID: 113725561}
   - component: {fileID: 113725563}
   - component: {fileID: 113725562}
+  - component: {fileID: 113725564}
   m_Layer: 0
   m_Name: Joystick_Pular
   m_TagString: Untagged
@@ -287,6 +288,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 113725560}
   m_CullTransparentMesh: 1
+--- !u!114 &113725564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113725560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a696cecf30d842928effeb8ae365504f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceJoystickPulo
+  player: {fileID: 896773395}
+  botao: {fileID: 465677669}
+  espelharMetadeDeBaixo: 1
+  raio: 0
 --- !u!114 &126180104
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -839,7 +856,6 @@ GameObject:
   - component: {fileID: 465677672}
   - component: {fileID: 465677671}
   - component: {fileID: 465677670}
-  - component: {fileID: 1874095660}
   m_Layer: 0
   m_Name: Button_Pular
   m_TagString: Untagged
@@ -924,7 +940,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -4788,19 +4804,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1843338071}
   m_CullTransparentMesh: 1
---- !u!114 &1874095660
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 465677668}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a696cecf30d842928effeb8ae365504f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceBotaoPulo
-  player: {fileID: 896773395}
 --- !u!4 &1890589369
 Transform:
   m_ObjectHideFlags: 0

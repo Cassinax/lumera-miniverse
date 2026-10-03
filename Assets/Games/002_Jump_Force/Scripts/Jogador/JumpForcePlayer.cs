@@ -40,8 +40,6 @@ namespace Lumera.JumpForce
         public Renderer seta;
         [Tooltip("Limite da mira para cada lado, em graus, a partir do alto do personagem.")]
         [Range(0, 89)] public float anguloMaximo = 70;
-        [Tooltip("Graus por segundo ao girar a mira com setas ou direcional.")]
-        [Min(0)] public float velocidadeGiroMira = 120;
         [Tooltip("Escala da seta sem carga (multiplica a escala original da Seta).")]
         [Min(0)] public float tamanhoSetaMinimo = 0.6f;
         [Tooltip("Escala da seta com a carga cheia (multiplica a escala original da Seta).")]
@@ -169,8 +167,12 @@ namespace Lumera.JumpForce
             if (input.JumpPressed) BeginCharge();
             if (Charging)
             {
-                chargeTime += Time.deltaTime * chargeMultiplier;
-                AtualizarMira(Time.deltaTime);
+                // A distancia do botao do joystick do pulo e o teto da carga: carrega ate ela e, se o botao
+                // voltar, a carga cai junto. Na zona morta nao ha salto (a seta some).
+                float teto = input.AimPadInDeadZone ? 0 : Mathf.Clamp01(input.AimPadStrength);
+                chargeTime = Mathf.Min(chargeTime + Time.deltaTime * chargeMultiplier, teto * fullChargeSeconds);
+                AtualizarMira();
+                MostrarMira(!input.AimPadInDeadZone);
             }
             if (input.JumpReleased) ReleaseJump();
             if (deferredTapHeight.HasValue && Time.time >= secondTapDeadline)
@@ -180,15 +182,14 @@ namespace Lumera.JumpForce
             }
         }
 
-        // Segurando o pulo no chao, a direcao mira o salto. Absoluta (inclinacao), pelo angulo (analogico) ou girando
-        // (setas, direcional). Soltar a direcao mantem a mira.
-        void AtualizarMira(float dt)
+        // A direcao do salto e o angulo do botao do joystick do pulo (metade de baixo espelhada para cima),
+        // limitado ao angulo maximo. Na zona morta a mira fica onde estava.
+        void AtualizarMira()
         {
-            if (!Grounded || !input) return;
+            if (!Grounded || !input || input.AimPadInDeadZone) return;
             float limite = Mathf.Clamp(anguloMaximo, 0, 89);
-            float angulo = input.AimByAngle ? input.AimAngle
-                : input.AimAbsolute ? input.Aim * limite : AnguloMira + input.Aim * velocidadeGiroMira * dt;
-            AnguloMira = Mathf.Clamp(angulo, -limite, limite);
+            var direcao = input.AimPadDirection;
+            AnguloMira = Mathf.Clamp(Mathf.Atan2(direcao.x, direcao.y) * Mathf.Rad2Deg, -limite, limite);
         }
 
         void LateUpdate()
@@ -239,7 +240,7 @@ namespace Lumera.JumpForce
             chargeTime = 0;
             pressStartedAt = Time.time;
             AnguloMira = 0;
-            MostrarMira(true);
+            MostrarMira(false);
             animationDriver?.BeginCharge();
         }
         public void ReleaseJump()
@@ -248,6 +249,8 @@ namespace Lumera.JumpForce
             Charging = false;
             MostrarMira(false);
             if ((!Grounded && !CanWallJump) || Dead) { animationDriver?.Land(); return; }
+            // Soltar com o botao do joystick na zona morta cancela o salto.
+            if (input && input.AimPadInDeadZone) { chargeTime = 0; animationDriver?.Land(); return; }
             float factor = Mathf.Clamp01(chargeCurve.Evaluate(Charge01));
             float height = Mathf.Lerp(minimumJumpHeight, Mathf.Max(minimumJumpHeight, maximumJumpHeight), factor);
             if (Grounded && chargeMultiplier == 1 && doubleTapWindow > 0 &&

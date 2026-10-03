@@ -13,7 +13,7 @@ namespace Lumera.JumpForce
         public Text status;
         public GameObject deathPanel;
         public Button restartButton;
-        [Tooltip("Controles de toque (Controles: Button_Esquerda, Button_Pular, Button_Direita): ocultos no vestiario e apos a morte.")]
+        [Tooltip("Controles de toque (Controles: Button_Esquerda, Joystick_Pular, Button_Direita): ocultos no vestiario e apos a morte.")]
         public GameObject[] controlesToque = System.Array.Empty<GameObject>();
         bool showedDeath;
         int restartFrame = -1;
@@ -29,8 +29,8 @@ namespace Lumera.JumpForce
             if (player.Dead && showedDeath && player.input.AnyPressed) { Restart(); return; }
             MostrarControles(!player.Dead);
             if (status) status.text = player.Dead ? "" : player.Charging
-                ? "Use a direcao para mirar o salto e solte PULAR."
-                : player.Grounded ? "Mova para andar. Segure PULAR para carregar o salto." : "Controle a direcao no ar";
+                ? "Arraste PULAR: direcao e forca do salto. Solte para saltar; no centro cancela."
+                : player.Grounded ? "Mova para andar. Segure e arraste PULAR para carregar o salto." : "Controle a direcao no ar";
             deathPanel.SetActive(player.Dead);
             if (player.Dead && !showedDeath && EventSystem.current)
                 EventSystem.current.SetSelectedGameObject(restartButton.gameObject);

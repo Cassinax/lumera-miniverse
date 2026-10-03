@@ -4,8 +4,8 @@ using UnityEngine.EventSystems;
 
 namespace Lumera.JumpForce
 {
-    // Button_Esquerda / Button_Direita: botoes fixos de direcao. Segurar anda e, carregando o salto, gira a mira
-    // (como as setas do teclado). Funciona junto com o Button_Pular, cada um com seu dedo.
+    // Button_Esquerda / Button_Direita: botoes fixos de direcao. Segurar anda (no chao e no ar). A mira do salto
+    // e do Joystick_Pular. Funciona junto com ele, cada um com seu dedo.
     [DisallowMultipleComponent]
     public sealed class JumpForceBotaoDirecao : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
