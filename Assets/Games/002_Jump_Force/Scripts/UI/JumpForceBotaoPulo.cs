@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 namespace Lumera.JumpForce
 {
     // Button_Pular: segurar carrega, soltar salta (o toque duplo da carga rapida vem do JumpForcePlayer).
-    // Funciona junto com o joystick, cada um com seu dedo.
+    // Funciona junto com os botoes de direcao, cada um com seu dedo.
     [DisallowMultipleComponent]
     public sealed class JumpForceBotaoPulo : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {

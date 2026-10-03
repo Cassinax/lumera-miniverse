@@ -65,7 +65,7 @@ namespace Lumera.JumpForce
                 enabled = false;
                 return;
             }
-            view = followCamera.GetComponent<Camera>();
+            view = followCamera.Visao;
             z = player.transform.position.z;
             var groundBounds = JumpForceSpawnedElement.ColliderBounds(startingGround.GetComponent<BoxCollider>());
             originY = groundBounds.max.y;

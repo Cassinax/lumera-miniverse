@@ -130,7 +130,6 @@ GameObject:
   - component: {fileID: 91972559}
   - component: {fileID: 91972561}
   - component: {fileID: 91972560}
-  - component: {fileID: 632096137}
   m_Layer: 0
   m_Name: Controles
   m_TagString: Untagged
@@ -417,6 +416,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 258961684}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &295430045
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 295430046}
+  m_Layer: 0
+  m_Name: Ancora_Jogo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &295430046
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 295430045}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 4.5, z: -14}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1519061584}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &378558083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -868,7 +898,7 @@ GameObject:
   - component: {fileID: 494740141}
   - component: {fileID: 494740140}
   - component: {fileID: 494740139}
-  - component: {fileID: 494740138}
+  - component: {fileID: 494740142}
   m_Layer: 0
   m_Name: Button_Esquerda
   m_TagString: Untagged
@@ -895,19 +925,6 @@ RectTransform:
   m_AnchoredPosition: {x: -250, y: -144}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &494740138
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 494740136}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a696cecf30d842928effeb8ae365504f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceBotaoPulo
-  player: {fileID: 896773395}
 --- !u!114 &494740139
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -990,6 +1007,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 494740136}
   m_CullTransparentMesh: 1
+--- !u!114 &494740142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494740136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff2395514c144ab9bcc3117190c9e886, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceBotaoDirecao
+  player: {fileID: 896773395}
+  lado: -1
 --- !u!1 &528571997
 GameObject:
   m_ObjectHideFlags: 0
@@ -1230,7 +1261,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6f198a2f64b4c6fb972231504aca320, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceFeedback
-  cameraJogo: {fileID: 2065248609}
+  cameraJogo: {fileID: 1519061585}
   impactoForte: 12
   pousoForte:
     tremor: 0.08
@@ -1242,6 +1273,37 @@ MonoBehaviour:
     duracaoTremor: 0.3
     vibracaoMs: 60
     intensidadeVibracao: 160
+--- !u!1 &587591630
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 587591631}
+  m_Layer: 0
+  m_Name: Ancora_Vestiario
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &587591631
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 587591630}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.4, y: 1.7, z: -4}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1519061584}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &611479046
 GameObject:
   m_ObjectHideFlags: 0
@@ -1287,24 +1349,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MiloCI.Bootstrap.ObjetoMestreSceneGuard
   preMenuSceneName: Menu
---- !u!114 &632096137
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 91972558}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4238974a37af47ac9266fe213837c102, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceJoystick
-  player: {fileID: 896773395}
-  area: {fileID: 0}
-  controle: {fileID: 0}
-  zonaMorta: 0.1
-  alphaSolto: 0.3
-  alphaPressionado: 1
 --- !u!114 &638892918
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3712,7 +3756,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceSpawner
   player: {fileID: 896773395}
-  followCamera: {fileID: 2065248609}
+  followCamera: {fileID: 1519061585}
   startingGround: {fileID: 222424821302869639}
   platformPrefab: {fileID: 4569596513166003222, guid: 9964b68f8b77cbb4196b85480e2aef87, type: 3}
   pillarPrefab: {fileID: 8360736158262500850, guid: f0c5c0df8ddaffb4d8072fb93890300e, type: 3}
@@ -3834,6 +3878,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1519061584}
+  - component: {fileID: 1519061585}
+  - component: {fileID: 1519061586}
   m_Layer: 0
   m_Name: Ancorador_Camera
   m_TagString: Untagged
@@ -3857,8 +3903,50 @@ Transform:
   - {fileID: 2065248607}
   - {fileID: 258961685}
   - {fileID: 1595250948}
+  - {fileID: 295430046}
+  - {fileID: 587591631}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1519061585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1519061583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d7aa2cb4b586c647a577c3382667e28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceCamera
+  player: {fileID: 896773395}
+  visao: {fileID: 2065248606}
+  offset: {x: 0, y: 0, z: 0}
+  smoothTime: 0.3
+  ancoras:
+  - foco: 0
+    ponto: {fileID: 295430046}
+    tempo: 0.3
+  - foco: 1
+    ponto: {fileID: 587591631}
+    tempo: 0.3
+  deathBodyFraction: 0.5
+  deathEnabled: 1
+--- !u!114 &1519061586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1519061583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53ad672f486712b4ba40e8a9624ce641, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatformVisibility
+  view: {fileID: 2065248606}
+  follow: {fileID: 1519061585}
+  viewportMargin: 0.05
 --- !u!1 &1525407688
 GameObject:
   m_ObjectHideFlags: 0
@@ -4929,7 +5017,7 @@ GameObject:
   - component: {fileID: 2051968862}
   - component: {fileID: 2051968861}
   - component: {fileID: 2051968860}
-  - component: {fileID: 2051968859}
+  - component: {fileID: 2051968863}
   m_Layer: 0
   m_Name: Button_Direita
   m_TagString: Untagged
@@ -4956,19 +5044,6 @@ RectTransform:
   m_AnchoredPosition: {x: 250, y: -144}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2051968859
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2051968857}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a696cecf30d842928effeb8ae365504f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceBotaoPulo
-  player: {fileID: 896773395}
 --- !u!114 &2051968860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5051,6 +5126,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2051968857}
   m_CullTransparentMesh: 1
+--- !u!114 &2051968863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051968857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff2395514c144ab9bcc3117190c9e886, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceBotaoDirecao
+  player: {fileID: 896773395}
+  lado: 1
 --- !u!1 &2065248604
 GameObject:
   m_ObjectHideFlags: 0
@@ -5063,8 +5152,6 @@ GameObject:
   - component: {fileID: 2065248606}
   - component: {fileID: 2065248605}
   - component: {fileID: 2065248608}
-  - component: {fileID: 2065248609}
-  - component: {fileID: 2065248610}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -5190,38 +5277,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!114 &2065248609
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2065248604}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d7aa2cb4b586c647a577c3382667e28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceCamera
-  player: {fileID: 896773395}
-  smoothTime: 0.3
-  heightOffset: 4
-  deathBodyFraction: 0.5
-  deathEnabled: 1
---- !u!114 &2065248610
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2065248604}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53ad672f486712b4ba40e8a9624ce641, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatformVisibility
-  view: {fileID: 2065248606}
-  follow: {fileID: 2065248609}
-  viewportMargin: 0.05
 --- !u!114 &2067212583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5411,7 +5466,7 @@ MonoBehaviour:
   spawner: {fileID: 1452426269}
   wardrobe: {fileID: 2130574732}
   player: {fileID: 896773395}
-  followCamera: {fileID: 2065248609}
+  followCamera: {fileID: 1519061585}
   status: {fileID: 736398337}
   deathPanel: {fileID: 538034041}
   restartButton: {fileID: 1173104070}
@@ -5531,7 +5586,6 @@ MonoBehaviour:
   characterRenderer: {fileID: 896773397}
   palettes: {fileID: 11400000, guid: 247f8712268f8354b9808b32d0db2581, type: 2}
   plataforma: {fileID: 0}
-  openingCameraPosition: {x: 0.4, y: 1.7, z: -4}
   reopenOnRetry: 1
 --- !u!114 &2130574733
 MonoBehaviour:

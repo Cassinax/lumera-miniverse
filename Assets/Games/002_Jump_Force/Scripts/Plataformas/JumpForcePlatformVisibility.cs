@@ -18,8 +18,8 @@ namespace Lumera.JumpForce
         readonly List<Entry> entries = new();
         void Start()
         {
-            if (!view) view = GetComponent<Camera>();
             if (!follow) follow = GetComponent<JumpForceCamera>();
+            if (!view) view = follow ? follow.Visao : GetComponentInChildren<Camera>();
             foreach (var platform in FindObjectsByType<JumpForcePlatform>())
             {
                 if (platform.GetComponentInParent<JumpForceSpawnedElement>()) continue;

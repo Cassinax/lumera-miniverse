@@ -13,7 +13,7 @@ namespace Lumera.JumpForce
         public Text status;
         public GameObject deathPanel;
         public Button restartButton;
-        [Tooltip("Controles de toque (Joystick_Virtual, Button_Pular): ocultos no vestiario e apos a morte.")]
+        [Tooltip("Controles de toque (Controles: Button_Esquerda, Button_Pular, Button_Direita): ocultos no vestiario e apos a morte.")]
         public GameObject[] controlesToque = System.Array.Empty<GameObject>();
         bool showedDeath;
         int restartFrame = -1;

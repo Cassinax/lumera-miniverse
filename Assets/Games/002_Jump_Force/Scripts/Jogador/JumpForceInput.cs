@@ -21,10 +21,11 @@ namespace Lumera.JumpForce
         public bool AnyPressed { get; private set; }
         public Vector2 Movement { get; private set; }
         public float Direction => Movement.x;
-        // Joystick virtual: enquanto pressionado, a inclinacao do aparelho e ignorada.
-        public bool JoystickHeld { get; private set; }
-        // Mira do salto. Absoluta (-1 a 1, lado todo = angulo maximo): joystick, analogico e inclinacao.
-        // Giro (-1, 0 ou 1): setas e direcional giram a mira, que fica onde parar. Sem fonte: giro 0 (mantem).
+        // Botoes de direcao da tela (Button_Esquerda, Button_Direita): enquanto algum esta pressionado,
+        // a inclinacao do aparelho e ignorada.
+        public bool DirectionButtonsHeld => directionSources.Count > 0;
+        // Mira do salto. Absoluta (-1 a 1, lado todo = angulo maximo): inclinacao. Por angulo: analogico.
+        // Giro (-1, 0 ou 1): botoes da tela, setas e direcional giram a mira, que fica onde parar. Sem fonte: mantem.
         public bool AimAbsolute { get; private set; }
         public float Aim { get; private set; }
         // Analogico fisico: a mira e o angulo para onde ele aponta (atan2 de x e y), em graus.
@@ -32,9 +33,9 @@ namespace Lumera.JumpForce
         public bool AimByAngle { get; private set; }
         public float AimAngle { get; private set; }
         readonly HashSet<object> jumpSources = new();
+        readonly Dictionary<object, int> directionSources = new();
         bool previousHeld, sensorEnabledByUs, uiJumpPulse;
         float tilt, tiltNeutral;
-        Vector2 joystick;
         bool gameplayEnabled = true, waitingForRelease;
         public void SetGameplayEnabled(bool value)
         {
@@ -57,12 +58,18 @@ namespace Lumera.JumpForce
             return false;
         }
 
-        // Chamado pelo JumpForceJoystick. valor: deslocamento do controle, de -1 a 1 em cada eixo.
-        public void SetJoystick(Vector2 value, bool held)
+        // Chamado pelo JumpForceBotaoDirecao. lado: -1 esquerda, 1 direita da tela. Os dois juntos se anulam.
+        public void SetDirectionSource(object id, int lado, bool held)
         {
-            if (!gameplayEnabled || waitingForRelease) { joystick = Vector2.zero; JoystickHeld = false; return; }
-            joystick = held ? Vector2.ClampMagnitude(value, 1) : Vector2.zero;
-            JoystickHeld = held;
+            if (held && (!gameplayEnabled || waitingForRelease)) return;
+            if (held && lado != 0) directionSources[id] = lado > 0 ? 1 : -1;
+            else directionSources.Remove(id);
+        }
+        int DirectionButtons()
+        {
+            int soma = 0;
+            foreach (var lado in directionSources.Values) soma += lado;
+            return System.Math.Sign(soma);
         }
         public void SetJumpSource(object id, bool held)
         {
@@ -128,17 +135,19 @@ namespace Lumera.JumpForce
                 foreach (var touch in Touchscreen.current.touches)
                     if (touch.press.wasPressedThisFrame) AnyPressed = true;
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) AnyPressed = true;
-            // Inclinar o aparelho so vale com o joystick solto.
-            float raw = tiltEnabled && !JoystickHeld && Accelerometer.current != null
+            // Botoes da tela valem como as setas e passam na frente delas.
+            int botoes = DirectionButtons();
+            if (botoes != 0) digital = botoes;
+            // Inclinar o aparelho so vale com os botoes de direcao soltos.
+            float raw = tiltEnabled && !DirectionButtonsHeld && Accelerometer.current != null
                 ? (Accelerometer.current.acceleration.ReadValue().x - tiltNeutral) * (invertTilt ? -1 : 1) : 0;
             raw = Mathf.Abs(raw) < tiltDeadZone ? 0 : Mathf.Sign(raw) * (Mathf.Abs(raw) - tiltDeadZone) * tiltSensitivity;
-            tilt = JoystickHeld ? 0 : Mathf.Lerp(tilt, Mathf.Clamp(raw, -1, 1), 1 - Mathf.Exp(-tiltSmoothing * Time.unscaledDeltaTime));
-            // Prioridade: joystick, setas/direcional, analogico, inclinacao.
-            float move = JoystickHeld ? joystick.x : digital != 0 ? digital : stick != 0 ? stick : tilt;
+            tilt = DirectionButtonsHeld ? 0 : Mathf.Lerp(tilt, Mathf.Clamp(raw, -1, 1), 1 - Mathf.Exp(-tiltSmoothing * Time.unscaledDeltaTime));
+            // Prioridade: botoes da tela, setas/direcional, analogico, inclinacao.
+            float move = digital != 0 ? digital : stick != 0 ? stick : tilt;
             Movement = new Vector2(Mathf.Clamp(move, -1, 1), 0);
             AimByAngle = false;
-            if (JoystickHeld) { AimAbsolute = true; Aim = Mathf.Clamp(joystick.x, -1, 1); }
-            else if (digital != 0) { AimAbsolute = false; Aim = digital; }
+            if (digital != 0) { AimAbsolute = false; Aim = digital; }
             else if (stickMirando) { AimAbsolute = AimByAngle = true; AimAngle = stickAngulo; Aim = stickAngulo / 90; }
             else if (Mathf.Abs(tilt) > 0.01f) { AimAbsolute = true; Aim = tilt; }
             else { AimAbsolute = false; Aim = 0; }
@@ -149,10 +158,11 @@ namespace Lumera.JumpForce
         }
         void Clear()
         {
-            JumpHeld = JumpPressed = JumpReleased = previousHeld = uiJumpPulse = AnyPressed = JoystickHeld = AimAbsolute = AimByAngle = false;
-            Movement = joystick = Vector2.zero;
+            JumpHeld = JumpPressed = JumpReleased = previousHeld = uiJumpPulse = AnyPressed = AimAbsolute = AimByAngle = false;
+            Movement = Vector2.zero;
             tilt = Aim = AimAngle = 0;
             jumpSources.Clear();
+            directionSources.Clear();
         }
         void OnApplicationFocus(bool focus) { if (!focus) Clear(); }
         void OnApplicationPause(bool paused) { if (paused) Clear(); }

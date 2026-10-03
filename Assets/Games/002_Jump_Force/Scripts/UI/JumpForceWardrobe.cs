@@ -22,7 +22,7 @@ namespace Lumera.JumpForce
         [Tooltip("Guarda a paleta escolhida no save do jogo. Vazio: procura na cena.")]
         public JumpForcePlataforma plataforma;
         [Header("Abertura")]
-        public Vector3 openingCameraPosition = new Vector3(0.4f, 1.7f, -4);
+        [Tooltip("Volta ao vestiario a cada reinicio. A pose da camera aqui e a ancora Vestiario do Ancorador_Camera.")]
         public bool reopenOnRetry = true;
         public bool IsOpen { get; private set; }
         public int SelectedPalette { get; private set; }
@@ -112,7 +112,7 @@ namespace Lumera.JumpForce
             hud.player.input.SetGameplayEnabled(false);
             hud.player.animationDriver.Preview = true;
             hud.player.animationDriver.ResetIntro();
-            hud.followCamera.HoldForWardrobe(openingCameraPosition);
+            hud.followCamera.HoldForWardrobe();
             if (visibility) { restoreVisibility = visibility.enabled; visibility.enabled = false; }
             hud.MostrarControles(false);
             if (hud.deathPanel) hud.deathPanel.SetActive(false);

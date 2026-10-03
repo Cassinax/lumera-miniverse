@@ -180,7 +180,7 @@ namespace Lumera.JumpForce
             }
         }
 
-        // Segurando o pulo no chao, a direcao mira o salto. Absoluta (joystick, analogico, inclinacao) ou girando
+        // Segurando o pulo no chao, a direcao mira o salto. Absoluta (inclinacao), pelo angulo (analogico) ou girando
         // (setas, direcional). Soltar a direcao mantem a mira.
         void AtualizarMira(float dt)
         {
