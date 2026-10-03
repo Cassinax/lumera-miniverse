@@ -3036,6 +3036,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 256352108}
   m_CullTransparentMesh: 1
+--- !u!114 &260252037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459631360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83a52ea969a829048be91a86b82b791c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorPlayGames
+  conectarAoIniciar: 1
 --- !u!1 &260527538
 GameObject:
   m_ObjectHideFlags: 0
@@ -3062,7 +3075,7 @@ Transform:
   m_GameObject: {fileID: 260527538}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.38029, y: 2.53768, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3090,6 +3103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cfc3a7b9a97dc749b684158dd340614, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjetoMestre
+  recuperarTelaCheia: 1
+  atrasoOcultarBarras: 3
   painelCarregando: {fileID: 741880789}
   textoCarregando: {fileID: 1806117152}
 --- !u!1 &265090438
@@ -4180,6 +4195,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &363197209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971258963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 10
+  botao: {fileID: 894222036}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &366195802
 GameObject:
   m_ObjectHideFlags: 0
@@ -5317,6 +5349,23 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
+--- !u!1 &415001429
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 855481611}
+  - component: {fileID: 892428330}
+  m_Layer: 0
+  m_Name: Metricas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &418530151
 GameObject:
   m_ObjectHideFlags: 0
@@ -6373,6 +6422,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 468286026}
   m_CullTransparentMesh: 1
+--- !u!114 &470838682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1204223779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
+  posicaoInicial: {x: 0, y: 1}
 --- !u!1 &479878598
 GameObject:
   m_ObjectHideFlags: 0
@@ -7216,6 +7278,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 587154815}
   m_CullTransparentMesh: 1
+--- !u!114 &611665075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361539462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 1
+  botao: {fileID: 1063556498}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &617817711
 GameObject:
   m_ObjectHideFlags: 0
@@ -8279,6 +8358,19 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &720521296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730680946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
+  posicaoInicial: {x: 0, y: 1}
 --- !u!1 &723192863
 GameObject:
   m_ObjectHideFlags: 0
@@ -8698,6 +8790,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 751276819}
   m_CullTransparentMesh: 1
+--- !u!1 &766175128
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1307290770}
+  - component: {fileID: 964709309}
+  m_Layer: 0
+  m_Name: Voltar_Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &790468223
 GameObject:
   m_ObjectHideFlags: 0
@@ -9049,6 +9158,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 802457000}
   m_CullTransparentMesh: 1
+--- !u!114 &818973164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 396467586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 2
+  botao: {fileID: 874752124}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &820462438
 GameObject:
   m_ObjectHideFlags: 0
@@ -9352,6 +9478,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 853907950}
   m_CullTransparentMesh: 1
+--- !u!4 &855481611
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 415001429}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 260527539}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &858345080
 GameObject:
   m_ObjectHideFlags: 0
@@ -10146,6 +10287,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 882144949}
   m_CullTransparentMesh: 1
+--- !u!114 &892428330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 415001429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6e921f47a2548579827cfb0fcb7947d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorMetricas
+  registrarNoLog: 1
 --- !u!1 &894222034
 GameObject:
   m_ObjectHideFlags: 0
@@ -10267,6 +10421,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 894222034}
   m_CullTransparentMesh: 1
+--- !u!114 &911326215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691696464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2648091e77a8c749acb9d48445f4092, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuTopoJogador
+  textoMoedas: {fileID: 418530153}
+  textoNome: {fileID: 1853258312}
+  foto: {fileID: 491230654}
 --- !u!1 &931936924
 GameObject:
   m_ObjectHideFlags: 0
@@ -10441,6 +10610,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 956718565}
   m_CullTransparentMesh: 1
+--- !u!114 &964709309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766175128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52471ec988ed4924eb2a6a888570f3db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorVoltar
 --- !u!1 &971258963
 GameObject:
   m_ObjectHideFlags: 0
@@ -10480,6 +10661,49 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &990022874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621401294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: -1
+  botao: {fileID: 0}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 990185549}
+        m_TargetAssemblyTypeName: MenuSair, Assembly-CSharp
+        m_MethodName: Abrir
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &990185549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971258963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc257f5008111b44fa973c8d65684ea9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuSair
+  confirmar: {fileID: 2003186857}
+  negar: {fileID: 894222036}
 --- !u!1 &1005532645
 GameObject:
   m_ObjectHideFlags: 0
@@ -12793,6 +13017,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1173011463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874700070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 0
+  botao: {fileID: 2050266607}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1174324784
 GameObject:
   m_ObjectHideFlags: 0
@@ -13701,6 +13942,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1240641688}
   m_CullTransparentMesh: 1
+--- !u!114 &1245812558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309840347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad6afaaddcd979143b77b437b74d62aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AjustarAreaSegura
+  espacador: {fileID: 861272791}
+  margemExtra: 0
 --- !u!1 &1248371059
 GameObject:
   m_ObjectHideFlags: 0
@@ -14370,6 +14625,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1297511611}
   m_CullTransparentMesh: 1
+--- !u!4 &1307290770
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766175128}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 260527539}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1309840347
 GameObject:
   m_ObjectHideFlags: 0
@@ -14494,6 +14764,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 294c031769ad73c479a1904dd7cf0eb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControladorVibracao
+  duracaoPadrao: 40
+  intensidadePadrao: 120
 --- !u!1 &1338824217
 GameObject:
   m_ObjectHideFlags: 0
@@ -14886,6 +15158,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1370630286}
   m_CullTransparentMesh: 1
+--- !u!114 &1382187457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920822414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
+  posicaoInicial: {x: 0, y: 1}
 --- !u!1 &1408137116
 GameObject:
   m_ObjectHideFlags: 0
@@ -17327,6 +17612,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 756dadb6ac5115a4db3f90be7795843b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControladorAudio
+  fadeMusica: 1
+  fadeCorte: 0.03
 --- !u!1 &1697448665
 GameObject:
   m_ObjectHideFlags: 0
@@ -18786,6 +19073,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1793809497}
   m_CullTransparentMesh: 1
+--- !u!114 &1800843065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397056185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
+  prioridade: 2
+  botao: {fileID: 864264254}
+  aoVoltar:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1805189711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820606004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b9c719e914f85b468d4da2cf0a15bc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemApagarJogo
+  capa: {fileID: 234588420}
+  nome: {fileID: 56237347}
+  botaoApagar: {fileID: 1671152282}
+  painelConfirmar: {fileID: 396467586}
+  confirmar: {fileID: 196129765}
 --- !u!1 &1806117150
 GameObject:
   m_ObjectHideFlags: 0
@@ -20373,6 +20694,9 @@ MonoBehaviour:
   cardEmBreve: {fileID: 133810502}
   jogos:
   - {fileID: 11400000, guid: 2cc1ad7119b33c84ead757fa7e4378ea, type: 2}
+  aoFaltarMoedas:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1874700070
 GameObject:
   m_ObjectHideFlags: 0
@@ -20706,6 +21030,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1906187144}
   m_CullTransparentMesh: 1
+--- !u!114 &1907163762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361539462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc98f31f7aef853449b42d45a657e10f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuApagarDados
+  conteudo: {fileID: 708730390}
+  modelo: {fileID: 1805189711}
+  catalogo: {fileID: 1870176363}
+  painelApagarTudo: {fileID: 397056185}
+  confirmarApagarTudo: {fileID: 422191058}
 --- !u!1 &1913945460
 GameObject:
   m_ObjectHideFlags: 0
@@ -22716,338 +23057,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2145516548}
   m_CullTransparentMesh: 1
---- !u!1 &766175128
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1307290770}
-  - component: {fileID: 964709309}
-  m_Layer: 0
-  m_Name: Voltar_Controller
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1307290770
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 766175128}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 260527539}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &964709309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 766175128}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52471ec988ed4924eb2a6a888570f3db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ControladorVoltar
---- !u!114 &260252037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1459631360}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83a52ea969a829048be91a86b82b791c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ControladorPlayGames
-  conectarAoIniciar: 1
---- !u!114 &1245812558
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1309840347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad6afaaddcd979143b77b437b74d62aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AjustarAreaSegura
-  espacador: {fileID: 861272791}
-  margemExtra: 0
---- !u!114 &911326215
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1691696464}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2648091e77a8c749acb9d48445f4092, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuTopoJogador
-  textoMoedas: {fileID: 418530153}
-  textoNome: {fileID: 1853258312}
-  foto: {fileID: 491230654}
---- !u!114 &1805189711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1820606004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b9c719e914f85b468d4da2cf0a15bc2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemApagarJogo
-  capa: {fileID: 234588420}
-  nome: {fileID: 56237347}
-  botaoApagar: {fileID: 1671152282}
-  painelConfirmar: {fileID: 396467586}
-  confirmar: {fileID: 196129765}
---- !u!114 &1907163762
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 361539462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc98f31f7aef853449b42d45a657e10f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuApagarDados
-  conteudo: {fileID: 708730390}
-  modelo: {fileID: 1805189711}
-  catalogo: {fileID: 1870176363}
-  painelApagarTudo: {fileID: 397056185}
-  confirmarApagarTudo: {fileID: 422191058}
---- !u!114 &990185549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 971258963}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc257f5008111b44fa973c8d65684ea9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuSair
-  confirmar: {fileID: 2003186857}
-  negar: {fileID: 894222036}
---- !u!114 &990022874
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 621401294}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
-  prioridade: -1
-  botao: {fileID: 0}
-  aoVoltar:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 990185549}
-        m_TargetAssemblyTypeName: MenuSair, Assembly-CSharp
-        m_MethodName: Abrir
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &363197209
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 971258963}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
-  prioridade: 10
-  botao: {fileID: 894222036}
-  aoVoltar:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1173011463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1874700070}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
-  prioridade: 0
-  botao: {fileID: 2050266607}
-  aoVoltar:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &611665075
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 361539462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
-  prioridade: 1
-  botao: {fileID: 1063556498}
-  aoVoltar:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1800843065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 397056185}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
-  prioridade: 2
-  botao: {fileID: 864264254}
-  aoVoltar:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &818973164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 396467586}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85736a2014ff16d44833056566114692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AcaoVoltar
-  prioridade: 2
-  botao: {fileID: 874752124}
-  aoVoltar:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &470838682
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1204223779}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
-  posicaoInicial: {x: 0, y: 1}
---- !u!114 &1382187457
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1920822414}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
-  posicaoInicial: {x: 0, y: 1}
---- !u!114 &720521296
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1730680946}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67c7e3a910722e4438be72a201291e1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ReiniciarRolagem
-  posicaoInicial: {x: 0, y: 1}
---- !u!1 &415001429
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 855481611}
-  - component: {fileID: 892428330}
-  m_Layer: 0
-  m_Name: Metricas
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &855481611
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 415001429}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 260527539}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &892428330
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 415001429}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6e921f47a2548579827cfb0fcb7947d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ControladorMetricas
-  registrarNoLog: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -18,8 +18,10 @@ namespace Lumera.JumpForce
         [SerializeField] JumpForceAudio audioCena;
 
         [Header("Recorde")]
-        [Tooltip("Text_Placar_Recorde: mostra o recorde na mesma unidade do placar da partida.")]
+        [Tooltip("Text_Placar_Recorde: mostra o recorde em metros (a mesma medida do placar online).")]
         [SerializeField] TMP_Text textoRecorde;
+        [Tooltip("Texto do recorde. {0} = metros (inteiro, arredondado para baixo), {1} = pontos do placar da partida.")]
+        [SerializeField] string formatoRecorde = "{0} m";
         [SerializeField] Color corRecordeBatido = new Color(1f, 0.82f, 0.2f);
         [Tooltip("Pulso do texto ao bater o recorde, em segundos.")]
         [SerializeField, Min(0)] float duracaoPulso = 0.6f;
@@ -180,7 +182,9 @@ namespace Lumera.JumpForce
         {
             if (!textoRecorde) return;
             float metrosPorPonto = placar ? Mathf.Max(0.1f, placar.metersPerPoint) : 1;
-            textoRecorde.text = Mathf.FloorToInt(metros / metrosPorPonto).ToString();
+            int inteiros = Mathf.FloorToInt(metros), pontos = Mathf.FloorToInt(metros / metrosPorPonto);
+            try { textoRecorde.text = string.Format(formatoRecorde, inteiros, pontos); }
+            catch (System.FormatException) { textoRecorde.text = inteiros + " m"; }
             textoRecorde.color = destaque ? corRecordeBatido : corOriginal;
         }
 

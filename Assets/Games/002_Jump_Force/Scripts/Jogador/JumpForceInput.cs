@@ -27,6 +27,10 @@ namespace Lumera.JumpForce
         // Giro (-1, 0 ou 1): setas e direcional giram a mira, que fica onde parar. Sem fonte: giro 0 (mantem).
         public bool AimAbsolute { get; private set; }
         public float Aim { get; private set; }
+        // Analogico fisico: a mira e o angulo para onde ele aponta (atan2 de x e y), em graus.
+        // 0 = para cima, positivo = para a direita da tela. Vale so quando AimByAngle e verdadeiro.
+        public bool AimByAngle { get; private set; }
+        public float AimAngle { get; private set; }
         readonly HashSet<object> jumpSources = new();
         bool previousHeld, sensorEnabledByUs, uiJumpPulse;
         float tilt, tiltNeutral;
@@ -88,6 +92,8 @@ namespace Lumera.JumpForce
             uiJumpPulse = false;
             AnyPressed = pressed;
             float digital = 0, stick = 0;
+            bool stickMirando = false;
+            float stickAngulo = 0;
             var keyboard = Keyboard.current;
             if (keyboard != null)
             {
@@ -104,8 +110,17 @@ namespace Lumera.JumpForce
                 pressed |= pad.buttonSouth.wasPressedThisFrame || pad.buttonWest.wasPressedThisFrame;
                 float dpadX = pad.dpad.ReadValue().x;
                 if (Mathf.Abs(dpadX) > 0.1f) digital = Mathf.Sign(dpadX);
-                float x = pad.leftStick.ReadValue().x;
-                if (Mathf.Abs(x) > stickDeadZone) stick = x;
+                var analogico = pad.leftStick.ReadValue();
+                if (Mathf.Abs(analogico.x) > stickDeadZone) stick = analogico.x;
+                // Mira: inclinacao do analogico pelo comprimento (Pitagoras) e direcao pelo angulo (atan2).
+                // Apontar para cima volta a mira a 0; a metade de baixo vale como o lado para onde pende.
+                if (analogico.magnitude > stickDeadZone)
+                {
+                    stickAngulo = Mathf.Atan2(analogico.x, analogico.y) * Mathf.Rad2Deg;
+                    if (Mathf.Abs(stickAngulo) > 90) stickAngulo = Mathf.Sign(analogico.x) * 90;
+                    // Quase reto para baixo nao tem lado: mantem a mira.
+                    stickMirando = analogico.y >= 0 || Mathf.Abs(analogico.x) > Mathf.Abs(analogico.y) * 0.25f;
+                }
                 foreach (var control in pad.allControls)
                     if (control is ButtonControl button && button.wasPressedThisFrame) AnyPressed = true;
             }
@@ -121,9 +136,10 @@ namespace Lumera.JumpForce
             // Prioridade: joystick, setas/direcional, analogico, inclinacao.
             float move = JoystickHeld ? joystick.x : digital != 0 ? digital : stick != 0 ? stick : tilt;
             Movement = new Vector2(Mathf.Clamp(move, -1, 1), 0);
+            AimByAngle = false;
             if (JoystickHeld) { AimAbsolute = true; Aim = Mathf.Clamp(joystick.x, -1, 1); }
             else if (digital != 0) { AimAbsolute = false; Aim = digital; }
-            else if (stick != 0) { AimAbsolute = true; Aim = stick; }
+            else if (stickMirando) { AimAbsolute = AimByAngle = true; AimAngle = stickAngulo; Aim = stickAngulo / 90; }
             else if (Mathf.Abs(tilt) > 0.01f) { AimAbsolute = true; Aim = tilt; }
             else { AimAbsolute = false; Aim = 0; }
             JumpPressed = !previousHeld && (held || pressed);
@@ -133,9 +149,9 @@ namespace Lumera.JumpForce
         }
         void Clear()
         {
-            JumpHeld = JumpPressed = JumpReleased = previousHeld = uiJumpPulse = AnyPressed = JoystickHeld = AimAbsolute = false;
+            JumpHeld = JumpPressed = JumpReleased = previousHeld = uiJumpPulse = AnyPressed = JoystickHeld = AimAbsolute = AimByAngle = false;
             Movement = joystick = Vector2.zero;
-            tilt = Aim = 0;
+            tilt = Aim = AimAngle = 0;
             jumpSources.Clear();
         }
         void OnApplicationFocus(bool focus) { if (!focus) Clear(); }
