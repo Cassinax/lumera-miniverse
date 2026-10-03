@@ -82,7 +82,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -90,10 +90,10 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1576014273468231061}
+      addedObject: {fileID: 1787574309497332789}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1787574309497332789}
+      addedObject: {fileID: 2881404840988067062}
     - targetCorrespondingSourceObject: {fileID: -3607280971017118274, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6651994865566647287}
@@ -124,27 +124,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
   m_PrefabInstance: {fileID: 6582395171470724841}
   m_PrefabAsset: {fileID: 0}
---- !u!135 &1576014273468231061
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6311852436408464312}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.8
-  m_Center: {x: 0, y: 0.2, z: 0}
 --- !u!114 &1787574309497332789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -157,7 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f383222628b045f42b2820c6218a045a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Trampolim
-  colisor: {fileID: 1576014273468231061}
+  colisor: {fileID: 0}
   forcaMinima: 5
   forcaMaxima: 25
   curvaForca:
@@ -204,6 +183,29 @@ MonoBehaviour:
     m_RotationOrder: 4
   gizmoSempreVisivel: 0
   gizmoMetrosPorForca: 0.1
+--- !u!136 &2881404840988067062
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6311852436408464312}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.35706115
+  m_Height: 1.3798593
+  m_Direction: 1
+  m_Center: {x: 0.009529352, y: 0.89033103, z: 0}
 --- !u!1 &8827161964130369298 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2439047198753042939, guid: e868edac79ed1d247a72a2d5f0ce1bd1, type: 3}
