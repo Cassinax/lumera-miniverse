@@ -17,8 +17,6 @@ namespace Lumera.JumpForce
         [Min(0)] public float wallAttraction = 3f;
         [Min(0)] public float wallSlideDrag = 5f;
         [Min(0.1f)] public float wallSlideSpeed = 2f;
-        [Min(0.01f)] public float wallProbeDistance = 0.1f;
-        [Min(0)] public float wallJumpAwaySpeed = 2.5f;
         public bool TouchingPillar => wallContact;
         public Collider PillarContact => wallContact;
         public bool CanWallJump => wallContact && wallJumpReady && takeoffGrace <= 0f;
@@ -38,6 +36,10 @@ namespace Lumera.JumpForce
         public Renderer seta;
         [Tooltip("Limite da mira para cada lado, em graus, a partir do alto do personagem.")]
         [Range(0, 89)] public float anguloMaximo = 70f;
+        [Tooltip("Graus para cada lado do topo tratados como salto vertical, sem impulso horizontal.")]
+        [Range(0, 30)] public float margemPuloVertical = 5f;
+        [Tooltip("Velocidade horizontal maxima em relacao ao apoio para considerar o jogador parado.")]
+        [Min(0)] public float toleranciaParado = 0.15f;
         [Min(0)] public float tamanhoSetaMinimo = 0.6f;
         [Min(0)] public float tamanhoSetaMaximo = 1.2f;
         public float AnguloMira { get; private set; }
@@ -84,7 +86,6 @@ namespace Lumera.JumpForce
 
         [Header("Contato")]
         [Min(0.001f)] public float contactTolerance = 0.06f;
-        [Min(0)] public float groundProbeDistance = 0.08f;
         [Tooltip("Mudanca minima de velocidade do suporte para sincronizar uma frenagem brusca.")]
 
         [Header("Eventos")]
@@ -105,10 +106,16 @@ namespace Lumera.JumpForce
 
         readonly System.Collections.Generic.HashSet<JumpForcePlatform> landingSurfaces = new();
 
+        public bool ParadoNoChao => Grounded && body &&
+            Mathf.Abs(body.linearVelocity.x - (Support ? Support.Velocity.x : 0f)) <= toleranciaParado;
+        public bool PodePular => GameplayEnabled && !Dead && takeoffGrace <= 0f &&
+            !pendingJumpHeight.HasValue && (ParadoNoChao || CanWallJump);
+        public bool JoystickPuloDisponivel => PodePular && ParadoNoChao;
+        public bool PuloSimplesDisponivel => PodePular && !JoystickPuloDisponivel;
+
         Rigidbody body;
         CapsuleCollider capsule;
         float feetOffset;
-        float playerRadius;
         float chargeTime;
         float takeoffGrace;
         float? pendingJumpHeight;
@@ -124,7 +131,8 @@ namespace Lumera.JumpForce
         Collider wallContact;
         bool wallJumpReady;
         float wallNormalX;
-        readonly RaycastHit[] contactHits = new RaycastHit[24];
+        readonly ContactPoint[] physicsContacts = new ContactPoint[24];
+        int physicsContactCount;
 
         JumpForcePlatform launchPlatform;
         JumpForcePlatform supportVelocitySource;
@@ -183,10 +191,6 @@ namespace Lumera.JumpForce
                 capsule.center.y * transform.lossyScale.y -
                 capsule.height * transform.lossyScale.y * 0.5f;
 
-            playerRadius =
-                capsule.radius *
-                Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
-
             body.constraints =
                 RigidbodyConstraints.FreezeRotation |
                 (lockZ ? RigidbodyConstraints.FreezePositionZ : RigidbodyConstraints.None);
@@ -234,7 +238,7 @@ namespace Lumera.JumpForce
 
             if (deferredTapHeight.HasValue && Time.time >= secondTapDeadline)
             {
-                if (Grounded)
+                if (ParadoNoChao)
                 {
                     pendingJumpHeight = deferredTapHeight;
                     pendingJumpAngle = deferredTapAngle;
@@ -252,11 +256,17 @@ namespace Lumera.JumpForce
             float limite = Mathf.Clamp(anguloMaximo, 0f, 89f);
             Vector2 direcao = input.AimPadDirection;
 
-            AnguloMira = Mathf.Clamp(
+            AnguloMira = AjustarAnguloPulo(Mathf.Clamp(
                 Mathf.Atan2(direcao.x, direcao.y) * Mathf.Rad2Deg,
                 -limite,
                 limite
-            );
+            ));
+        }
+
+        public float AjustarAnguloPulo(float angulo)
+        {
+            angulo = Mathf.Clamp(angulo, -anguloMaximo, anguloMaximo);
+            return Mathf.Abs(angulo) <= margemPuloVertical ? 0f : angulo;
         }
 
         void LateUpdate()
@@ -305,7 +315,7 @@ namespace Lumera.JumpForce
         {
             if (
                 !GameplayEnabled ||
-                (!Grounded && !CanWallJump) ||
+                !PodePular ||
                 Dead ||
                 Charging ||
                 pendingJumpHeight.HasValue
@@ -345,7 +355,7 @@ namespace Lumera.JumpForce
             Charging = false;
             MostrarMira(false);
 
-            if ((!Grounded && !CanWallJump) || Dead)
+            if (!PodePular || Dead)
             {
                 animationDriver?.Land();
                 return;
@@ -431,6 +441,7 @@ namespace Lumera.JumpForce
 
         void OnCollisionEnter(Collision collision)
         {
+            RememberContacts(collision);
             if (Dead || !GameplayEnabled)
                 return;
 
@@ -454,6 +465,28 @@ namespace Lumera.JumpForce
                     return;
                 }
             }
+        }
+
+        void OnCollisionStay(Collision collision) => RememberContacts(collision);
+        void OnCollisionExit(Collision collision) => ForgetContacts(collision);
+
+        void ForgetContacts(Collision collision)
+        {
+            // One collision pair may contain several colliders on a compound Rigidbody.
+            for (int i = physicsContactCount - 1; i >= 0; i--)
+            {
+                GetContact(i, out Collider other, out _);
+                if (!other || other == collision.collider ||
+                    (collision.rigidbody && other.attachedRigidbody == collision.rigidbody))
+                    physicsContacts[i] = physicsContacts[--physicsContactCount];
+            }
+        }
+
+        void RememberContacts(Collision collision)
+        {
+            ForgetContacts(collision);
+            for (int i = 0; i < collision.contactCount && physicsContactCount < physicsContacts.Length; i++)
+                physicsContacts[physicsContactCount++] = collision.GetContact(i);
         }
 
         void OnTriggerEnter(Collider other)
@@ -514,7 +547,7 @@ namespace Lumera.JumpForce
 
             if (pendingJumpHeight.HasValue)
             {
-                if (Grounded || CanWallJump)
+                if (ParadoNoChao || CanWallJump)
                 {
                     bool wallJump = !Grounded;
                     launchPlatform = Support;
@@ -524,7 +557,7 @@ namespace Lumera.JumpForce
                     );
 
                     float angle =
-                        (Grounded ? pendingJumpAngle : 0f) * Mathf.Deg2Rad;
+                        (Grounded ? AjustarAnguloPulo(pendingJumpAngle) : 0f) * Mathf.Deg2Rad;
 
                     float verticalImpulse = speed * Mathf.Cos(angle);
                     float horizontalImpulse;
@@ -532,7 +565,7 @@ namespace Lumera.JumpForce
                     if (wallJump)
                     {
                         wallJumpReady = false;
-                        horizontalImpulse = wallNormalX * wallJumpAwaySpeed;
+                        horizontalImpulse = 0f;
                     }
                     else
                     {
@@ -651,44 +684,21 @@ namespace Lumera.JumpForce
 
             if (takeoffGrace <= 0f)
             {
-                foreach (JumpForcePlatform platform in JumpForcePlatform.Active)
+                for (int i = 0; i < physicsContactCount; i++)
                 {
-                    if (
-                        !platform ||
-                        !platform.Surface ||
-                        !platform.Surface.enabled ||
-                        platform.Surface.isTrigger
-                    )
-                        continue;
-
-                    // Subindo em relacao a plataforma (saindo dela) nao e apoio. Relativo: em cima de um pilar
-                    // que sobe, o jogador sobe junto e continua no chao.
-                    if (body.linearVelocity.y - platform.Velocity.y > 0.5f)
-                        continue;
-
-                    float top = platform.Top;
-                    Vector3 local = platform.transform.InverseTransformPoint(body.position);
-                    BoxCollider box = platform.Surface;
-                    Vector3 scale = platform.transform.lossyScale;
-
-                    float scaleX = Mathf.Max(0.0001f, Mathf.Abs(scale.x));
-                    float scaleZ = Mathf.Max(0.0001f, Mathf.Abs(scale.z));
-
-                    bool inside =
-                        Mathf.Abs(local.x - box.center.x) <=
-                            box.size.x * 0.5f + playerRadius * 0.4f / scaleX &&
-                        Mathf.Abs(local.z - box.center.z) <=
-                            box.size.z * 0.5f + playerRadius * 0.4f / scaleZ;
-
-                    bool touching =
-                        FeetY >= top - contactTolerance &&
-                        FeetY <= top + groundProbeDistance;
-
-                    if (inside && touching && top > bestTop)
+                    GetContact(i, out Collider other, out Vector3 normal);
+                    if (!other || normal.y < 0.7f) continue;
+                    var platform = other.GetComponent<JumpForcePlatform>();
+                    if (!platform)
                     {
-                        found = platform;
-                        bestTop = top;
+                        var pillar = other.GetComponentInParent<JumpForcePilarArco>();
+                        if (pillar) platform = pillar.TopSurface;
                     }
+                    if (!platform || !platform.Surface || !platform.Surface.enabled ||
+                        platform.Surface.isTrigger || body.linearVelocity.y - platform.Velocity.y > 0.5f)
+                        continue;
+                    float top = physicsContacts[i].point.y;
+                    if (top > bestTop) { found = platform; bestTop = top; }
                 }
             }
 
@@ -996,71 +1006,41 @@ namespace Lumera.JumpForce
             }
         }
 
-        void CapsulePoints(out Vector3 bottom, out Vector3 top)
+        void GetContact(int index, out Collider other, out Vector3 normal)
         {
-            Vector3 center =
-                body.position +
-                Vector3.Scale(capsule.center, transform.lossyScale);
-
-            float half = Mathf.Max(
-                0f,
-                capsule.height * transform.lossyScale.y * 0.5f - playerRadius
-            );
-
-            bottom = center - Vector3.up * half;
-            top = center + Vector3.up * half;
+            ContactPoint contact = physicsContacts[index];
+            other = contact.otherCollider;
+            normal = contact.normal;
+            if (other == capsule)
+            {
+                other = contact.thisCollider;
+                normal = -normal;
+            }
+            if (other && (!other.enabled || !other.gameObject.activeInHierarchy)) other = null;
         }
 
         void ProbePillar()
         {
             Collider found = null;
-            float normal = 0f;
-            float best = float.PositiveInfinity;
-
+            float normalX = 0f;
             if (!Grounded)
             {
-                CapsulePoints(out Vector3 bottom, out Vector3 top);
-                Vector3 center = (bottom + top) * 0.5f;
-
-                for (int side = -1; side <= 1; side += 2)
+                for (int i = 0; i < physicsContactCount; i++)
                 {
-                    int count = Physics.SphereCastNonAlloc(
-                        center,
-                        playerRadius * 0.9f,
-                        Vector3.right * side,
-                        contactHits,
-                        wallProbeDistance + playerRadius * 0.1f,
-                        ~0,
-                        QueryTriggerInteraction.Ignore
-                    );
-
-                    for (int i = 0; i < count; i++)
-                    {
-                        RaycastHit hit = contactHits[i];
-
-                        if (
-                            !hit.collider ||
-                            hit.collider == capsule ||
-                            hit.collider.GetComponent<JumpForcePlatform>() ||
-                            !hit.collider.GetComponentInParent<JumpForcePilarArco>() ||
-                            Mathf.Abs(hit.normal.x) < 0.7f ||
-                            center.y >= hit.collider.bounds.max.y - 0.05f ||
-                            hit.distance >= best
-                        )
-                            continue;
-
-                        found = hit.collider;
-                        normal = Mathf.Sign(hit.normal.x);
-                        best = hit.distance;
-                    }
+                    GetContact(i, out Collider other, out Vector3 normal);
+                    if (!other || Mathf.Abs(normal.x) < 0.7f ||
+                        !other.GetComponentInParent<JumpForcePilarArco>())
+                        continue;
+                    found = other;
+                    normalX = Mathf.Sign(normal.x);
+                    break;
                 }
             }
 
             if (found != wallContact)
                 wallJumpReady = found != null;
-
             wallContact = found;
-            wallNormalX = normal;
+            wallNormalX = normalX;
         }
 
         void ApplyWallSlide()
@@ -1132,6 +1112,7 @@ namespace Lumera.JumpForce
             score?.ObserveHeight(body.position.y);
 
             landingSurfaces.Clear();
+            physicsContactCount = 0;
             Dead = true;
             body.linearVelocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
@@ -1155,6 +1136,7 @@ namespace Lumera.JumpForce
         public void Restart()
         {
             landingSurfaces.Clear();
+            physicsContactCount = 0;
             FindAnyObjectByType<JumpForcePlatformVisibility>()?.RestoreAll();
 
             body.isKinematic = false;
@@ -1191,6 +1173,7 @@ namespace Lumera.JumpForce
         void OnDisable()
         {
             landingSurfaces.Clear();
+            physicsContactCount = 0;
             if (!initialized)
                 return;
 

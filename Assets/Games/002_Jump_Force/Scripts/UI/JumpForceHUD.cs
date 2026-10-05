@@ -15,6 +15,8 @@ namespace Lumera.JumpForce
         public Button restartButton;
         [Tooltip("Controles de toque (Controles: Button_Esquerda, Joystick_Pular, Button_Direita): ocultos no vestiario e apos a morte.")]
         public GameObject[] controlesToque = System.Array.Empty<GameObject>();
+        public GameObject joystickPular;
+        public GameObject botaoPularSimples;
         bool showedDeath;
         int restartFrame = -1;
         void Update()
@@ -30,7 +32,9 @@ namespace Lumera.JumpForce
             MostrarControles(!player.Dead);
             if (status) status.text = player.Dead ? "" : player.Charging
                 ? "Arraste PULAR: direcao e forca do salto. Solte para saltar; no centro cancela."
-                : player.Grounded ? "Mova para andar. Segure e arraste PULAR para carregar o salto." : "Controle a direcao no ar";
+                : player.PuloSimplesDisponivel ? "Toque PULAR para saltar pela lateral."
+                : player.JoystickPuloDisponivel ? "Segure e arraste PULAR para carregar o salto."
+                : player.Grounded ? "Pare para poder pular." : "Controle a direcao no ar";
             deathPanel.SetActive(player.Dead);
             if (player.Dead && !showedDeath && EventSystem.current)
                 EventSystem.current.SetSelectedGameObject(restartButton.gameObject);
@@ -39,7 +43,15 @@ namespace Lumera.JumpForce
         public void MostrarControles(bool visiveis)
         {
             foreach (var controle in controlesToque)
-                if (controle && controle.activeSelf != visiveis) controle.SetActive(visiveis);
+                if (controle && controle != joystickPular && controle != botaoPularSimples &&
+                    controle.activeSelf != visiveis) controle.SetActive(visiveis);
+            DefinirVisibilidade(joystickPular, visiveis && player && player.JoystickPuloDisponivel);
+            DefinirVisibilidade(botaoPularSimples, visiveis && player && player.PuloSimplesDisponivel);
+        }
+
+        static void DefinirVisibilidade(GameObject controle, bool visivel)
+        {
+            if (controle && controle.activeSelf != visivel) controle.SetActive(visivel);
         }
 
         public void Restart()

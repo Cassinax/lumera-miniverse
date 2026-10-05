@@ -5393,6 +5393,7 @@ GameObject:
   - component: {fileID: 2071715606}
   - component: {fileID: 2071715605}
   - component: {fileID: 2071715604}
+  - component: {fileID: 2071715607}
   m_Layer: 0
   m_Name: Button_Pular_Simples
   m_TagString: Untagged
@@ -5432,7 +5433,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
@@ -5501,6 +5502,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2071715602}
   m_CullTransparentMesh: 1
+--- !u!114 &2071715607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071715602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43efd13cc7e0e414685a98bd7c15f316, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePuloSimples
+  player: {fileID: 896773395}
 --- !u!1 &2120284937
 GameObject:
   m_ObjectHideFlags: 0
@@ -5683,6 +5697,8 @@ MonoBehaviour:
   controlesToque:
   - {fileID: 91972558}
   - {fileID: 465677668}
+  joystickPular: {fileID: 113725560}
+  botaoPularSimples: {fileID: 2071715602}
 --- !u!114 &2130574728
 MonoBehaviour:
   m_ObjectHideFlags: 0

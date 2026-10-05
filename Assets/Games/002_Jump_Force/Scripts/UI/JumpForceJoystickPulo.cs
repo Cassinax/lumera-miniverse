@@ -100,7 +100,7 @@ namespace Lumera.JumpForce
 
         public void OnPointerDown(PointerEventData dados)
         {
-            if (dedo != int.MinValue)
+            if (dedo != int.MinValue || !player || !player.JoystickPuloDisponivel)
                 return;
 
             dedo = dados.pointerId;

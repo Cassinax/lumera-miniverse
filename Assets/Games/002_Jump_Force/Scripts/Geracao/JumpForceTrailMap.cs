@@ -126,7 +126,7 @@ namespace Lumera.JumpForce
         readonly int collisionLevels;
         int lastLevel, nextTrampoline, nextFan, nextCoin;
         float leftBoundary = float.NegativeInfinity, rightBoundary = float.PositiveInfinity;
-        float jumpHeight, airSpeed, gravity, maximumAimAngle, safeFall = float.PositiveInfinity;
+        float jumpHeight, airSpeed, gravity, maximumAimAngle, verticalAimMargin, safeFall = float.PositiveInfinity;
         static readonly JumpForceDifficultyTier fallbackTier = new();
         // Below this, a "moving" element barely moves: it is planned as fixed instead.
         const float MinimumAmplitude = 0.25f;
@@ -157,13 +157,14 @@ namespace Lumera.JumpForce
         }
 
         // survivableFall: how far below the support it left the player can drop before the camera kills it.
-        public void SetCapabilities(float height, float lateralSpeed, float acceleration, float survivableFall, float aimAngle = 0f)
+        public void SetCapabilities(float height, float lateralSpeed, float acceleration, float survivableFall, float aimAngle = 0f, float verticalMargin = 0f)
         {
             jumpHeight = Mathf.Max(0.1f, height);
             airSpeed = Mathf.Max(0, lateralSpeed);
             gravity = Mathf.Max(0.1f, acceleration);
             safeFall = Mathf.Max(0.5f, survivableFall);
             maximumAimAngle = Mathf.Clamp(aimAngle, 0f, 89f) * Mathf.Deg2Rad;
+            verticalAimMargin = Mathf.Max(0f, verticalMargin) * Mathf.Deg2Rad;
         }
 
         int GapExcept(int forbidden, int level)
@@ -222,6 +223,7 @@ namespace Lumera.JumpForce
             // Angle from vertical that maximizes range at this destination height.
             float optimum = Mathf.Atan(Mathf.Sqrt(Mathf.Max(0f, speedSquared - 2f * gravity * dy)) / speed);
             float angle = Mathf.Min(maximumAimAngle, optimum);
+            if (angle <= verticalAimMargin) return steeringReach;
             float verticalSpeed = speed * Mathf.Cos(angle);
             float discriminant = verticalSpeed * verticalSpeed - 2f * gravity * dy;
             if (discriminant < 0f) return steeringReach;

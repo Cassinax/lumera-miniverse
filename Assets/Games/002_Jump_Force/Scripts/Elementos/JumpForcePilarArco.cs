@@ -11,6 +11,7 @@ namespace Lumera.JumpForce
     public sealed class JumpForcePilarArco : MonoBehaviour
     {
         public enum Eixo { X, Y }
+        public JumpForcePlatform TopSurface { get; private set; }
 
         [Header("Motor fisico (newtons: a massa do pilar e de quem esta em cima contam)")]
         [Tooltip("Forca maxima para acelerar ate a velocidade de cruzeiro. No eixo Y tambem sustenta o jogador em cima.")]
@@ -111,7 +112,7 @@ namespace Lumera.JumpForce
             var box = topo.AddComponent<BoxCollider>();
             box.sharedMaterial = materialTopo;
             box.size = new Vector3(tamanho.x / Mathf.Abs(escala.x), tamanho.y / Mathf.Abs(escala.y), tamanho.z / Mathf.Abs(escala.z));
-            topo.AddComponent<JumpForcePlatform>();
+            TopSurface = topo.AddComponent<JumpForcePlatform>();
         }
 
 #if UNITY_EDITOR
