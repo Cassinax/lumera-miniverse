@@ -3,11 +3,11 @@ using UnityEngine;
 namespace Lumera.JumpForce
 {
     // Impulso instantaneo na direcao do eixo X local do ventilador.
-    // O trigger/contato apenas adiciona velocidade ao Rigidbody do jogador.
+    // O trigger/contato aplica o impulso no Rigidbody do jogador (JumpForcePlayer.Launch).
     [DisallowMultipleComponent]
     public sealed class JumpForceVentilador : MonoBehaviour
     {
-        [Tooltip("Mudanca de velocidade em m/s ao longo do eixo X local. Negativo empurra para o -X local.")]
+        [Tooltip("Velocidade de saida em m/s ao longo do eixo X local (substitui a velocidade nessa direcao). Negativo empurra para o -X local.")]
         [SerializeField] private float forca = -12f;
 
         public Vector2 Empurrao

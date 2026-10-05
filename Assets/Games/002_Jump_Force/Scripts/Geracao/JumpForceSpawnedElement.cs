@@ -238,28 +238,9 @@ namespace Lumera.JumpForce
                     parts[i].localRotation = rotations[i];
             }
 
-            Vector3 spawnPosition =
-                record.TopPosition(z) - Vector3.up * Shape.topOffset;
-
-            Rigidbody rb = GetComponent<Rigidbody>();
-
-            if (rb)
-            {
-                rb.position = spawnPosition;
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-            }
-            else
-            {
-                transform.position = spawnPosition;
-            }
-
-            // Informa ao novo motor físico qual é a origem deste elemento
-            // reutilizado pelo pool.
-            var motion = GetComponent<JumpForcePlatformMotion>();
-
-            if (motion)
-                motion.SetOrigin(spawnPosition);
+            // Centro do percurso planejado. O objeto ainda esta inativo: a posicao vale ao ativar.
+            Vector3 centro = record.TopPosition(z) - Vector3.up * Shape.topOffset;
+            transform.position = centro;
 
             if (trampoline)
                 trampoline.gameObject.SetActive(
@@ -304,6 +285,20 @@ namespace Lumera.JumpForce
 
             SetVisible(true);
             gameObject.SetActive(true);
+            ConfigurarMovimento(centro);
+        }
+
+        // O movimento continua sendo do Rigidbody e do motor do proprio objeto; aqui so entra o plano do gerador
+        // (eixo, amplitude, velocidade e sentido), para o percurso real caber no envelope que a rota reservou.
+        void ConfigurarMovimento(Vector3 centro)
+        {
+            Vector3 eixo = node.axis == JumpForceMotionAxis.Y ? Vector3.up : Vector3.right;
+            var motion = GetComponent<JumpForcePlatformMotion>();
+            if (motion) motion.Configurar(centro, eixo, node.amplitude, node.baseSpeed, node.direction);
+            var pillar = GetComponent<JumpForcePilarArco>();
+            if (pillar)
+                pillar.Configurar(centro, node.axis == JumpForceMotionAxis.Y ? JumpForcePilarArco.Eixo.Y : JumpForcePilarArco.Eixo.X,
+                    node.amplitude, node.baseSpeed, node.direction);
         }
 
         public void SetVisible(bool value)

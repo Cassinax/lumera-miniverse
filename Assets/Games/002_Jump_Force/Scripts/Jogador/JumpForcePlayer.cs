@@ -52,10 +52,12 @@ namespace Lumera.JumpForce
         public Camera movementCamera;
         [Min(0)] public float groundSpeed = 3.5f;
         [Min(0)] public float airSpeed = 5f;
-        [Tooltip("Aceleracao usada para atingir a velocidade relativa desejada no chao.")]
+        [Tooltip("Aceleracao do andar no chao, ate a velocidade relativa desejada. Parar e escorregar sao do atrito " +
+                 "(Physics Material do jogador e do chao), nao do codigo.")]
         [Min(0)] public float groundAcceleration = 28f;
-        [Tooltip("Frenagem relativa quando o jogador solta a direcao no chao.")]
-        [Min(0)] public float groundBrakeAcceleration = 36f;
+        [Tooltip("Ao pousar, a velocidade horizontal em relacao ao apoio fica limitada a de andar (Ground Speed), " +
+                 "para um salto longo nao escorregar para fora da plataforma. Impulso unico no pouso, nao atrito.")]
+        public bool pousoFirme = true;
         [Tooltip("Segundos aproximados para inverter totalmente o movimento controlavel no ar.")]
         [Min(0.01f)] public float tempoViradaNoAr = 0.25f;
         [Min(0)] public float visualTurnSpeed = 720f;
@@ -392,11 +394,17 @@ namespace Lumera.JumpForce
             animationDriver?.Land();
         }
 
-        // Impulso fisico adicionado ao Rigidbody. O valor e uma mudanca de velocidade em m/s.
-        public void Launch(Vector2 deltaVelocity)
+        // Impulso fisico no Rigidbody (ForceMode.VelocityChange). O valor e a velocidade de saida em m/s ao longo
+        // da direcao dele: a parte da velocidade atual nessa direcao e substituida (uma queda nao enfraquece o
+        // trampolim; quem ja vai mais rapido no mesmo sentido nao e freado). O resto da velocidade continua.
+        public void Launch(Vector2 velocidadeSaida)
         {
-            if (Dead || !GameplayEnabled || deltaVelocity == Vector2.zero)
+            if (Dead || !GameplayEnabled || velocidadeSaida == Vector2.zero)
                 return;
+
+            Vector2 direcao = velocidadeSaida.normalized;
+            float atual = Vector2.Dot(body.linearVelocity, direcao);
+            Vector2 deltaVelocity = direcao * Mathf.Max(0f, velocidadeSaida.magnitude - atual);
 
             if (Charging || deferredTapHeight.HasValue)
                 CancelCharge();
@@ -410,7 +418,7 @@ namespace Lumera.JumpForce
                 ForceMode.VelocityChange
             );
 
-            if (deltaVelocity.y > 0.01f)
+            if (velocidadeSaida.y > 0.01f)
             {
                 Grounded = false;
                 Support = null;
@@ -533,6 +541,11 @@ namespace Lumera.JumpForce
                             DireitaDaTela().x;
                     }
 
+                    // A subida sai cheia em relacao ao apoio (plataforma ou pilar que sobe ou desce), tambem
+                    // no salto de parede, em que o jogador estava deslizando para baixo.
+                    float apoioY = Grounded && Support ? Support.Velocity.y : 0f;
+                    verticalImpulse += apoioY - body.linearVelocity.y;
+
                     body.AddForce(
                         new Vector3(horizontalImpulse, verticalImpulse, 0f),
                         ForceMode.VelocityChange
@@ -569,20 +582,18 @@ namespace Lumera.JumpForce
 
             MoveHorizontally(dt);
 
-            if (!Grounded)
+            // A gravidade base vem do Rigidbody; o multiplicador excedente vale sempre, tambem no chao, para o
+            // peso (e o atrito do Physics Material) ser o mesmo que o salto usa.
+            if (Mathf.Abs(gravityMultiplier - 1f) > 0.0001f)
             {
-                // A gravidade base vem do Rigidbody. Apenas o multiplicador excedente
-                // e aplicado como aceleracao adicional.
-                if (Mathf.Abs(gravityMultiplier - 1f) > 0.0001f)
-                {
-                    body.AddForce(
-                        Physics.gravity * (gravityMultiplier - 1f),
-                        ForceMode.Acceleration
-                    );
-                }
-
-                ApplyWallSlide();
+                body.AddForce(
+                    Physics.gravity * (gravityMultiplier - 1f),
+                    ForceMode.Acceleration
+                );
             }
+
+            if (!Grounded)
+                ApplyWallSlide();
 
             if (body.linearVelocity.y < -maximumFallSpeed)
             {
@@ -637,7 +648,7 @@ namespace Lumera.JumpForce
             JumpForcePlatform found = null;
             float bestTop = float.NegativeInfinity;
 
-            if (takeoffGrace <= 0f && body.linearVelocity.y <= 0.5f)
+            if (takeoffGrace <= 0f)
             {
                 foreach (JumpForcePlatform platform in JumpForcePlatform.Active)
                 {
@@ -647,6 +658,11 @@ namespace Lumera.JumpForce
                         !platform.Surface.enabled ||
                         platform.Surface.isTrigger
                     )
+                        continue;
+
+                    // Subindo em relacao a plataforma (saindo dela) nao e apoio. Relativo: em cima de um pilar
+                    // que sobe, o jogador sobe junto e continua no chao.
+                    if (body.linearVelocity.y - platform.Velocity.y > 0.5f)
                         continue;
 
                     float top = platform.Top;
@@ -686,6 +702,14 @@ namespace Lumera.JumpForce
 
                 if (!wasGrounded)
                 {
+                    if (pousoFirme)
+                    {
+                        float relativo = body.linearVelocity.x - found.Velocity.x;
+                        float limitado = Mathf.Clamp(relativo, -groundSpeed, groundSpeed);
+                        if (!Mathf.Approximately(relativo, limitado))
+                            body.AddForce(Vector3.right * (limitado - relativo), ForceMode.VelocityChange);
+                    }
+
                     animationDriver?.Land();
                     JumpForceEventos.AvisarPouso(Mathf.Max(0f, -previousVerticalSpeed));
                 }
@@ -831,18 +855,20 @@ namespace Lumera.JumpForce
 
             if (Grounded)
             {
+                // So o comando gera forca. Sem comando, ou ja mais rapido no mesmo sentido, quem freia e o atrito.
                 float desiredRelativeSpeed =
                     command * groundSpeed * screenDirection;
 
-                float acceleration =
-                    Mathf.Abs(command) > 0.01f
-                        ? groundAcceleration
-                        : groundBrakeAcceleration;
+                float acceleration = groundAcceleration;
 
                 float speedError =
                     desiredRelativeSpeed - relativeSpeedX;
 
-                if (Mathf.Abs(speedError) > 0.001f && acceleration > 0f)
+                bool alreadyFaster =
+                    relativeSpeedX * desiredRelativeSpeed > 0f &&
+                    Mathf.Abs(relativeSpeedX) >= Mathf.Abs(desiredRelativeSpeed);
+
+                if (Mathf.Abs(command) > 0.01f && !alreadyFaster && Mathf.Abs(speedError) > 0.001f && acceleration > 0f)
                 {
                     float requestedAcceleration =
                         Mathf.Clamp(
@@ -872,7 +898,11 @@ namespace Lumera.JumpForce
                     Mathf.Sign(relativeSpeedX) == desiredDirection &&
                     Mathf.Abs(relativeSpeedX) >= airSpeed;
 
-                if (!alreadyFasterSameDirection)
+                // Encostado no pilar e empurrando para dentro dele: a forca so empurraria o pilar.
+                bool pushingIntoPillar =
+                    wallContact && desiredDirection * wallNormalX < 0f;
+
+                if (!alreadyFasterSameDirection && !pushingIntoPillar)
                 {
                     body.AddForce(
                         Vector3.right * desiredDirection * acceleration * Mathf.Abs(command),

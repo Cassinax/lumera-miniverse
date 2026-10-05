@@ -2,153 +2,78 @@ using UnityEngine;
 
 namespace Lumera.JumpForce
 {
+    // Plataforma movel por forca (Rigidbody dinamico, sem gravidade): vai e volta em um eixo do plano X/Y.
+    // Colocada na cena, usa Amplitude e Period daqui; gerada pelo Spawner, recebe o plano do gerador em Configurar.
     [DefaultExecutionOrder(-300), DisallowMultipleComponent, RequireComponent(typeof(JumpForcePlatform), typeof(Rigidbody))]
     public sealed class JumpForcePlatformMotion : MonoBehaviour
     {
-        Rigidbody body;
-
-        [Header("Motor fisico")]
-        [Min(0.1f)] public float motorForce = 500f;
+        [Header("Motor fisico (newtons: a massa da plataforma e de quem esta em cima contam)")]
+        [Tooltip("Forca maxima para acelerar ate a velocidade de cruzeiro.")]
+        [Min(0.1f)] public float motorForce = 900f;
+        [Tooltip("Forca maxima do freio perto dos extremos. Abaixo do atrito do jogador (cerca de 10 m/s2 de desaceleracao) ele e levado sem escorregar.")]
         [Min(0.1f)] public float brakeForce = 1200f;
-        [Min(0.01f)] public float brakeDistance = 0.35f;
+        [Tooltip("Distancia ao extremo que ja conta como chegada (inverte o sentido).")]
         [Min(0.01f)] public float endpointTolerance = 0.03f;
 
-        [Tooltip("Amplitude em metros no espaco global. Zero mantem a plataforma parada.")]
+        [Header("Percurso (plataforma colocada na cena)")]
+        [Tooltip("Amplitude em metros no espaco global, para cada lado. Zero mantem a plataforma parada.")]
         public Vector3 amplitude = Vector3.zero;
+        [Tooltip("Segundos para ir e voltar; define a velocidade maxima (4 x amplitude / periodo).")]
         [Min(0.1f)] public float period = 4;
         [Range(0, 1)] public float phase;
         [Tooltip("Sorteia, ao iniciar, se a plataforma vai primeiro no sentido da amplitude ou no oposto.")]
         public bool randomStartDirection = true;
-        Vector3 origin;
-        Quaternion initialRotation;
-        float elapsed, direction = 1;
+
+        public Vector3 Centro => centro;
+        public float VelocidadeMaxima => velocidadeMaxima;
+
+        Rigidbody body;
+        Vector3 centro, eixo = Vector3.right;
+        float distancia, velocidadeMaxima, sentido = 1;
 
         void Awake()
         {
             body = GetComponent<Rigidbody>();
-
-            origin = body.position;
-            initialRotation = body.rotation;
-
             body.isKinematic = false;
             body.useGravity = false;
             body.interpolation = RigidbodyInterpolation.Interpolate;
-
-            // A plataforma se move em apenas um eixo do plano X/Y.
-            // O eixo Z permanece sempre travado.
-            RigidbodyConstraints constraints =
-                RigidbodyConstraints.FreezeRotation |
-                RigidbodyConstraints.FreezePositionZ;
-
-            if (Mathf.Abs(amplitude.x) >= Mathf.Abs(amplitude.y))
-                constraints |= RigidbodyConstraints.FreezePositionY;
-            else
-                constraints |= RigidbodyConstraints.FreezePositionX;
-
-            body.constraints = constraints;
-
-            if (randomStartDirection)
-                direction = Random.value < 0.5f ? -1f : 1f;
+            bool horizontal = Mathf.Abs(amplitude.x) >= Mathf.Abs(amplitude.y);
+            float metros = horizontal ? Mathf.Abs(amplitude.x) : Mathf.Abs(amplitude.y);
+            Configurar(body.position, horizontal ? Vector3.right : Vector3.up, metros,
+                4f * metros / Mathf.Max(0.1f, period), randomStartDirection ? (Random.value < 0.5f ? -1 : 1) : 1);
         }
 
-        void FixedUpdate()
+        // centro: meio do percurso. eixo: Vector3.right ou Vector3.up. distancia: metros para cada lado (0 = parada).
+        // Coloca a plataforma no centro, parada, com as travas do eixo.
+        public void Configurar(Vector3 novoCentro, Vector3 novoEixo, float novaDistancia, float novaVelocidade, int novoSentido)
         {
-            Vector3 eixo;
-            float distanciaMaxima;
-
-            if (Mathf.Abs(amplitude.x) >= Mathf.Abs(amplitude.y))
+            if (!body) body = GetComponent<Rigidbody>();
+            centro = novoCentro;
+            eixo = novoEixo.sqrMagnitude > 0.0001f ? novoEixo.normalized : Vector3.right;
+            distancia = Mathf.Max(0, novaDistancia);
+            velocidadeMaxima = Mathf.Max(0.1f, novaVelocidade);
+            sentido = novoSentido < 0 ? -1 : 1;
+            amplitude = eixo * distancia;
+            body.constraints = JumpForceMotorFisico.Travas(eixo, distancia);
+            body.position = centro;
+            if (!body.isKinematic)
             {
-                eixo = Vector3.right;
-                distanciaMaxima = Mathf.Abs(amplitude.x);
-            }
-            else
-            {
-                eixo = Vector3.up;
-                distanciaMaxima = Mathf.Abs(amplitude.y);
-            }
-
-            if (distanciaMaxima <= 0.0001f)
-            {
-                body.linearVelocity = Vector3.zero;
-                return;
-            }
-
-            Vector3 destino = origin + eixo * distanciaMaxima * direction;
-
-            float distanciaRestante =
-                Vector3.Dot(destino - body.position, eixo) * direction;
-
-            float velocidadeNoEixo =
-                Vector3.Dot(body.linearVelocity, eixo);
-
-            // Velocidade de cruzeiro equivalente ao antigo "period":
-            // percorre ida e volta aproximadamente dentro do período configurado.
-            float velocidadeMaxima =
-                Mathf.Max(0.1f, 4f * distanciaMaxima / Mathf.Max(0.1f, period));
-
-            // Chegou ao extremo: para e começa o retorno.
-            if (distanciaRestante <= endpointTolerance)
-            {
-                Vector3 velocidade = body.linearVelocity;
-                velocidade -= eixo * velocidadeNoEixo;
-                body.linearVelocity = velocidade;
-
-                body.position = destino;
-
-                direction = -direction;
-                return;
-            }
-
-            // Freio curto e forte perto do destino.
-            if (distanciaRestante <= brakeDistance)
-            {
-                if (Mathf.Abs(velocidadeNoEixo) > 0.01f)
-                {
-                    body.AddForce(
-                        -eixo * Mathf.Sign(velocidadeNoEixo) * brakeForce,
-                        ForceMode.Force
-                    );
-                }
-
-                return;
-            }
-
-            // Motor: tenta atingir a velocidade de cruzeiro no sentido atual.
-            float velocidadeDesejada = velocidadeMaxima * direction;
-            float erroVelocidade = velocidadeDesejada - velocidadeNoEixo;
-
-            if (Mathf.Abs(erroVelocidade) > 0.01f)
-            {
-                body.AddForce(
-                    eixo * Mathf.Sign(erroVelocidade) * motorForce,
-                    ForceMode.Force
-                );
-            }
-        }
-        public void SetOrigin(Vector3 newOrigin)
-        {
-            origin = newOrigin;
-
-            if (!body)
-                body = GetComponent<Rigidbody>();
-
-            if (body)
-            {
-                body.position = newOrigin;
                 body.linearVelocity = Vector3.zero;
                 body.angularVelocity = Vector3.zero;
-
-                initialRotation = body.rotation;
             }
-            else
-            {
-                transform.position = newOrigin;
-                initialRotation = transform.rotation;
-            }
-
-            direction = randomStartDirection
-                ? (Random.value < 0.5f ? -1f : 1f)
-                : 1f;
         }
+
+        void FixedUpdate() =>
+            JumpForceMotorFisico.Aplicar(body, centro, eixo, distancia, velocidadeMaxima, motorForce, brakeForce, endpointTolerance, ref sentido);
+
+#if UNITY_EDITOR
+        void OnDrawGizmosSelected()
+        {
+            Vector3 meio = Application.isPlaying ? centro : transform.position;
+            Vector3 lado = Application.isPlaying ? eixo * distancia : amplitude;
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(meio - lado, meio + lado);
+        }
+#endif
     }
 }

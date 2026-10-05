@@ -136,7 +136,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6387708242225370226}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 1e709a9f6b684ca4f9d0008c37f5c8a4, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -169,7 +169,9 @@ MonoBehaviour:
   tiltSensitivity: 2.5
   tiltSmoothing: 8
   invertTilt: 0
-  mouseAsTouch: 1
+  stickDeadZone: 0.2
+  padDeadZone: 0.2
+  padArrowSpeed: 1.5
 --- !u!114 &8182250728086957446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,14 +208,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlayer
   input: {fileID: 9034177216035967105}
   score: {fileID: 0}
-  invisibleWalls: []
+  animationDriver: {fileID: 8182250728086957446}
+  visual: {fileID: 5008387681636680152}
   wallAttraction: 3
   wallSlideDrag: 5
   wallSlideSpeed: 2
   wallProbeDistance: 0.1
   wallJumpAwaySpeed: 2.5
-  animationDriver: {fileID: 8182250728086957446}
-  visual: {fileID: 5008387681636680152}
   minimumJumpHeight: 0.45
   maximumJumpHeight: 6.5
   fullChargeSeconds: 1
@@ -243,20 +244,27 @@ MonoBehaviour:
     m_RotationOrder: 4
   gravityMultiplier: 1.8
   maximumFallSpeed: 28
+  direcaoPulo: {fileID: 5483662344048922275}
+  seta: {fileID: 5773859761357117771}
+  anguloMaximo: 70
+  tamanhoSetaMinimo: 0.6
+  tamanhoSetaMaximo: 1.2
   doubleTapWindow: 0.25
   quickTapDuration: 0.12
   doubleTapChargeMultiplier: 2
   movementCamera: {fileID: 0}
   groundSpeed: 3.5
   airSpeed: 5
+  groundAcceleration: 40
+  pousoFirme: 1
+  tempoViradaNoAr: 0.25
   visualTurnSpeed: 1500
+  velocidadeMinimaParaVirar: 0.3
   lockZ: 1
-  externalHorizontalDrag: 2.5
-  externalGroundDrag: 8
   assistanceEnabled: 1
   assistanceRange: 2.5
-  repulsionSpeed: 1
-  attractionSpeed: 1
+  repulsionAcceleration: 8
+  attractionAcceleration: 6
   assistanceWhileSteering: 0.15
   searchRadius: 8
   verticalDistanceWeight: 0.5
@@ -264,6 +272,7 @@ MonoBehaviour:
   targetHysteresis: 1.2
   contactTolerance: 0.06
   groundProbeDistance: 0.08
+  platformBrakeSyncThreshold: 0.2
   onJump:
     m_PersistentCalls:
       m_Calls: []
@@ -273,8 +282,6 @@ MonoBehaviour:
   onDeath:
     m_PersistentCalls:
       m_Calls: []
-  direcaoPulo: {fileID: 5483662344048922275}
-  seta: {fileID: 5773859761357117771}
 --- !u!1 &7971880307291355066
 GameObject:
   m_ObjectHideFlags: 0

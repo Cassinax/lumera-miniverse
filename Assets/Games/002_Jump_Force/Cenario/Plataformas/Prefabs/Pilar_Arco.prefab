@@ -78,7 +78,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8360736158262500850}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 0a7f64cdbb119804bb09d1f8c5ad6699, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -106,6 +106,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46d52e1210a7df74a97f868fff7c23b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpForcePilarArco
+  motorForce: 3000
+  brakeForce: 5000
+  endpointTolerance: 0.03
   eixo: 0
   amplitude: 2
   period: 4
@@ -113,6 +116,7 @@ MonoBehaviour:
   randomStartDirection: 1
   topoContaComoChao: 1
   larguraTopo: 0.7
+  materialTopo: {fileID: 13400000, guid: 4708e3a7c9757d24ab51868a8b18bf53, type: 2}
 --- !u!54 &2171040454902257885
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -121,7 +125,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8360736158262500850}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 200
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -135,7 +139,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0

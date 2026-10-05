@@ -438,7 +438,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 258961684}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 0a7f64cdbb119804bb09d1f8c5ad6699, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -3914,14 +3914,8 @@ MonoBehaviour:
   anticipationSeconds: 2
   initialPerType: 10
   activationLeadSeconds: 0.5
-  speedChangeInterval: {x: 1, y: 3}
-  speedAcceleration: 1.5
-  endEaseDistance: 0.8
   viewportMargin: 0.05
   currentLevel: 0
-  currentTier: 0
-  plannedThrough: 0
-  activeElements: 0
   createdPlatforms: 0
   createdPillars: 0
   runSeed: 0
@@ -4428,7 +4422,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1595250947}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 0a7f64cdbb119804bb09d1f8c5ad6699, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0

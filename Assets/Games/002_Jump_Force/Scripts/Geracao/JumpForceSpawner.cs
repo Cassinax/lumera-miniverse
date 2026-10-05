@@ -23,18 +23,10 @@ namespace Lumera.JumpForce
         [Min(10)] public int initialPerType = 10;
         [Tooltip("Objetos fisicos acompanham a camera e a velocidade; o restante existe apenas no mapa.")]
         [Min(0.1f)] public float activationLeadSeconds = 0.5f;
-        [Header("Movimento")]
-        [Tooltip("Intervalo, em segundos, entre sorteios de velocidade. A variacao de cada faixa fica em Settings > Tiers.")]
-        public Vector2 speedChangeInterval = new Vector2(1, 3);
-        [Tooltip("Aceleracao, em m/s2, ao trocar de velocidade. Zero troca na hora.")]
-        [Min(0)] public float speedAcceleration = 1.5f;
-        [Tooltip("Distancia, em metros, em que o elemento desacelera antes de cada ponta e acelera ao sair dela.")]
-        [Min(0)] public float endEaseDistance = 0.8f;
         [Header("Visibilidade")]
         [Range(0, 0.5f)] public float viewportMargin = 0.05f;
         [Header("Estado atual (leitura)")]
         [SerializeField] int currentLevel;
-        [Tooltip("Faixa de dificuldade do nivel em que o jogador esta.")]
         [SerializeField] int createdPlatforms;
         [SerializeField] int createdPillars;
         [SerializeField] int runSeed;

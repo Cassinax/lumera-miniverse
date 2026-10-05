@@ -4,11 +4,11 @@ using UnityEngine.Serialization;
 namespace Lumera.JumpForce
 {
     // Impulso instantaneo na direcao do eixo Y local do trampolim.
-    // O jogador recebe a mudanca de velocidade no proprio Rigidbody.
+    // O jogador recebe o impulso no proprio Rigidbody (JumpForcePlayer.Launch).
     [DisallowMultipleComponent]
     public sealed class JumpForceTrampolim : MonoBehaviour
     {
-        [Tooltip("Mudanca de velocidade em m/s ao longo do eixo Y local. Negativo impulsiona para o -Y local.")]
+        [Tooltip("Velocidade de saida em m/s ao longo do eixo Y local (substitui a velocidade nessa direcao). Negativo impulsiona para o -Y local.")]
         [SerializeField, FormerlySerializedAs("forcaMaxima")]
         private float forca = 20f;
 
