@@ -213,8 +213,6 @@ MonoBehaviour:
   wallAttraction: 3
   wallSlideDrag: 5
   wallSlideSpeed: 2
-  wallProbeDistance: 0.1
-  wallJumpAwaySpeed: 2.5
   minimumJumpHeight: 0.45
   maximumJumpHeight: 6.5
   fullChargeSeconds: 1
@@ -247,17 +245,19 @@ MonoBehaviour:
   direcaoPulo: {fileID: 5483662344048922275}
   seta: {fileID: 5773859761357117771}
   anguloMaximo: 70
-  tamanhoSetaMinimo: 0.6
-  tamanhoSetaMaximo: 1.2
+  margemPuloVertical: 5
+  toleranciaParado: 0.15
+  tamanhoSetaMinimo: 0.1
+  tamanhoSetaMaximo: 2.5
   doubleTapWindow: 0.25
   quickTapDuration: 0.12
   doubleTapChargeMultiplier: 2
   movementCamera: {fileID: 0}
   groundSpeed: 3.5
-  airSpeed: 5
+  airSpeed: 1
   groundAcceleration: 40
   pousoFirme: 1
-  tempoViradaNoAr: 0.25
+  tempoViradaNoAr: 0.01
   visualTurnSpeed: 1500
   velocidadeMinimaParaVirar: 0.3
   lockZ: 1
@@ -271,8 +271,6 @@ MonoBehaviour:
   facingPreference: 1.4
   targetHysteresis: 1.2
   contactTolerance: 0.06
-  groundProbeDistance: 0.08
-  platformBrakeSyncThreshold: 0.2
   onJump:
     m_PersistentCalls:
       m_Calls: []

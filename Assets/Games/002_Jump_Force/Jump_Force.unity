@@ -535,7 +535,7 @@ Transform:
   m_GameObject: {fileID: 295430045}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.5, z: -14}
+  m_LocalPosition: {x: 0, y: 2.5, z: -14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2501,37 +2501,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2130574733}
     - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
-      propertyPath: airSpeed
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
       propertyPath: movementCamera
       value: 
       objectReference: {fileID: 2065248606}
-    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
-      propertyPath: tempoViradaNoAr
-      value: 0.01
-      objectReference: {fileID: 0}
-    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
-      propertyPath: tamanhoSetaMaximo
-      value: 2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
-      propertyPath: tamanhoSetaMinimo
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
-      propertyPath: invisibleWalls.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
-      propertyPath: 'invisibleWalls.Array.data[0]'
-      value: 
-      objectReference: {fileID: 258961686}
-    - target: {fileID: 960174193935266852, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
-      propertyPath: 'invisibleWalls.Array.data[1]'
-      value: 
-      objectReference: {fileID: 1595250949}
     - target: {fileID: 4635189979873005393, guid: ea2387e13d5578c4c9d966312697b094, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -5317,7 +5289,7 @@ Transform:
   m_GameObject: {fileID: 2065248604}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.5, z: -14}
+  m_LocalPosition: {x: 0, y: 2.5, z: -14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
