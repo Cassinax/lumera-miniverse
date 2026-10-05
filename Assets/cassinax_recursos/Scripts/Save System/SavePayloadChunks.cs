@@ -1,6 +1,4 @@
-// Cassinax Unity System Save
-// Version: v0.10.0
-// Status: integration-pilot
+// Cassinax Unity System Save - v1.0.0
 
 using System;
 using System.Collections.Generic;

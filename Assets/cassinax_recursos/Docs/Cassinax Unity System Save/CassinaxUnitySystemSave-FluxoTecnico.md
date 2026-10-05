@@ -1,4 +1,4 @@
-# Cassinax Unity System Save 0.10.0 - Fluxo tecnico
+# Cassinax Unity System Save 1.0.0 - Fluxo tecnico
 
 Data: 2026-09-09. Status: piloto de integracao.
 Este documento descreve garantias implementadas e limites observados, nao uma
@@ -188,6 +188,6 @@ A suite deterministica valida o protocolo local, nao substitui essa homologacao.
 ## Distribuicao
 
 PackageManifests/CassinaxUnitySystemSave.json e a lista permitida.
-Tools/ExportSavePackage.ps1 gera Cassinax Unity System Save (0.10.0).unitypackage
+Tools/ExportSavePackage.ps1 gera Cassinax Unity System Save (1.0.0).unitypackage
 em Packs e verifica pathnames/hashes. Inclui somente os arquivos listados, metas
 e pastas ancestrais. Os pacotes anteriores permanecem intactos.

@@ -1,4 +1,4 @@
-// Cassinax Unity System Save - v0.10.0
+// Cassinax Unity System Save - v1.0.0
 using System;
 using System.IO;
 using System.Linq;

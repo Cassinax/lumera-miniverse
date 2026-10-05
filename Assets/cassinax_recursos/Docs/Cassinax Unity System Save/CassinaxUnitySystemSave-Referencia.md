@@ -1,4 +1,4 @@
-# Cassinax Unity System Save 0.10.0 - Referencia
+# Cassinax Unity System Save 1.0.0 - Referencia
 
 Piloto de integracao. Codec 2. Atualizacao: 2026-09-09.
 O template e uma fachada adaptavel, sem regras de um jogo ou servidor proprio
@@ -16,7 +16,7 @@ preferencias locais. Campos conhecidos de SLG0001, CUSS e identidade SLG0003 sao
 reservados. Configuracoes adicionais em SLG0001 seguem a regra declarada:
 nao desaparecem porque compartilham o grupo do cabecalho.
 
-Tools/Cassinax/Save/Create Local-only Example cria objeto com ID e chave de
+Window > Cassinax > Exemplo de Save Local cria objeto com ID e chave de
 exemplo. Em Play Mode, Commit example checkpoint grava um checkpoint sem internet.
 
 ## Transacoes e leitura
@@ -175,7 +175,7 @@ aplicacao tardia. Gameplay local continua disponivel.
 
 EstadoAlterado, ErroTipado, ConflitoEncontrado, ProgressoAplicado,
 ResetSolicitado e ResetConfirmado permitem UI e localization do jogo.
-SaveAdapterExamples fornece ChooseLocal/ChooseIncoming/Defer, um painel opcional
+SaveAdapterExemploCena fornece ChooseLocal/ChooseIncoming/Defer, um painel opcional
 e a chave save.conflict, para conectar a botoes/textos existentes sem impor layout.
 
 ## Exemplo opcional Web/site

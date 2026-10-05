@@ -1,6 +1,4 @@
-// Cassinax Unity System Save
-// Version: v0.9.0
-// Status: integration-pilot
+// Cassinax Unity System Save - v1.0.0
 //
 // Ponte WebGL entre a pagina do site Cassinax e o CassinaxSiteSaveApi (C#).
 // Le as variaveis que o index.php do jogo publica antes do loader, conforme o

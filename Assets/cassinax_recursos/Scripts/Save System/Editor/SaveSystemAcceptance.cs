@@ -1,4 +1,4 @@
-// Cassinax Unity System Save - v0.10.0
+// Cassinax Unity System Save - v1.0.0
 // Tests and fake providers are excluded from players, including Development Builds.
 #if UNITY_EDITOR || SAVE_STANDALONE
 using System;
@@ -118,7 +118,7 @@ public static class CassinaxSaveAcceptance
         return "[1]" + core.Encrypt(text);
     }
 #if UNITY_EDITOR
-    [UnityEditor.MenuItem("Tools/Cassinax/Save/Run Acceptance Tests")]
+    // Chamado pela janela do pacote e por -executeMethod em modo batch.
     public static void RunBatch() { Run(Array.Empty<string>()); }
 #endif
     public static int Run(string[] args)
