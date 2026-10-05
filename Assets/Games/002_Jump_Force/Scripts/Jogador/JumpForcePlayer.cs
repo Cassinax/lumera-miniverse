@@ -86,7 +86,6 @@ namespace Lumera.JumpForce
         [Min(0.001f)] public float contactTolerance = 0.06f;
         [Min(0)] public float groundProbeDistance = 0.08f;
         [Tooltip("Mudanca minima de velocidade do suporte para sincronizar uma frenagem brusca.")]
-        [Min(0)] public float platformBrakeSyncThreshold = 0.2f;
 
         [Header("Eventos")]
         public UnityEvent onJump = new();
@@ -397,14 +396,10 @@ namespace Lumera.JumpForce
         // Impulso fisico no Rigidbody (ForceMode.VelocityChange). O valor e a velocidade de saida em m/s ao longo
         // da direcao dele: a parte da velocidade atual nessa direcao e substituida (uma queda nao enfraquece o
         // trampolim; quem ja vai mais rapido no mesmo sentido nao e freado). O resto da velocidade continua.
-        public void Launch(Vector2 velocidadeSaida)
+        public void Launch(Vector2 impulso)
         {
-            if (Dead || !GameplayEnabled || velocidadeSaida == Vector2.zero)
+            if (Dead || !GameplayEnabled || impulso == Vector2.zero)
                 return;
-
-            Vector2 direcao = velocidadeSaida.normalized;
-            float atual = Vector2.Dot(body.linearVelocity, direcao);
-            Vector2 deltaVelocity = direcao * Mathf.Max(0f, velocidadeSaida.magnitude - atual);
 
             if (Charging || deferredTapHeight.HasValue)
                 CancelCharge();
@@ -414,16 +409,20 @@ namespace Lumera.JumpForce
             launchPlatform = null;
 
             body.AddForce(
-                new Vector3(deltaVelocity.x, deltaVelocity.y, 0f),
+                new Vector3(impulso.x, impulso.y, 0f),
                 ForceMode.VelocityChange
             );
 
-            if (velocidadeSaida.y > 0.01f)
+            // Se o impulso possuir componente vertical, deixa de estar apoiado.
+            if (Mathf.Abs(impulso.y) > 0.01f)
             {
                 Grounded = false;
                 Support = null;
                 ResetSupportVelocityTracking();
-                takeoffGrace = TakeoffGrace;
+
+                if (impulso.y > 0f)
+                    takeoffGrace = TakeoffGrace;
+
                 animationDriver?.Release();
             }
         }
@@ -746,16 +745,20 @@ namespace Lumera.JumpForce
                 return;
             }
 
-            Vector3 delta = currentVelocity - previousSupportVelocity;
+            Vector3 delta =
+                currentVelocity - previousSupportVelocity;
 
-            // Sincroniza somente mudancas que estejam freando/revertendo o suporte.
-            // A aceleracao normal continua sendo transmitida pelo contato fisico.
             bool braking =
                 Vector3.Dot(previousSupportVelocity, delta) < 0f ||
                 Vector3.Dot(previousSupportVelocity, currentVelocity) < 0f;
 
-            if (braking && delta.magnitude >= platformBrakeSyncThreshold)
-                body.AddForce(delta, ForceMode.VelocityChange);
+            if (braking && delta.sqrMagnitude > 0.000001f)
+            {
+                body.AddForce(
+                    delta,
+                    ForceMode.VelocityChange
+                );
+            }
 
             previousSupportVelocity = currentVelocity;
         }
@@ -1093,15 +1096,22 @@ namespace Lumera.JumpForce
                 if (!platform || !platform.Surface || !capsule)
                     continue;
 
+                float relativeVerticalSpeed =
+                    body.linearVelocity.y - platform.Velocity.y;
+
                 bool ignore =
                     !platform.startingGround &&
                     platform != Support &&
                     (
-                        body.linearVelocity.y > 0.01f ||
+                        relativeVerticalSpeed > 0.01f ||
                         FeetY < platform.Top - contactTolerance
                     );
 
-                Physics.IgnoreCollision(capsule, platform.Surface, ignore);
+                Physics.IgnoreCollision(
+                    capsule,
+                    platform.Surface,
+                    ignore
+                );
             }
         }
 
