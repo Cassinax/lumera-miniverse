@@ -11,7 +11,7 @@ namespace Lumera.JumpForce
         public JumpForceElementShape Shape { get; private set; }
         public Bounds WorldBounds
         {
-            get { var bounds = node != null && node.special == JumpForceSpecial.Fan ? Shape.fanBodyFromTop : Shape.bodyFromTop; bounds.center += transform.position + Vector3.up * Shape.topOffset; return bounds; }
+            get { var bounds = node != null && node.special == JumpForceSpecial.Fan ? (node.fanSpinY != 0 ? Shape.rotatingFanBodyFromTop : Shape.fanBodyFromTop) : Shape.bodyFromTop; bounds.center += transform.position + Vector3.up * Shape.topOffset; return bounds; }
         }
         public JumpForceElementKind Kind { get; private set; }
         Renderer[] renderers;
@@ -20,6 +20,8 @@ namespace Lumera.JumpForce
         JumpForceCoin coin;
         Vector3 coinLocalPosition;
         Quaternion fanRotation;
+        JumpForceGirador fanSpinner;
+        JumpForcePlatform baseSurface;
         bool visible = true;
         Transform[] parts;
         Quaternion[] rotations;
@@ -54,7 +56,10 @@ namespace Lumera.JumpForce
                 AccessoryRoot(fanComponent ? fanComponent.transform : null);
 
             if (fan)
+            {
                 fanRotation = fan.localRotation;
+                fanSpinner = fan.GetComponent<JumpForceGirador>();
+            }
 
             coin =
                 GetComponentInChildren<JumpForceCoin>(true);
@@ -65,6 +70,7 @@ namespace Lumera.JumpForce
             var surface =
                 GetComponent<JumpForcePlatform>();
 
+            baseSurface = surface;
             Bounds body = default;
             Bounds fanBody = default;
 
@@ -124,10 +130,21 @@ namespace Lumera.JumpForce
                     ? ColliderBounds(surface.GetComponent<BoxCollider>()).max.y
                     : body.max.y;
 
+            Bounds rotatingFanBody = body;
             if (firstFan)
                 fanBody = body;
             else
+            {
+                // Reserve the body's whole Y rotation, while the wind remains a trigger.
+                Vector3 pivot = fan.position;
+                float dx = Mathf.Max(Mathf.Abs(fanBody.min.x - pivot.x), Mathf.Abs(fanBody.max.x - pivot.x));
+                float dz = Mathf.Max(Mathf.Abs(fanBody.min.z - pivot.z), Mathf.Abs(fanBody.max.z - pivot.z));
+                float radius = Mathf.Sqrt(dx * dx + dz * dz);
+                rotatingFanBody = new Bounds(new Vector3(pivot.x, fanBody.center.y, pivot.z),
+                    new Vector3(2 * radius, fanBody.size.y, 2 * radius));
+                rotatingFanBody.Encapsulate(body);
                 fanBody.Encapsulate(body);
+            }
 
             Vector3 reference =
                 new Vector3(
@@ -138,6 +155,7 @@ namespace Lumera.JumpForce
 
             body.center -= reference;
             fanBody.center -= reference;
+            rotatingFanBody.center -= reference;
 
             float halfX =
                 Mathf.Max(
@@ -166,6 +184,7 @@ namespace Lumera.JumpForce
                 {
                     bodyFromTop = body,
                     fanBodyFromTop = fanBody,
+                    rotatingFanBodyFromTop = rotatingFanBody,
                     topOffset = top - transform.position.y,
                     baseSpeed = Mathf.Max(0.1f, speed)
                 };
@@ -231,6 +250,7 @@ namespace Lumera.JumpForce
         public void Assign(JumpForceTrailNode record, float z, JumpForceScore score)
         {
             node = record;
+            if (baseSurface) baseSurface.instantJump = record.special == JumpForceSpecial.Fan && record.fanSpinY != 0;
 
             for (int i = 0; i < parts.Length; i++)
             {
@@ -253,6 +273,7 @@ namespace Lumera.JumpForce
                     record.special == JumpForceSpecial.Fan
                 );
 
+                if (fanSpinner) fanSpinner.DefinirVelocidadeY(record.fanSpinY);
                 var euler = fanRotation.eulerAngles;
 
                 fan.localRotation =
@@ -292,6 +313,8 @@ namespace Lumera.JumpForce
         // (eixo, amplitude, velocidade e sentido), para o percurso real caber no envelope que a rota reservou.
         void ConfigurarMovimento(Vector3 centro)
         {
+            Vector3 inicio = centro;
+            centro += Vector3.right * node.motionCenterOffsetX;
             Vector3 eixo = node.axis == JumpForceMotionAxis.Y ? Vector3.up : Vector3.right;
             var motion = GetComponent<JumpForcePlatformMotion>();
             if (motion) motion.Configurar(centro, eixo, node.amplitude, node.baseSpeed, node.direction);
@@ -299,6 +322,12 @@ namespace Lumera.JumpForce
             if (pillar)
                 pillar.Configurar(centro, node.axis == JumpForceMotionAxis.Y ? JumpForcePilarArco.Eixo.Y : JumpForcePilarArco.Eixo.X,
                     node.amplitude, node.baseSpeed, node.direction);
+            // The motor's center can differ from the birth lane (full-width corner fan).
+            if (node.motionCenterOffsetX != 0 && TryGetComponent<Rigidbody>(out var body))
+            {
+                body.position = inicio;
+                transform.position = inicio;
+            }
         }
 
         public void SetVisible(bool value)

@@ -11,7 +11,7 @@ namespace Lumera.JumpForce
         public void OnPointerDown(PointerEventData dados)
         {
             if (player && player.PuloSimplesDisponivel)
-                player.BeginCharge();
+                player.PularInstantaneamente();
         }
     }
 }

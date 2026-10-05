@@ -32,7 +32,7 @@ namespace Lumera.JumpForce
             MostrarControles(!player.Dead);
             if (status) status.text = player.Dead ? "" : player.Charging
                 ? "Arraste PULAR: direcao e forca do salto. Solte para saltar; no centro cancela."
-                : player.PuloSimplesDisponivel ? "Toque PULAR para saltar pela lateral."
+                : player.PuloSimplesDisponivel ? "Toque PULAR para saltar para cima."
                 : player.JoystickPuloDisponivel ? "Segure e arraste PULAR para carregar o salto."
                 : player.Grounded ? "Pare para poder pular." : "Controle a direcao no ar";
             deathPanel.SetActive(player.Dead);

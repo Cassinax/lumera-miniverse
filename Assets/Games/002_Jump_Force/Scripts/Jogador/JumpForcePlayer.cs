@@ -17,6 +17,8 @@ namespace Lumera.JumpForce
         [Min(0)] public float wallAttraction = 3f;
         [Min(0)] public float wallSlideDrag = 5f;
         [Min(0.1f)] public float wallSlideSpeed = 2f;
+        [Tooltip("Tempo minimo sem colisao com o pilar de origem ao saltar pela lateral. A colisao volta ao sair dele, sem reativar dentro da malha.")]
+        [Min(0)] public float wallJumpCollisionGrace = 0.15f;
         public bool TouchingPillar => wallContact;
         public Collider PillarContact => wallContact;
         public bool CanWallJump => wallContact && wallJumpReady && takeoffGrace <= 0f;
@@ -24,6 +26,8 @@ namespace Lumera.JumpForce
         [Header("Pulo - alturas em metros")]
         [Min(0.1f)] public float minimumJumpHeight = 1.5f;
         [Min(0.1f)] public float maximumJumpHeight = 6.5f;
+        [Tooltip("Fracao do impulso vertical maximo aplicada no pulo instantaneo (0,6 = 60%).")]
+        [Range(0.1f, 1f)] public float proporcaoPuloInstantaneo = 0.6f;
         [Min(0.01f)] public float fullChargeSeconds = 1f;
         public AnimationCurve chargeCurve = AnimationCurve.Linear(0, 0, 1, 1);
         [Min(0.1f)] public float gravityMultiplier = 1.8f;
@@ -110,7 +114,7 @@ namespace Lumera.JumpForce
             Mathf.Abs(body.linearVelocity.x - (Support ? Support.Velocity.x : 0f)) <= toleranciaParado;
         public bool PodePular => GameplayEnabled && !Dead && takeoffGrace <= 0f &&
             !pendingJumpHeight.HasValue && (ParadoNoChao || CanWallJump);
-        public bool JoystickPuloDisponivel => PodePular && ParadoNoChao;
+        public bool JoystickPuloDisponivel => PodePular && ParadoNoChao && !(Support && Support.instantJump);
         public bool PuloSimplesDisponivel => PodePular && !JoystickPuloDisponivel;
 
         Rigidbody body;
@@ -128,6 +132,9 @@ namespace Lumera.JumpForce
         float giroVisual;
         float previousVerticalSpeed;
 
+        readonly System.Collections.Generic.List<Collider> ignoredPillarColliders = new();
+        readonly System.Collections.Generic.List<bool> previousPillarIgnores = new();
+        float pillarCollisionGrace;
         Collider wallContact;
         bool wallJumpReady;
         float wallNormalX;
@@ -160,6 +167,7 @@ namespace Lumera.JumpForce
 
             if (!value)
             {
+                RestorePillarCollision();
                 CancelCharge();
                 MoveAmount = 0f;
                 body.linearVelocity = Vector3.zero;
@@ -322,11 +330,9 @@ namespace Lumera.JumpForce
             )
                 return;
 
-            if (!Grounded && CanWallJump)
+            if (PuloSimplesDisponivel)
             {
-                deferredTapHeight = null;
-                chargeTime = fullChargeSeconds;
-                pendingJumpHeight = Mathf.Max(minimumJumpHeight, maximumJumpHeight);
+                PularInstantaneamente();
                 return;
             }
 
@@ -345,6 +351,22 @@ namespace Lumera.JumpForce
             AnguloMira = 0f;
             MostrarMira(false);
             animationDriver?.BeginCharge();
+        }
+
+        public void PularInstantaneamente()
+        {
+            if (!GameplayEnabled || Dead || !PuloSimplesDisponivel ||
+                Charging || pendingJumpHeight.HasValue)
+                return;
+
+            deferredTapHeight = null;
+            float proporcao = Mathf.Clamp(proporcaoPuloInstantaneo, 0.1f, 1f);
+            // v = sqrt(2gh): escalar a altura por p^2 aplica p do impulso.
+            pendingJumpHeight = Mathf.Max(minimumJumpHeight, maximumJumpHeight) *
+                proporcao * proporcao;
+            pendingJumpAngle = 0f;
+            AnguloMira = 0f;
+            MostrarMira(false);
         }
 
         public void ReleaseJump()
@@ -529,6 +551,7 @@ namespace Lumera.JumpForce
 #endif
 
             float dt = Time.fixedDeltaTime;
+            UpdatePillarCollisionRelease(dt);
             takeoffGrace = Mathf.Max(0f, takeoffGrace - dt);
 
             FindSupport();
@@ -564,6 +587,7 @@ namespace Lumera.JumpForce
 
                     if (wallJump)
                     {
+                        ReleasePillarCollision();
                         wallJumpReady = false;
                         horizontalImpulse = 0f;
                     }
@@ -798,7 +822,8 @@ namespace Lumera.JumpForce
                     platform.startingGround ||
                     !platform.Surface ||
                     !platform.Surface.enabled ||
-                    platform.Surface.isTrigger
+                    platform.Surface.isTrigger ||
+                    ignoredPillarColliders.Contains(platform.Surface)
                 )
                     continue;
 
@@ -1016,7 +1041,7 @@ namespace Lumera.JumpForce
                 other = contact.thisCollider;
                 normal = -normal;
             }
-            if (other && (!other.enabled || !other.gameObject.activeInHierarchy)) other = null;
+            if (other && (!other.enabled || !other.gameObject.activeInHierarchy || ignoredPillarColliders.Contains(other))) other = null;
         }
 
         void ProbePillar()
@@ -1041,6 +1066,57 @@ namespace Lumera.JumpForce
                 wallJumpReady = found != null;
             wallContact = found;
             wallNormalX = normalX;
+        }
+
+        void ReleasePillarCollision()
+        {
+            var pillar = wallContact ? wallContact.GetComponentInParent<JumpForcePilarArco>() : null;
+            if (!pillar) return;
+            RestorePillarCollision();
+            pillar.GetComponentsInChildren(false, ignoredPillarColliders);
+            for (int i = ignoredPillarColliders.Count - 1; i >= 0; i--)
+                if (!ignoredPillarColliders[i].enabled || ignoredPillarColliders[i].isTrigger)
+                    ignoredPillarColliders.RemoveAt(i);
+            foreach (var collider in ignoredPillarColliders)
+            {
+                previousPillarIgnores.Add(Physics.GetIgnoreCollision(capsule, collider));
+                Physics.IgnoreCollision(capsule, collider, true);
+            }
+            pillarCollisionGrace = wallJumpCollisionGrace;
+            physicsContactCount = 0;
+            wallContact = null;
+            wallNormalX = 0f;
+        }
+
+        void UpdatePillarCollisionRelease(float dt)
+        {
+            if (ignoredPillarColliders.Count == 0) return;
+            pillarCollisionGrace -= dt;
+            if (pillarCollisionGrace > 0f) return;
+            bool any = false, penetrating = false;
+            Bounds bounds = default;
+            foreach (var collider in ignoredPillarColliders)
+            {
+                if (!collider || !collider.enabled || !collider.gameObject.activeInHierarchy) continue;
+                if (!any) bounds = collider.bounds; else bounds.Encapsulate(collider.bounds);
+                any = true;
+                penetrating |= Physics.ComputePenetration(capsule, body.position, body.rotation,
+                    collider, collider.transform.position, collider.transform.rotation, out _, out _);
+            }
+            // Stay released during ascent alongside/inside the arch. Re-enable only in free space.
+            bool clear = !any || !bounds.Intersects(capsule.bounds) || FeetY > bounds.max.y + contactTolerance;
+            if (!penetrating && (clear || body.linearVelocity.y <= 0f))
+                RestorePillarCollision();
+        }
+
+        void RestorePillarCollision()
+        {
+            if (capsule)
+                for (int i = 0; i < ignoredPillarColliders.Count; i++)
+                    if (ignoredPillarColliders[i])
+                        Physics.IgnoreCollision(capsule, ignoredPillarColliders[i], previousPillarIgnores[i]);
+            ignoredPillarColliders.Clear();
+            previousPillarIgnores.Clear();
         }
 
         void ApplyWallSlide()
@@ -1078,11 +1154,17 @@ namespace Lumera.JumpForce
                 if (!platform || !platform.Surface || !capsule)
                     continue;
 
+                if (ignoredPillarColliders.Contains(platform.Surface))
+                {
+                    Physics.IgnoreCollision(capsule, platform.Surface, true);
+                    continue;
+                }
+
                 float relativeVerticalSpeed =
                     body.linearVelocity.y - platform.Velocity.y;
 
                 bool leavingSupport = takeoffGrace > 0f && platform == launchPlatform;
-                bool solid = platform.startingGround || platform == Support;
+                bool solid = platform.startingGround || !platform.oneWay || platform == Support;
                 if (!solid)
                 {
                     // Once approaching from above, keep the physical contact through the rounded
@@ -1111,6 +1193,7 @@ namespace Lumera.JumpForce
             CancelCharge();
             score?.ObserveHeight(body.position.y);
 
+            RestorePillarCollision();
             landingSurfaces.Clear();
             physicsContactCount = 0;
             Dead = true;
@@ -1135,6 +1218,7 @@ namespace Lumera.JumpForce
 
         public void Restart()
         {
+            RestorePillarCollision();
             landingSurfaces.Clear();
             physicsContactCount = 0;
             FindAnyObjectByType<JumpForcePlatformVisibility>()?.RestoreAll();
@@ -1172,6 +1256,7 @@ namespace Lumera.JumpForce
 
         void OnDisable()
         {
+            RestorePillarCollision();
             landingSurfaces.Clear();
             physicsContactCount = 0;
             if (!initialized)

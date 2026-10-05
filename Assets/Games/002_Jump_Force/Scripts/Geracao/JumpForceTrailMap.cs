@@ -79,7 +79,7 @@ namespace Lumera.JumpForce
     // Value-only geometry, measured once from prefabs. No scene objects are stored in the map.
     public struct JumpForceElementShape
     {
-        public Bounds bodyFromTop, fanBodyFromTop;
+        public Bounds bodyFromTop, fanBodyFromTop, rotatingFanBodyFromTop;
         public float topOffset;
         public float baseSpeed;
     }
@@ -93,13 +93,14 @@ namespace Lumera.JumpForce
         public JumpForceElementKind kind;
         public JumpForceSpecial special;
         public JumpForceMotionAxis axis;
-        public float topY, amplitude, baseSpeed, fanYaw;
+        public float topY, amplitude, baseSpeed, fanYaw, fanSpinY, motionCenterOffsetX;
         // Speed limits chosen at planning time, from the tier and the player's air speed.
         public float speedVariation, minimumSpeed, maximumSpeed;
         public int motionSeed;
         // Movement state belongs to the logical node, so recycling a visual does not change its plan.
         public float offset, currentSpeed, targetSpeed, untilSpeedChange;
         public int direction = 1;
+        public float MotionCenterX => lane * LaneSpacing + motionCenterOffsetX;
         public Vector3 TopPosition(float z) => new Vector3(lane * LaneSpacing, topY, z);
     }
 
@@ -188,8 +189,8 @@ namespace Lumera.JumpForce
         public Bounds Envelope(JumpForceTrailNode node)
         {
             var shape = Shape(node);
-            var bounds = node.special == JumpForceSpecial.Fan ? shape.fanBodyFromTop : shape.bodyFromTop;
-            bounds.center += node.TopPosition(0);
+            var bounds = node.special == JumpForceSpecial.Fan ? (node.fanSpinY != 0 ? shape.rotatingFanBodyFromTop : shape.fanBodyFromTop) : shape.bodyFromTop;
+            bounds.center += node.TopPosition(0) + Vector3.right * node.motionCenterOffsetX;
             bounds.Expand(node.axis == JumpForceMotionAxis.X ? new Vector3(2 * node.amplitude, 0, 0) : new Vector3(0, 2 * node.amplitude, 0));
             bounds.Expand(settings.separation);
             return bounds;
@@ -206,7 +207,7 @@ namespace Lumera.JumpForce
             // Both vertical extremes must work: highest target needs height, lowest one must not be a lethal drop.
             float reach = Mathf.Min(HorizontalReach(dy + swing), HorizontalReach(dy - swing));
             if (reach <= 0) return false;
-            float distance = Mathf.Abs(to.lane - from.lane) * JumpForceTrailNode.LaneSpacing + AmplitudeX(from) + AmplitudeX(to);
+            float distance = Mathf.Abs(to.MotionCenterX - from.MotionCenterX) + AmplitudeX(from) + AmplitudeX(to);
             // Center-to-center, with a steering margin, at every motion phase.
             return distance <= reach * Tier(to.level).reachMargin;
         }
@@ -279,7 +280,8 @@ namespace Lumera.JumpForce
                 baseSpeed = Mathf.Clamp(speed, minimumSpeed, maximumSpeed), speedVariation = tier.speedVariation,
                 minimumSpeed = minimumSpeed, maximumSpeed = maximumSpeed,
                 motionSeed = random.Next(), direction = Chance(0.5f) ? -1 : 1,
-                fanYaw = lane == -1 ? 180 : lane == 1 ? 0 : Chance(0.5f) ? 180 : 0
+                fanYaw = lane == -1 ? 180 : lane == 1 ? 0 : Chance(0.5f) ? 180 : 0,
+                fanSpinY = lane == 0 ? Range(30, 60) * (Chance(0.5f) ? -1 : 1) : 0
             };
         }
 
@@ -422,13 +424,20 @@ namespace Lumera.JumpForce
         bool ResolveDeadEnds(JumpForceTrailLevel level, JumpForceTrailLevel lower, bool restricted)
         {
             var primary = level.Primary;
-            var previous = lower.Primary;
-            bool fixedFan = primary.special == JumpForceSpecial.Fan && primary.amplitude == 0;
-            if (fixedFan && primary.lane != 0 && lower.nodes.Count == 1)
+            var previous = lower.nodes.Find(n => n.id == primary.previousId) ?? lower.Primary;
+            if (primary.special == JumpForceSpecial.Fan && primary.lane != 0 && level.nodes.Count == 1)
             {
-                // Exact requested escape: stationary pillar in the opposite corner.
-                level.nodes.RemoveAll(n => !n.primary);
-                if (!AddAlternative(level, previous, restricted, true)) return false;
+                // A lone corner fan must cover -3, 0 and +3, starting at its birth lane.
+                float oldAmplitude = primary.amplitude;
+                primary.axis = JumpForceMotionAxis.X;
+                primary.motionCenterOffsetX = -primary.lane * JumpForceTrailNode.LaneSpacing;
+                primary.amplitude = JumpForceTrailNode.LaneSpacing;
+                primary.direction = -primary.lane;
+                if (Reachable(previous, primary) && Free(primary) && HasSafeExit(primary)) return true;
+                // Never silently shrink the required sweep. Offer a second support if it cannot fit.
+                primary.motionCenterOffsetX = 0;
+                primary.amplitude = oldAmplitude;
+                return AddAlternative(level, previous, restricted, false);
             }
 
             if (level.nodes.Count == 1 &&
@@ -441,25 +450,6 @@ namespace Lumera.JumpForce
                         return false;
                     }
 
-            if (level.nodes.Count == 1 && primary.special == JumpForceSpecial.Fan &&
-                primary.lane == 0 && primary.amplitude == 0)
-            {
-                foreach (var below in lower.nodes)
-                {
-                    if (below.level == 0 || below.kind != JumpForceElementKind.Platform) continue;
-                    if (below.axis == JumpForceMotionAxis.X && below.amplitude > 0) return true;
-                    if (below.level <= protectedThrough) continue;
-                    var before = levels[below.level - 1].Primary;
-                    if (VerticalPillar(before)) continue;
-                    if (TryMoveX(below, before))
-                    {
-                        if (Reachable(below, primary)) return true;
-                        below.amplitude = 0;
-                    }
-                }
-                return AddAlternative(level, previous, restricted, false) ||
-                    (!restricted && TryMoveX(primary, previous));
-            }
             return true;
         }
 

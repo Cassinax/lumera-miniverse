@@ -33,6 +33,9 @@ namespace Lumera.JumpForce
         [Tooltip("Tempo de suavizacao do ancorador ate a posicao seguida, em segundos.")]
         [Min(0.01f)] public float smoothTime = 0.3f;
 
+        [Tooltip("Atraso de altura desejado em subidas rapidas. Reduz o tempo de suavizacao conforme a velocidade de subida.")]
+        [Min(0.1f)] public float atrasoMaximoSubida = 2f;
+
         [Header("Foco (ancoras da camera)")]
         [Tooltip("Uma ancora por estado de foco. Foco sem ancora usa a de Jogo.")]
         public Ancora[] ancoras = Array.Empty<Ancora>();
@@ -95,7 +98,7 @@ namespace Lumera.JumpForce
         }
 
         float floorFeet;
-        Vector3 initialPosition, velocity, velocidadeCamera;
+        Vector3 initialPosition, velocidadeCamera;
         Vector3 cameraInicial;
         Quaternion rotacaoCameraInicial = Quaternion.identity;
         CapsuleCollider capsule;
@@ -183,12 +186,18 @@ namespace Lumera.JumpForce
                 if (LockedUpward) feet = Mathf.Max(feet, floorFeet);
             }
             var target = new Vector3(initialPosition.x, feet, initialPosition.z) + offset;
-            Vector3 position = Vector3.SmoothDamp(transform.position, target, ref velocity, Mathf.Max(0.01f, smoothTime));
+            float tempo = Mathf.Max(0.01f, smoothTime);
+            if (!InWardrobe && player.Body && player.Body.linearVelocity.y > 0f)
+                tempo = Mathf.Min(tempo, Mathf.Max(0.01f, atrasoMaximoSubida / player.Body.linearVelocity.y));
+            // Proportional following: (target - current) * response * dt.
+            // Exponential form keeps the response consistent across frame rates and never overshoots.
+            Vector3 diferenca = target - transform.position;
+            float fracao = 1f - Mathf.Exp(-Time.deltaTime / tempo);
+            Vector3 position = transform.position + diferenca * fracao;
             // Coming back down from a jump, the ancorador stops at the floor instead of overshooting below it.
             if (!InWardrobe && LockedUpward && position.y < LowestY && position.y < transform.position.y)
             {
                 position.y = Mathf.Min(transform.position.y, LowestY);
-                velocity.y = Mathf.Max(0, velocity.y);
             }
             transform.position = position;
         }
@@ -207,7 +216,6 @@ namespace Lumera.JumpForce
         public void Restart()
         {
             LockedUpward = false;
-            velocity = Vector3.zero;
             floorFeet = player ? player.FeetY : 0;
         }
     }

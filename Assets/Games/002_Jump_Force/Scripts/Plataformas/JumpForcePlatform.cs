@@ -11,6 +11,10 @@ namespace Lumera.JumpForce
         public static readonly List<JumpForcePlatform> Active = new();
         [Tooltip("O chao inicial e solido; nao atrai nem ativa a camera de morte.")]
         public bool startingGround;
+        [Tooltip("Desligado: superficie solida tambem por baixo e pelas laterais, como o corpo do ventilador.")]
+        public bool oneWay = true;
+        [Tooltip("Usa pulo vertical maximo imediato em vez do joystick. Configurado pelo gerador na base do ventilador giratorio.")]
+        public bool instantJump;
         [Min(0)] public float extraOrbitClearance = 0.15f;
         public BoxCollider Surface { get; private set; }
         public float Top => Surface.bounds.max.y;
