@@ -103,6 +103,8 @@ namespace Lumera.JumpForce
         public Rigidbody Body => body;
         public bool GameplayEnabled { get; private set; } = true;
 
+        readonly System.Collections.Generic.HashSet<JumpForcePlatform> landingSurfaces = new();
+
         Rigidbody body;
         CapsuleCollider capsule;
         float feetOffset;
@@ -1099,19 +1101,25 @@ namespace Lumera.JumpForce
                 float relativeVerticalSpeed =
                     body.linearVelocity.y - platform.Velocity.y;
 
-                bool ignore =
-                    !platform.startingGround &&
-                    platform != Support &&
-                    (
-                        relativeVerticalSpeed > 0.01f ||
-                        FeetY < platform.Top - contactTolerance
-                    );
+                bool leavingSupport = takeoffGrace > 0f && platform == launchPlatform;
+                bool solid = platform.startingGround || platform == Support;
+                if (!solid)
+                {
+                    // Once approaching from above, keep the physical contact through the rounded
+                    // capsule's edge contact. Feet below Top alone does not mean we are underneath.
+                    if (!platform.Surface.enabled || platform.Surface.isTrigger ||
+                        leavingSupport || relativeVerticalSpeed > 0.01f ||
+                        capsule.bounds.max.y < platform.Surface.bounds.min.y - contactTolerance)
+                        landingSurfaces.Remove(platform);
+                    else if (FeetY >= platform.Top - contactTolerance)
+                        landingSurfaces.Add(platform);
 
-                Physics.IgnoreCollision(
-                    capsule,
-                    platform.Surface,
-                    ignore
-                );
+                    solid = landingSurfaces.Contains(platform);
+                }
+                else
+                    landingSurfaces.Add(platform);
+
+                Physics.IgnoreCollision(capsule, platform.Surface, !solid);
             }
         }
 
@@ -1123,6 +1131,7 @@ namespace Lumera.JumpForce
             CancelCharge();
             score?.ObserveHeight(body.position.y);
 
+            landingSurfaces.Clear();
             Dead = true;
             body.linearVelocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
@@ -1145,6 +1154,7 @@ namespace Lumera.JumpForce
 
         public void Restart()
         {
+            landingSurfaces.Clear();
             FindAnyObjectByType<JumpForcePlatformVisibility>()?.RestoreAll();
 
             body.isKinematic = false;
@@ -1180,6 +1190,7 @@ namespace Lumera.JumpForce
 
         void OnDisable()
         {
+            landingSurfaces.Clear();
             if (!initialized)
                 return;
 

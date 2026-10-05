@@ -126,7 +126,7 @@ namespace Lumera.JumpForce
         readonly int collisionLevels;
         int lastLevel, nextTrampoline, nextFan, nextCoin;
         float leftBoundary = float.NegativeInfinity, rightBoundary = float.PositiveInfinity;
-        float jumpHeight, airSpeed, gravity, safeFall = float.PositiveInfinity;
+        float jumpHeight, airSpeed, gravity, maximumAimAngle, safeFall = float.PositiveInfinity;
         static readonly JumpForceDifficultyTier fallbackTier = new();
         // Below this, a "moving" element barely moves: it is planned as fixed instead.
         const float MinimumAmplitude = 0.25f;
@@ -157,12 +157,13 @@ namespace Lumera.JumpForce
         }
 
         // survivableFall: how far below the support it left the player can drop before the camera kills it.
-        public void SetCapabilities(float height, float lateralSpeed, float acceleration, float survivableFall)
+        public void SetCapabilities(float height, float lateralSpeed, float acceleration, float survivableFall, float aimAngle = 0f)
         {
             jumpHeight = Mathf.Max(0.1f, height);
             airSpeed = Mathf.Max(0, lateralSpeed);
             gravity = Mathf.Max(0.1f, acceleration);
             safeFall = Mathf.Max(0.5f, survivableFall);
+            maximumAimAngle = Mathf.Clamp(aimAngle, 0f, 89f) * Mathf.Deg2Rad;
         }
 
         int GapExcept(int forbidden, int level)
@@ -202,11 +203,30 @@ namespace Lumera.JumpForce
             float swing = AmplitudeY(from) + AmplitudeY(to);
             if (dy + swing > jumpHeight - 0.1f) return false;
             // Both vertical extremes must work: highest target needs height, lowest one must not be a lethal drop.
-            float time = Mathf.Min(FlightTime(dy + swing), FlightTime(dy - swing));
-            if (time <= 0) return false;
+            float reach = Mathf.Min(HorizontalReach(dy + swing), HorizontalReach(dy - swing));
+            if (reach <= 0) return false;
             float distance = Mathf.Abs(to.lane - from.lane) * JumpForceTrailNode.LaneSpacing + AmplitudeX(from) + AmplitudeX(to);
-            // A conservative route: center-to-center, with a steering margin, at every motion phase.
-            return distance <= airSpeed * time * Tier(to.level).reachMargin;
+            // Center-to-center, with a steering margin, at every motion phase.
+            return distance <= reach * Tier(to.level).reachMargin;
+        }
+
+        // Air Speed is steering, not the horizontal impulse of an aimed jump.
+        // Compare steering alone with the ballistic range; do not add the two ranges.
+        float HorizontalReach(float dy)
+        {
+            float time = FlightTime(dy);
+            if (time <= 0f) return 0f;
+            float steeringReach = airSpeed * time;
+            float speedSquared = 2f * gravity * jumpHeight;
+            float speed = Mathf.Sqrt(speedSquared);
+            // Angle from vertical that maximizes range at this destination height.
+            float optimum = Mathf.Atan(Mathf.Sqrt(Mathf.Max(0f, speedSquared - 2f * gravity * dy)) / speed);
+            float angle = Mathf.Min(maximumAimAngle, optimum);
+            float verticalSpeed = speed * Mathf.Cos(angle);
+            float discriminant = verticalSpeed * verticalSpeed - 2f * gravity * dy;
+            if (discriminant < 0f) return steeringReach;
+            float flight = (verticalSpeed + Mathf.Sqrt(discriminant)) / gravity;
+            return Mathf.Max(steeringReach, speed * Mathf.Sin(angle) * flight);
         }
 
         // Air time of a full jump until the feet come back down to dy. The camera comes back down to the support

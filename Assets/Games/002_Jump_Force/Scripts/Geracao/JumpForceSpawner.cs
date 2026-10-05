@@ -105,7 +105,7 @@ namespace Lumera.JumpForce
             // The camera kills a fall deeper than this: planned jumps must never need one.
             float survivableFall = followCamera.SurvivableFall() - settings.safeFallMargin;
             Map.SetCapabilities(player.maximumJumpHeight, player.airSpeed,
-                Mathf.Abs(Physics.gravity.y) * player.gravityMultiplier, survivableFall);
+                Mathf.Abs(Physics.gravity.y) * player.gravityMultiplier, survivableFall, player.anguloMaximo);
         }
 
         void RefreshWindow()
