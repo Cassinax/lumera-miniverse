@@ -20,8 +20,6 @@ namespace Lumera.JumpForce
         JumpForceCoin coin;
         Vector3 coinLocalPosition;
         Quaternion fanRotation;
-        System.Random motionRandom;
-        Vector3 origin;
         bool visible = true;
         Transform[] parts;
         Quaternion[] rotations;
@@ -30,53 +28,165 @@ namespace Lumera.JumpForce
         public void Initialize(JumpForceElementKind kind)
         {
             Kind = kind;
+
             var motion = GetComponent<JumpForcePlatformMotion>();
             var pillar = GetComponent<JumpForcePilarArco>();
-            float speed = motion ? 4 * motion.amplitude.magnitude / Mathf.Max(0.1f, motion.period) :
-                pillar ? 4 * pillar.amplitude / Mathf.Max(0.1f, pillar.period) : 1;
-            if (motion) motion.enabled = false;
-            if (pillar) pillar.enabled = false; // Retains its standable top and obstacle identity.
-            var trampComponent = GetComponentInChildren<JumpForceTrampolim>(true);
-            var fanComponent = GetComponentInChildren<JumpForceVentilador>(true);
-            trampoline = AccessoryRoot(trampComponent ? trampComponent.transform : null);
-            fan = AccessoryRoot(fanComponent ? fanComponent.transform : null);
-            if (fan) fanRotation = fan.localRotation;
-            coin = GetComponentInChildren<JumpForceCoin>(true);
-            if (coin) coinLocalPosition = coin.transform.localPosition;
-            var surface = GetComponent<JumpForcePlatform>();
-            Bounds body = default, fanBody = default;
-            bool first = true, firstFan = true;
+
+            // A velocidade-base continua sendo registrada como dado do elemento,
+            // mas o SpawnedElement não controla nem desativa mais o movimento físico.
+            float speed =
+                motion
+                    ? 4f * motion.amplitude.magnitude / Mathf.Max(0.1f, motion.period)
+                    : pillar
+                        ? 4f * pillar.amplitude / Mathf.Max(0.1f, pillar.period)
+                        : 1f;
+
+            var trampComponent =
+                GetComponentInChildren<JumpForceTrampolim>(true);
+
+            var fanComponent =
+                GetComponentInChildren<JumpForceVentilador>(true);
+
+            trampoline =
+                AccessoryRoot(trampComponent ? trampComponent.transform : null);
+
+            fan =
+                AccessoryRoot(fanComponent ? fanComponent.transform : null);
+
+            if (fan)
+                fanRotation = fan.localRotation;
+
+            coin =
+                GetComponentInChildren<JumpForceCoin>(true);
+
+            if (coin)
+                coinLocalPosition = coin.transform.localPosition;
+
+            var surface =
+                GetComponent<JumpForcePlatform>();
+
+            Bounds body = default;
+            Bounds fanBody = default;
+
+            bool first = true;
+            bool firstFan = true;
+
             foreach (var collider in GetComponentsInChildren<Collider>(true))
             {
-                if (collider.isTrigger || collider.GetComponentInParent<JumpForceCoin>() ||
-                    (kind == JumpForceElementKind.Pillar && collider.GetComponent<JumpForcePlatform>())) continue;
+                if (
+                    collider.isTrigger ||
+                    collider.GetComponentInParent<JumpForceCoin>() ||
+                    (
+                        kind == JumpForceElementKind.Pillar &&
+                        collider.GetComponent<JumpForcePlatform>()
+                    )
+                )
+                    continue;
+
                 Bounds bounds = ColliderBounds(collider);
+
                 if (fan && collider.transform.IsChildOf(fan))
                 {
-                    if (firstFan) { fanBody = bounds; firstFan = false; } else fanBody.Encapsulate(bounds);
+                    if (firstFan)
+                    {
+                        fanBody = bounds;
+                        firstFan = false;
+                    }
+                    else
+                    {
+                        fanBody.Encapsulate(bounds);
+                    }
+
                     continue;
                 }
-                if (trampoline && collider.transform.IsChildOf(trampoline)) continue;
-                if (first) { body = bounds; first = false; } else body.Encapsulate(bounds);
+
+                if (trampoline && collider.transform.IsChildOf(trampoline))
+                    continue;
+
+                if (first)
+                {
+                    body = bounds;
+                    first = false;
+                }
+                else
+                {
+                    body.Encapsulate(bounds);
+                }
             }
-            if (first) throw new InvalidOperationException("Elemento sem collider solido: " + name);
-            float top = surface ? ColliderBounds(surface.GetComponent<BoxCollider>()).max.y : body.max.y;
-            if (firstFan) fanBody = body; else fanBody.Encapsulate(body);
-            var reference = new Vector3(transform.position.x, top, transform.position.z);
+
+            if (first)
+                throw new InvalidOperationException(
+                    "Elemento sem collider solido: " + name
+                );
+
+            float top =
+                surface
+                    ? ColliderBounds(surface.GetComponent<BoxCollider>()).max.y
+                    : body.max.y;
+
+            if (firstFan)
+                fanBody = body;
+            else
+                fanBody.Encapsulate(body);
+
+            Vector3 reference =
+                new Vector3(
+                    transform.position.x,
+                    top,
+                    transform.position.z
+                );
+
             body.center -= reference;
             fanBody.center -= reference;
-            // Reserve both fan orientations without inflating ordinary platform geometry.
-            float halfX = Mathf.Max(Mathf.Abs(fanBody.min.x), Mathf.Abs(fanBody.max.x));
-            float halfZ = Mathf.Max(Mathf.Abs(fanBody.min.z), Mathf.Abs(fanBody.max.z));
-            fanBody = new Bounds(new Vector3(0, fanBody.center.y, 0), new Vector3(2 * halfX, fanBody.size.y, 2 * halfZ));
-            Shape = new JumpForceElementShape { bodyFromTop = body, fanBodyFromTop = fanBody,
-                topOffset = top - transform.position.y, baseSpeed = Mathf.Max(0.1f, speed) };
-            renderers = GetComponentsInChildren<Renderer>(true);
-            rendererEnabled = new bool[renderers.Length];
-            for (int i = 0; i < renderers.Length; i++) rendererEnabled[i] = renderers[i].enabled;
-            parts = GetComponentsInChildren<Transform>(true);
-            rotations = new Quaternion[parts.Length];
-            for (int i = 0; i < parts.Length; i++) rotations[i] = parts[i].localRotation;
+
+            float halfX =
+                Mathf.Max(
+                    Mathf.Abs(fanBody.min.x),
+                    Mathf.Abs(fanBody.max.x)
+                );
+
+            float halfZ =
+                Mathf.Max(
+                    Mathf.Abs(fanBody.min.z),
+                    Mathf.Abs(fanBody.max.z)
+                );
+
+            fanBody =
+                new Bounds(
+                    new Vector3(0, fanBody.center.y, 0),
+                    new Vector3(
+                        2f * halfX,
+                        fanBody.size.y,
+                        2f * halfZ
+                    )
+                );
+
+            Shape =
+                new JumpForceElementShape
+                {
+                    bodyFromTop = body,
+                    fanBodyFromTop = fanBody,
+                    topOffset = top - transform.position.y,
+                    baseSpeed = Mathf.Max(0.1f, speed)
+                };
+
+            renderers =
+                GetComponentsInChildren<Renderer>(true);
+
+            rendererEnabled =
+                new bool[renderers.Length];
+
+            for (int i = 0; i < renderers.Length; i++)
+                rendererEnabled[i] = renderers[i].enabled;
+
+            parts =
+                GetComponentsInChildren<Transform>(true);
+
+            rotations =
+                new Quaternion[parts.Length];
+
+            for (int i = 0; i < parts.Length; i++)
+                rotations[i] = parts[i].localRotation;
         }
 
         Transform AccessoryRoot(Transform part)
@@ -121,72 +231,79 @@ namespace Lumera.JumpForce
         public void Assign(JumpForceTrailNode record, float z, JumpForceScore score)
         {
             node = record;
-            motionRandom = new System.Random(record.motionSeed);
-            for (int i = 0; i < parts.Length; i++) if (parts[i] != transform) parts[i].localRotation = rotations[i];
-            origin = record.TopPosition(z) - Vector3.up * Shape.topOffset;
-            transform.position = origin + Axis * record.offset;
-            if (trampoline) trampoline.gameObject.SetActive(record.special == JumpForceSpecial.Trampoline);
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i] != transform)
+                    parts[i].localRotation = rotations[i];
+            }
+
+            Vector3 spawnPosition =
+                record.TopPosition(z) - Vector3.up * Shape.topOffset;
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+
+            if (rb)
+            {
+                rb.position = spawnPosition;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            else
+            {
+                transform.position = spawnPosition;
+            }
+
+            // Informa ao novo motor físico qual é a origem deste elemento
+            // reutilizado pelo pool.
+            var motion = GetComponent<JumpForcePlatformMotion>();
+
+            if (motion)
+                motion.SetOrigin(spawnPosition);
+
+            if (trampoline)
+                trampoline.gameObject.SetActive(
+                    record.special == JumpForceSpecial.Trampoline
+                );
+
             if (fan)
             {
-                fan.gameObject.SetActive(record.special == JumpForceSpecial.Fan);
+                fan.gameObject.SetActive(
+                    record.special == JumpForceSpecial.Fan
+                );
+
                 var euler = fanRotation.eulerAngles;
-                fan.localRotation = Quaternion.Euler(euler.x, record.fanYaw, euler.z);
+
+                fan.localRotation =
+                    Quaternion.Euler(
+                        euler.x,
+                        record.fanYaw,
+                        euler.z
+                    );
             }
+
             if (coin)
             {
-                // Coins share the player's gameplay plane, including when the fan turns.
                 coin.transform.localPosition = coinLocalPosition;
-                var coinPosition = coin.transform.position;
+
+                Vector3 coinPosition = coin.transform.position;
                 coinPosition.z = z;
+
                 if (record.special == JumpForceSpecial.Fan)
-                    coinPosition.y = Mathf.Max(coinPosition.y, WorldBounds.max.y + 0.5f);
+                {
+                    coinPosition.y =
+                        Mathf.Max(
+                            coinPosition.y,
+                            WorldBounds.max.y + 0.5f
+                        );
+                }
+
                 coin.transform.position = coinPosition;
                 coin.Configure(record, score);
             }
+
             SetVisible(true);
-            gameObject.SetActive(true); // OnEnable resets platform displacement before the player samples it.
-        }
-
-        Vector3 Axis => node.axis == JumpForceMotionAxis.Y ? Vector3.up : Vector3.right;
-        // Lowest fraction of the speed kept at the ends, so the element still arrives and leaves.
-        const float MinimumEase = 0.2f;
-        // Speed changes ramp with `acceleration` and the element slows down near both ends, instead of
-        // jumping between speeds and reversing at full speed (which also jolted a carried player).
-        public Vector3 Step(float dt, Vector2 changeInterval, float acceleration, float endEaseDistance)
-        {
-            if (node.amplitude <= 0) return Vector3.zero;
-            node.untilSpeedChange -= dt;
-            if (node.untilSpeedChange <= 0)
-            {
-                float variation = ((float)motionRandom.NextDouble() * 2 - 1) * node.speedVariation;
-                node.targetSpeed = Mathf.Clamp(node.baseSpeed + variation, node.minimumSpeed, Mathf.Max(node.minimumSpeed, node.maximumSpeed));
-                node.untilSpeedChange = Mathf.Lerp(Mathf.Max(0.1f, changeInterval.x), Mathf.Max(changeInterval.x, changeInterval.y), (float)motionRandom.NextDouble());
-                if (node.currentSpeed <= 0) node.currentSpeed = node.targetSpeed; // First activation starts at cruise speed.
-            }
-            node.currentSpeed = acceleration > 0 ? Mathf.MoveTowards(node.currentSpeed, node.targetSpeed, acceleration * dt) : node.targetSpeed;
-            float toEnd = node.amplitude - Mathf.Abs(node.offset);
-            float ease = endEaseDistance > 0 ? Mathf.Clamp(toEnd / endEaseDistance, MinimumEase, 1) : 1;
-            float next = Mathf.MoveTowards(node.offset, node.direction * node.amplitude, node.currentSpeed * ease * dt);
-            return Axis * (next - node.offset);
-        }
-
-        public Vector3 LimitStepToWalls(Vector3 step, float left, float right, float clearance, out bool blocked)
-        {
-            var bounds = WorldBounds;
-            float minimum = left + clearance - bounds.min.x;
-            float maximum = right - clearance - bounds.max.x;
-            float allowed = Mathf.Clamp(step.x, minimum, maximum);
-            blocked = !Mathf.Approximately(allowed, step.x);
-            step.x = allowed;
-            return step;
-        }
-
-        public void ApplyStep(Vector3 step, bool blocked, bool reverseAfterStep = false)
-        {
-            if (blocked) { node.direction = -node.direction; return; }
-            node.offset += Vector3.Dot(step, Axis);
-            transform.position = origin + Axis * node.offset;
-            if (reverseAfterStep || Mathf.Abs(node.offset - node.direction * node.amplitude) < 0.0001f) node.direction = -node.direction;
+            gameObject.SetActive(true);
         }
 
         public void SetVisible(bool value)

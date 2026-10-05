@@ -127,7 +127,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4569596513166003222}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 150
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -172,6 +172,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41342c546814d904fab3af189e06bc47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatformMotion
+  motorForce: 500
+  brakeForce: 1200
+  brakeDistance: 0.35
+  endpointTolerance: 0.03
   amplitude: {x: 1.2, y: 0, z: 0}
   period: 4
   phase: 0

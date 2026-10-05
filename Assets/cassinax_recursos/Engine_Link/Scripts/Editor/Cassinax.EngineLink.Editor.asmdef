@@ -1,0 +1,30 @@
+{
+    "name": "Cassinax.EngineLink.Editor",
+    "rootNamespace": "Cassinax.EngineLink.Editor",
+    "references": [
+        "Cassinax.EngineLink",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0.0",
+            "define": "CASSINAX_INPUT_SYSTEM"
+        },
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "1.0.0",
+            "define": "CASSINAX_URP"
+        }
+    ],
+    "noEngineReferences": false
+}

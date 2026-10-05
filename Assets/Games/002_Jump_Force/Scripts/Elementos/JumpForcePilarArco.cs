@@ -11,6 +11,12 @@ namespace Lumera.JumpForce
     {
         public enum Eixo { X, Y }
 
+        [Header("Motor fisico")]
+        [Min(0.1f)] public float motorForce = 500f;
+        [Min(0.1f)] public float brakeForce = 1200f;
+        [Min(0.01f)] public float brakeDistance = 0.35f;
+        [Min(0.01f)] public float endpointTolerance = 0.03f;
+
         public Eixo eixo = Eixo.X;
         [Tooltip("Distância em metros que o pilar percorre para cada lado. Zero mantém o pilar parado.")]
         [Min(0)] public float amplitude = 2;
@@ -28,7 +34,7 @@ namespace Lumera.JumpForce
         const float EspessuraTopo = 0.1f;
         Rigidbody body;
         Vector3 localOrigin;
-        float elapsed, direction = 1;
+        float direction = 1;
 
         Vector3 Axis => eixo == Eixo.X ? Vector3.right : Vector3.up;
         // Follows the parent (e.g. a moving platform) while oscillating along the world axis.
@@ -36,27 +42,129 @@ namespace Lumera.JumpForce
 
         void Awake()
         {
-            // RequireComponent does not add the Rigidbody to components that already existed in the scene.
-            if (!TryGetComponent(out body)) body = gameObject.AddComponent<Rigidbody>();
-            body.isKinematic = true;
+            if (!TryGetComponent(out body))
+                body = gameObject.AddComponent<Rigidbody>();
+
+            body.isKinematic = false;
             body.useGravity = false;
-            // Moved through the Transform, like the platforms: interpolation would fight it.
-            body.interpolation = RigidbodyInterpolation.None;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+            RigidbodyConstraints constraints =
+                RigidbodyConstraints.FreezeRotation |
+                RigidbodyConstraints.FreezePositionZ;
+
+            if (eixo == Eixo.X)
+                constraints |= RigidbodyConstraints.FreezePositionY;
+            else
+                constraints |= RigidbodyConstraints.FreezePositionX;
+
+            body.constraints = constraints;
+
             localOrigin = transform.localPosition;
-            if (!transform.parent) localOrigin = transform.position;
-            if (randomStartDirection) direction = Random.value < 0.5f ? -1 : 1;
-            if (topoContaComoChao) CriarTopo();
+
+            if (!transform.parent)
+                localOrigin = body.position;
+
+            if (randomStartDirection)
+                direction = Random.value < 0.5f ? -1f : 1f;
+
+            if (topoContaComoChao)
+                CriarTopo();
         }
 
         void FixedUpdate()
         {
-            elapsed += Time.fixedDeltaTime;
-            // Same curve as the platforms: starts at the placed position, flipping the sign changes only the first direction.
-            float offset = direction * (Mathf.Sin((elapsed / Mathf.Max(0.1f, period) + phase) * 2 * Mathf.PI)
-                         - Mathf.Sin(phase * 2 * Mathf.PI));
-            // Set before the top surface (order -200) samples its displacement, so the character is carried exactly.
-            // A solid moved this way still pushes the character out of the way.
-            transform.position = Origin + Axis * (amplitude * offset);
+            float distanciaMaxima = Mathf.Max(0f, amplitude);
+
+            if (distanciaMaxima <= 0.0001f)
+            {
+                Vector3 velocidade = body.linearVelocity;
+                velocidade -= Axis * Vector3.Dot(velocidade, Axis);
+                body.linearVelocity = velocidade;
+                return;
+            }
+
+            Vector3 eixoMovimento = Axis;
+            Vector3 destino =
+                Origin + eixoMovimento * distanciaMaxima * direction;
+
+            float distanciaRestante =
+                Vector3.Dot(
+                    destino - body.position,
+                    eixoMovimento
+                ) * direction;
+
+            float velocidadeNoEixo =
+                Vector3.Dot(
+                    body.linearVelocity,
+                    eixoMovimento
+                );
+
+            float velocidadeMaxima =
+                Mathf.Max(
+                    0.1f,
+                    4f * distanciaMaxima / Mathf.Max(0.1f, period)
+                );
+
+            // Chegou ao extremo.
+            if (distanciaRestante <= endpointTolerance)
+            {
+                Vector3 velocidade = body.linearVelocity;
+
+                velocidade -=
+                    eixoMovimento * velocidadeNoEixo;
+
+                body.linearVelocity = velocidade;
+                body.position = destino;
+
+                direction = -direction;
+                return;
+            }
+
+            // Freio curto e forte próximo ao extremo.
+            if (distanciaRestante <= brakeDistance)
+            {
+                // Só freia enquanto ainda estiver indo em direção ao destino.
+                if (velocidadeNoEixo * direction > 0.01f)
+                {
+                    body.AddForce(
+                        -eixoMovimento *
+                        Mathf.Sign(velocidadeNoEixo) *
+                        brakeForce,
+                        ForceMode.Force
+                    );
+                }
+                else
+                {
+                    // Se o freio já fez o corpo começar a voltar antes da hora,
+                    // mantém uma pequena correção em direção ao extremo.
+                    body.AddForce(
+                        eixoMovimento *
+                        direction *
+                        motorForce,
+                        ForceMode.Force
+                    );
+                }
+
+                return;
+            }
+
+            float velocidadeDesejada =
+                velocidadeMaxima * direction;
+
+            float erroVelocidade =
+                velocidadeDesejada - velocidadeNoEixo;
+
+            if (Mathf.Abs(erroVelocidade) > 0.01f)
+            {
+                body.AddForce(
+                    eixoMovimento *
+                    Mathf.Sign(erroVelocidade) *
+                    motorForce,
+                    ForceMode.Force
+                );
+            }
         }
 
         bool TopoArea(out Vector3 centro, out Vector3 tamanho)

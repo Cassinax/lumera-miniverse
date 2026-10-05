@@ -35,9 +35,6 @@ namespace Lumera.JumpForce
         [Header("Estado atual (leitura)")]
         [SerializeField] int currentLevel;
         [Tooltip("Faixa de dificuldade do nivel em que o jogador esta.")]
-        [SerializeField] int currentTier;
-        [SerializeField] int plannedThrough;
-        [SerializeField] int activeElements;
         [SerializeField] int createdPlatforms;
         [SerializeField] int createdPillars;
         [SerializeField] int runSeed;
@@ -123,7 +120,6 @@ namespace Lumera.JumpForce
         {
             UpdateCapabilities();
             currentLevel = Mathf.Max(0, Mathf.FloorToInt((player.FeetY - originY) / Mathf.Max(0.5f, settings.levelHeight)));
-            currentTier = settings.TierIndex(currentLevel);
             float gravity = Mathf.Max(0.1f, Mathf.Abs(Physics.gravity.y) * player.gravityMultiplier);
             float rising = Mathf.Max(0, player.Body.linearVelocity.y);
             float projectedRise = Mathf.Max(player.maximumJumpHeight, rising * rising / (2 * gravity));
@@ -195,8 +191,6 @@ namespace Lumera.JumpForce
                 forgottenBelow = low - 1;
                 Map.ForgetBelow(forgottenBelow);
             }
-            plannedThrough = Map.LastLevel;
-            activeElements = active.Count;
         }
 
         bool IsSupporting(JumpForceSpawnedElement item) =>
@@ -215,27 +209,13 @@ namespace Lumera.JumpForce
 
         void FixedUpdate()
         {
-            if (!initialized || player.Dead) return;
+            if (!initialized || player.Dead)
+                return;
+
+            if (!player.GameplayEnabled)
+                return;
+
             RefreshWindow();
-            if (!enabled || !player.GameplayEnabled) return;
-            bool hasWalls = JumpForceSpawnedElement.TryGetWallLimits(invisibleWalls, out float left, out float right);
-            foreach (var item in active.Values)
-            {
-                Vector3 step = item.Step(Time.fixedDeltaTime, speedChangeInterval, speedAcceleration, endEaseDistance);
-                if (step == Vector3.zero) continue;
-                Bounds swept = item.WorldBounds;
-                bool wallBlocked = false;
-                if (hasWalls && step.x != 0)
-                    step = item.LimitStepToWalls(step, left, right, settings.separation, out wallBlocked);
-                var destination = swept;
-                destination.center += step;
-                swept.Encapsulate(destination);
-                swept.Expand(Mathf.Max(0.01f, settings.separation * 0.5f));
-                bool blocked = false;
-                foreach (var other in active.Values)
-                    if (other != item && swept.Intersects(other.WorldBounds)) { blocked = true; break; }
-                item.ApplyStep(step, blocked, wallBlocked);
-            }
         }
 
         void LateUpdate()
@@ -268,7 +248,6 @@ namespace Lumera.JumpForce
                 else pair.Value.SetVisible(!above && !below);
             }
             foreach (int id in remove) { Return(active[id]); active.Remove(id); }
-            activeElements = active.Count;
             // The starting ground is a scene object, not pooled: switched off once it can never be seen again.
             if (startingGround.gameObject.activeSelf && !IsSupportingGround() &&
                 followCamera.OutOfReachBelow(JumpForceSpawnedElement.ColliderBounds(startingGround.Surface), viewportMargin))

@@ -10,84 +10,87 @@ namespace Lumera.JumpForce
         [Header("Referencias")]
         public JumpForceInput input;
         public JumpForceScore score;
-        public Collider[] invisibleWalls = System.Array.Empty<Collider>();
+        public JumpForceAnimation animationDriver;
+        public Transform visual;
+
         [Header("Deslizar e pular na lateral do pilar")]
-        [Min(0)] public float wallAttraction = 3;
-        [Min(0)] public float wallSlideDrag = 5;
-        [Min(0.1f)] public float wallSlideSpeed = 2;
+        [Min(0)] public float wallAttraction = 3f;
+        [Min(0)] public float wallSlideDrag = 5f;
+        [Min(0.1f)] public float wallSlideSpeed = 2f;
         [Min(0.01f)] public float wallProbeDistance = 0.1f;
         [Min(0)] public float wallJumpAwaySpeed = 2.5f;
         public bool TouchingPillar => wallContact;
         public Collider PillarContact => wallContact;
-        public bool CanWallJump => wallContact && wallJumpReady && takeoffGrace <= 0;
-        Collider wallContact;
-        bool wallJumpReady;
-        float wallNormalX;
-        readonly RaycastHit[] contactHits = new RaycastHit[24];
-        public JumpForceAnimation animationDriver;
-        public Transform visual;
+        public bool CanWallJump => wallContact && wallJumpReady && takeoffGrace <= 0f;
+
         [Header("Pulo - alturas em metros")]
         [Min(0.1f)] public float minimumJumpHeight = 1.5f;
         [Min(0.1f)] public float maximumJumpHeight = 6.5f;
-        [Min(0.01f)] public float fullChargeSeconds = 1;
+        [Min(0.01f)] public float fullChargeSeconds = 1f;
         public AnimationCurve chargeCurve = AnimationCurve.Linear(0, 0, 1, 1);
         [Min(0.1f)] public float gravityMultiplier = 1.8f;
-        [Min(1)] public float maximumFallSpeed = 28;
+        [Min(1f)] public float maximumFallSpeed = 28f;
+
         [Header("Direcao do salto")]
         [Tooltip("Direcao_Pulo: aparece durante a carga no chao e aponta para onde o salto vai. Rotacao global, so no eixo Z.")]
         public Transform direcaoPulo;
         [Tooltip("Seta dentro de Direcao_Pulo: recebe a cor da camisa e cresce com a carga.")]
         public Renderer seta;
         [Tooltip("Limite da mira para cada lado, em graus, a partir do alto do personagem.")]
-        [Range(0, 89)] public float anguloMaximo = 70;
-        [Tooltip("Escala da seta sem carga (multiplica a escala original da Seta).")]
+        [Range(0, 89)] public float anguloMaximo = 70f;
         [Min(0)] public float tamanhoSetaMinimo = 0.6f;
-        [Tooltip("Escala da seta com a carga cheia (multiplica a escala original da Seta).")]
         [Min(0)] public float tamanhoSetaMaximo = 1.2f;
-        // Graus: 0 = para cima, positivo = para a direita da tela.
         public float AnguloMira { get; private set; }
+
         [Header("Toque duplo para carga rapida")]
-        [Tooltip("Janela a partir do primeiro pressionamento. Um toque breve aguarda esta janela antes de saltar.")]
         [Min(0)] public float doubleTapWindow = 0.25f;
         [Min(0)] public float quickTapDuration = 0.12f;
-        [Min(1)] public float doubleTapChargeMultiplier = 2;
+        [Min(1)] public float doubleTapChargeMultiplier = 2f;
         public float ChargeSpeedMultiplier => chargeMultiplier;
-        [Header("Movimento livre")]
+
+        [Header("Movimento horizontal fisico")]
         public Camera movementCamera;
         [Min(0)] public float groundSpeed = 3.5f;
-        [Min(0)] public float airSpeed = 5;
-        [Min(0)] public float visualTurnSpeed = 720;
-        [Tooltip("No ar, a parte horizontal do salto mantem a velocidade, mas segue o lado comandado. " +
-                 "Segundos para inverter totalmente o sentido com a direcao toda para o outro lado.")]
+        [Min(0)] public float airSpeed = 5f;
+        [Tooltip("Aceleracao usada para atingir a velocidade relativa desejada no chao.")]
+        [Min(0)] public float groundAcceleration = 28f;
+        [Tooltip("Frenagem relativa quando o jogador solta a direcao no chao.")]
+        [Min(0)] public float groundBrakeAcceleration = 36f;
+        [Tooltip("Segundos aproximados para inverter totalmente o movimento controlavel no ar.")]
         [Min(0.01f)] public float tempoViradaNoAr = 0.25f;
-        [Tooltip("Abaixo desta velocidade horizontal (m/s) o personagem continua olhando para onde estava.")]
+        [Min(0)] public float visualTurnSpeed = 720f;
         [Min(0)] public float velocidadeMinimaParaVirar = 0.3f;
+
         [Header("Plano 2D - so X e Y")]
-        [Tooltip("Trava o personagem no Z em que ele comeca a cena.")]
         public bool lockZ = true;
-        [Tooltip("Quao rapido o empurrao horizontal de impulsos externos (trampolim, ventilador) se dissipa no ar.")]
-        [Min(0)] public float externalHorizontalDrag = 2.5f;
-        [Tooltip("O mesmo, com o personagem no chao (atrito).")]
-        [Min(0)] public float externalGroundDrag = 8;
+
         [Header("Ajuda de plataforma - somente no ar")]
         public bool assistanceEnabled = true;
         [Min(0)] public float assistanceRange = 2.5f;
-        [Min(0)] public float repulsionSpeed = 1;
-        [Min(0)] public float attractionSpeed = 1;
+        [Tooltip("Aceleracao horizontal para afastar o personagem quando ele esta abaixo da plataforma.")]
+        [Min(0)] public float repulsionAcceleration = 8f;
+        [Tooltip("Aceleracao horizontal para aproximar o personagem do centro quando ele esta acima da plataforma.")]
+        [Min(0)] public float attractionAcceleration = 6f;
         [Range(0, 1)] public float assistanceWhileSteering = 0.15f;
         public float MoveAmount { get; private set; }
+
         [Header("Escolha de plataforma")]
-        [Min(0.1f)] public float searchRadius = 8;
+        [Min(0.1f)] public float searchRadius = 8f;
         [Min(0)] public float verticalDistanceWeight = 0.5f;
         [Min(0)] public float facingPreference = 1.4f;
         [Min(0)] public float targetHysteresis = 1.2f;
+
         [Header("Contato")]
         [Min(0.001f)] public float contactTolerance = 0.06f;
         [Min(0)] public float groundProbeDistance = 0.08f;
+        [Tooltip("Mudanca minima de velocidade do suporte para sincronizar uma frenagem brusca.")]
+        [Min(0)] public float platformBrakeSyncThreshold = 0.2f;
+
         [Header("Eventos")]
         public UnityEvent onJump = new();
         public UnityEvent onFirstPlatform = new();
         public UnityEvent onDeath = new();
+
         public bool Grounded { get; private set; }
         public bool Charging { get; private set; }
         public bool Dead { get; private set; }
@@ -97,34 +100,57 @@ namespace Lumera.JumpForce
         public JumpForcePlatform Support { get; private set; }
         public float FeetY => body.position.y + feetOffset;
         public Rigidbody Body => body;
+        public bool GameplayEnabled { get; private set; } = true;
+
         Rigidbody body;
         CapsuleCollider capsule;
-        float feetOffset, playerRadius, chargeTime, previousFeet, takeoffGrace, planeZ, externalSpeedX;
-        float? pendingJumpHeight, deferredTapHeight;
-        // Angulo da mira guardado ao soltar o pulo. A parte horizontal do salto dura o voo todo com a mesma
-        // velocidade (impulsoSaltoX), mas o sentido (jumpSpeedX) segue a direcao comandada no ar.
-        float pendingJumpAngle, deferredTapAngle, jumpSpeedX, impulsoSaltoX;
-        // Giro do visual em Y, em graus, a partir de olhar para a camera: +90 = olhando para +X, -90 = para -X.
+        float feetOffset;
+        float playerRadius;
+        float chargeTime;
+        float takeoffGrace;
+        float? pendingJumpHeight;
+        float? deferredTapHeight;
+        float pendingJumpAngle;
+        float deferredTapAngle;
+        float pressStartedAt;
+        float secondTapDeadline;
+        float chargeMultiplier = 1f;
         float giroVisual;
-        Vector3 escalaSetaOriginal = Vector3.one;
-        MaterialPropertyBlock blocoSeta;
-        static readonly int CorBase = Shader.PropertyToID("_BaseColor"), CorLegada = Shader.PropertyToID("_Color");
-        float pressStartedAt, secondTapDeadline, chargeMultiplier = 1;
+        float previousVerticalSpeed;
+
+        Collider wallContact;
+        bool wallJumpReady;
+        float wallNormalX;
+        readonly RaycastHit[] contactHits = new RaycastHit[24];
+
         JumpForcePlatform launchPlatform;
+        JumpForcePlatform supportVelocitySource;
+        Vector3 previousSupportVelocity;
         Vector3 facing = Vector3.forward;
 
         Quaternion initialRotation;
-        bool initialized;
-        public bool GameplayEnabled { get; private set; } = true;
+        Vector3 escalaSetaOriginal = Vector3.one;
+        MaterialPropertyBlock blocoSeta;
+        static readonly int CorBase = Shader.PropertyToID("_BaseColor");
+        static readonly int CorLegada = Shader.PropertyToID("_Color");
         CollisionDetectionMode gameplayCollisionMode;
+        bool initialized;
+
+        const float TakeoffGrace = 0.12f;
+
+        float Gravity => Mathf.Max(0.1f, -Physics.gravity.y * gravityMultiplier);
+
         public void SetGameplayEnabled(bool value)
         {
-            if (GameplayEnabled == value) return;
+            if (GameplayEnabled == value)
+                return;
+
             GameplayEnabled = value;
+
             if (!value)
             {
                 CancelCharge();
-                MoveAmount = 0;
+                MoveAmount = 0f;
                 body.linearVelocity = Vector3.zero;
                 gameplayCollisionMode = body.collisionDetectionMode;
                 body.collisionDetectionMode = CollisionDetectionMode.Discrete;
@@ -143,72 +169,120 @@ namespace Lumera.JumpForce
         {
             body = GetComponent<Rigidbody>();
             capsule = GetComponent<CapsuleCollider>();
-            if (!input) input = GetComponent<JumpForceInput>();
-            if (!animationDriver) animationDriver = GetComponent<JumpForceAnimation>();
-            feetOffset = capsule.center.y * transform.lossyScale.y - capsule.height * transform.lossyScale.y * 0.5f;
-            playerRadius = capsule.radius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
-            // Combine with the lock instead of overwriting what the Inspector set.
-            planeZ = body.position.z;
-            body.constraints = RigidbodyConstraints.FreezeRotation | (lockZ ? RigidbodyConstraints.FreezePositionZ : RigidbodyConstraints.None);
-            body.useGravity = false;
+
+            if (!input)
+                input = GetComponent<JumpForceInput>();
+
+            if (!animationDriver)
+                animationDriver = GetComponent<JumpForceAnimation>();
+
+            feetOffset =
+                capsule.center.y * transform.lossyScale.y -
+                capsule.height * transform.lossyScale.y * 0.5f;
+
+            playerRadius =
+                capsule.radius *
+                Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
+
+            body.constraints =
+                RigidbodyConstraints.FreezeRotation |
+                (lockZ ? RigidbodyConstraints.FreezePositionZ : RigidbodyConstraints.None);
+
+            body.useGravity = true;
             body.interpolation = RigidbodyInterpolation.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
             initialRotation = visual ? visual.localRotation : Quaternion.identity;
-            previousFeet = FeetY;
             facing = visual ? visual.forward : Vector3.forward;
-            if (seta) escalaSetaOriginal = seta.transform.localScale;
+
+            if (seta)
+                escalaSetaOriginal = seta.transform.localScale;
+
+            previousVerticalSpeed = body.linearVelocity.y;
             MostrarMira(false);
             initialized = true;
         }
+
         void Update()
         {
-            if (Dead || !GameplayEnabled || !input) return;
-            if (input.JumpPressed) BeginCharge();
+            if (Dead || !GameplayEnabled || !input)
+                return;
+
+            if (input.JumpPressed)
+                BeginCharge();
+
             if (Charging)
             {
-                // A distancia do botao do joystick do pulo e o teto da carga: carrega ate ela e, se o botao
-                // voltar, a carga cai junto. Na zona morta nao ha salto (a seta some).
-                float teto = input.AimPadInDeadZone ? 0 : Mathf.Clamp01(input.AimPadStrength);
-                chargeTime = Mathf.Min(chargeTime + Time.deltaTime * chargeMultiplier, teto * fullChargeSeconds);
+                float teto = input.AimPadInDeadZone
+                    ? 0f
+                    : Mathf.Clamp01(input.AimPadStrength);
+
+                chargeTime = Mathf.Min(
+                    chargeTime + Time.deltaTime * chargeMultiplier,
+                    teto * fullChargeSeconds
+                );
+
                 AtualizarMira();
                 MostrarMira(!input.AimPadInDeadZone);
             }
-            if (input.JumpReleased) ReleaseJump();
+
+            if (input.JumpReleased)
+                ReleaseJump();
+
             if (deferredTapHeight.HasValue && Time.time >= secondTapDeadline)
             {
-                if (Grounded) { pendingJumpHeight = deferredTapHeight; pendingJumpAngle = deferredTapAngle; }
+                if (Grounded)
+                {
+                    pendingJumpHeight = deferredTapHeight;
+                    pendingJumpAngle = deferredTapAngle;
+                }
+
                 deferredTapHeight = null;
             }
         }
 
-        // A direcao do salto e o angulo do botao do joystick do pulo (metade de baixo espelhada para cima),
-        // limitado ao angulo maximo. Na zona morta a mira fica onde estava.
         void AtualizarMira()
         {
-            if (!Grounded || !input || input.AimPadInDeadZone) return;
-            float limite = Mathf.Clamp(anguloMaximo, 0, 89);
-            var direcao = input.AimPadDirection;
-            AnguloMira = Mathf.Clamp(Mathf.Atan2(direcao.x, direcao.y) * Mathf.Rad2Deg, -limite, limite);
+            if (!Grounded || !input || input.AimPadInDeadZone)
+                return;
+
+            float limite = Mathf.Clamp(anguloMaximo, 0f, 89f);
+            Vector2 direcao = input.AimPadDirection;
+
+            AnguloMira = Mathf.Clamp(
+                Mathf.Atan2(direcao.x, direcao.y) * Mathf.Rad2Deg,
+                -limite,
+                limite
+            );
         }
 
         void LateUpdate()
         {
-            if (!direcaoPulo || !direcaoPulo.gameObject.activeSelf) return;
-            // Rotacao global: so Z muda, x e y ficam 0 mesmo com o personagem virado.
-            direcaoPulo.rotation = Quaternion.Euler(0, 0, -AnguloMira * DireitaDaTela().x);
-            if (seta) seta.transform.localScale = escalaSetaOriginal * Mathf.Lerp(tamanhoSetaMinimo, tamanhoSetaMaximo, Charge01);
+            if (!direcaoPulo || !direcaoPulo.gameObject.activeSelf)
+                return;
+
+            direcaoPulo.rotation =
+                Quaternion.Euler(0f, 0f, -AnguloMira * DireitaDaTela().x);
+
+            if (seta)
+            {
+                seta.transform.localScale =
+                    escalaSetaOriginal *
+                    Mathf.Lerp(tamanhoSetaMinimo, tamanhoSetaMaximo, Charge01);
+            }
         }
 
         void MostrarMira(bool visivel)
         {
-            if (direcaoPulo && direcaoPulo.gameObject.activeSelf != visivel) direcaoPulo.gameObject.SetActive(visivel);
+            if (direcaoPulo && direcaoPulo.gameObject.activeSelf != visivel)
+                direcaoPulo.gameObject.SetActive(visivel);
         }
 
-        // Cor da camisa da paleta escolhida (vestiario).
         public void DefinirCorSeta(Color cor)
         {
-            if (!seta) return;
+            if (!seta)
+                return;
+
             blocoSeta ??= new MaterialPropertyBlock();
             seta.GetPropertyBlock(blocoSeta);
             blocoSeta.SetColor(CorBase, cor);
@@ -218,43 +292,83 @@ namespace Lumera.JumpForce
 
         Vector3 DireitaDaTela()
         {
-            // Screen right mapped onto world X (flipped if the camera looks from the other side).
-            var camera = movementCamera ? movementCamera : Camera.main;
-            return camera && camera.transform.right.x < 0 ? Vector3.left : Vector3.right;
+            Camera camera = movementCamera ? movementCamera : Camera.main;
+            return camera && camera.transform.right.x < 0f
+                ? Vector3.left
+                : Vector3.right;
         }
-        // Public commands also serve future UI buttons, upgrades and deterministic validation.
+
         public void BeginCharge()
         {
-            if (!GameplayEnabled || (!Grounded && !CanWallJump) || Dead || Charging || pendingJumpHeight.HasValue) return;
+            if (
+                !GameplayEnabled ||
+                (!Grounded && !CanWallJump) ||
+                Dead ||
+                Charging ||
+                pendingJumpHeight.HasValue
+            )
+                return;
+
             if (!Grounded && CanWallJump)
             {
                 deferredTapHeight = null;
                 chargeTime = fullChargeSeconds;
                 pendingJumpHeight = Mathf.Max(minimumJumpHeight, maximumJumpHeight);
-                return; // Full wall jump on press; no hold/release delay.
+                return;
             }
-            bool secondTap = deferredTapHeight.HasValue && Time.time <= secondTapDeadline;
+
+            bool secondTap =
+                deferredTapHeight.HasValue &&
+                Time.time <= secondTapDeadline;
+
             deferredTapHeight = null;
-            chargeMultiplier = secondTap ? Mathf.Max(1, doubleTapChargeMultiplier) : 1;
+            chargeMultiplier = secondTap
+                ? Mathf.Max(1f, doubleTapChargeMultiplier)
+                : 1f;
+
             Charging = true;
-            chargeTime = 0;
+            chargeTime = 0f;
             pressStartedAt = Time.time;
-            AnguloMira = 0;
+            AnguloMira = 0f;
             MostrarMira(false);
             animationDriver?.BeginCharge();
         }
+
         public void ReleaseJump()
         {
-            if (!Charging) return;
+            if (!Charging)
+                return;
+
             Charging = false;
             MostrarMira(false);
-            if ((!Grounded && !CanWallJump) || Dead) { animationDriver?.Land(); return; }
-            // Soltar com o botao do joystick na zona morta cancela o salto.
-            if (input && input.AimPadInDeadZone) { chargeTime = 0; animationDriver?.Land(); return; }
+
+            if ((!Grounded && !CanWallJump) || Dead)
+            {
+                animationDriver?.Land();
+                return;
+            }
+
+            if (input && input.AimPadInDeadZone)
+            {
+                chargeTime = 0f;
+                animationDriver?.Land();
+                return;
+            }
+
             float factor = Mathf.Clamp01(chargeCurve.Evaluate(Charge01));
-            float height = Mathf.Lerp(minimumJumpHeight, Mathf.Max(minimumJumpHeight, maximumJumpHeight), factor);
-            if (Grounded && chargeMultiplier == 1 && doubleTapWindow > 0 &&
-                Time.time - pressStartedAt <= quickTapDuration && Time.time < pressStartedAt + doubleTapWindow)
+            float height = Mathf.Lerp(
+                minimumJumpHeight,
+                Mathf.Max(minimumJumpHeight, maximumJumpHeight),
+                factor
+            );
+
+            if (
+                Grounded &&
+                chargeMultiplier == 1f &&
+                doubleTapWindow > 0f &&
+                Time.time - pressStartedAt <= quickTapDuration &&
+                Time.time < pressStartedAt + doubleTapWindow
+            )
             {
                 deferredTapHeight = height;
                 deferredTapAngle = AnguloMira;
@@ -266,422 +380,777 @@ namespace Lumera.JumpForce
                 pendingJumpAngle = AnguloMira;
             }
         }
+
         public void CancelCharge()
         {
             Charging = false;
-            pendingJumpHeight = deferredTapHeight = null;
-            chargeMultiplier = 1;
-            chargeTime = 0;
+            pendingJumpHeight = null;
+            deferredTapHeight = null;
+            chargeMultiplier = 1f;
+            chargeTime = 0f;
             MostrarMira(false);
             animationDriver?.Land();
         }
-        // Velocity in m/s, independent of the Rigidbody mass. Used by the trampoline, the fan and other launchers.
-        public void Launch(Vector2 velocity)
+
+        // Impulso fisico adicionado ao Rigidbody. O valor e uma mudanca de velocidade em m/s.
+        public void Launch(Vector2 deltaVelocity)
         {
-            if (Dead || !GameplayEnabled) return;
-            externalSpeedX = velocity.x;
-            jumpSpeedX = impulsoSaltoX = 0;
-            if (Grounded)
+            if (Dead || !GameplayEnabled || deltaVelocity == Vector2.zero)
+                return;
+
+            if (Charging || deferredTapHeight.HasValue)
+                CancelCharge();
+
+            pendingJumpHeight = null;
+            pendingJumpAngle = 0f;
+            launchPlatform = null;
+
+            body.AddForce(
+                new Vector3(deltaVelocity.x, deltaVelocity.y, 0f),
+                ForceMode.VelocityChange
+            );
+
+            if (deltaVelocity.y > 0.01f)
             {
-                // A push too weak to clear the floor during the takeoff grace would sink through it: slide instead.
-                if (velocity.y <= Gravity * TakeoffGrace) return;
                 Grounded = false;
                 Support = null;
-            }
-            if (Charging || deferredTapHeight.HasValue) CancelCharge();
-            pendingJumpHeight = null;
-            launchPlatform = null;
-            body.linearVelocity = Vector3.up * velocity.y;
-            if (velocity.y > 0)
-            {
+                ResetSupportVelocityTracking();
                 takeoffGrace = TakeoffGrace;
                 animationDriver?.Release();
             }
         }
-        // A child collider's collision messages go to its Rigidbody's GameObject (a trampoline inside a
-        // platform with a kinematic Rigidbody never hears them), but the player always gets its own.
+
         void OnCollisionEnter(Collision collision)
         {
-            if (Dead || !GameplayEnabled) return;
+            if (Dead || !GameplayEnabled)
+                return;
+
             for (int i = 0; i < collision.contactCount; i++)
             {
-                var contact = collision.GetContact(i);
-                var other = contact.otherCollider;
-                if (!other) continue;
-                if (other.TryGetComponent(out JumpForceTrampolim trampolim)) { trampolim.Impulsionar(this); return; }
-                if (other.TryGetComponent(out JumpForceVentilador ventilador)) { ventilador.Empurrar(this); return; }
+                ContactPoint contact = collision.GetContact(i);
+                Collider other = contact.otherCollider;
+
+                if (!other)
+                    continue;
+
+                if (other.TryGetComponent(out JumpForceTrampolim trampolim))
+                {
+                    trampolim.Impulsionar(this);
+                    return;
+                }
+
+                if (other.TryGetComponent(out JumpForceVentilador ventilador))
+                {
+                    ventilador.Empurrar(this);
+                    return;
+                }
             }
         }
+
         void OnTriggerEnter(Collider other)
         {
-            if (Dead || !GameplayEnabled) return;
-            if (other.TryGetComponent(out JumpForceCoin coin)) { coin.Collect(this); return; }
-            if (other.TryGetComponent(out JumpForceTrampolim trampolim)) trampolim.Impulsionar(this);
-            else if (other.TryGetComponent(out JumpForceVentilador ventilador)) ventilador.Empurrar(this);
+            if (Dead || !GameplayEnabled)
+                return;
+
+            if (other.TryGetComponent(out JumpForceCoin coin))
+            {
+                coin.Collect(this);
+                return;
+            }
+
+            if (other.TryGetComponent(out JumpForceTrampolim trampolim))
+                trampolim.Impulsionar(this);
+            else if (other.TryGetComponent(out JumpForceVentilador ventilador))
+                ventilador.Empurrar(this);
         }
-        void OnApplicationFocus(bool focus) { if (!focus) CancelCharge(); }
-        void OnApplicationPause(bool paused) { if (paused) CancelCharge(); }
+
+        void OnApplicationFocus(bool focus)
+        {
+            if (!focus)
+                CancelCharge();
+        }
+
+        void OnApplicationPause(bool paused)
+        {
+            if (paused)
+                CancelCharge();
+        }
 
         void FixedUpdate()
         {
-            if (Dead || !GameplayEnabled) return;
+            if (Dead || !GameplayEnabled)
+                return;
+
 #if UNITY_EDITOR
-            if (FollowEditorDrag()) return;
+            if (FollowEditorDrag())
+                return;
 #endif
+
             float dt = Time.fixedDeltaTime;
-            body.linearVelocity = Vector3.up * body.linearVelocity.y;
-            takeoffGrace = Mathf.Max(0, takeoffGrace - dt);
-            // Carry before contact tests. The support has already sampled its new transform.
-            if (Grounded && Support && Support.isActiveAndEnabled)
-                body.position = ConstrainToWalls(Support.CarryPoint(body.position));
-            Physics.SyncTransforms();
+            takeoffGrace = Mathf.Max(0f, takeoffGrace - dt);
+
             FindSupport();
+            SyncSupportBrake();
             ProbePillar();
-            if (CanWallJump && input && input.JumpHeld && !pendingJumpHeight.HasValue) BeginCharge();
+
+            if (
+                CanWallJump &&
+                input &&
+                input.JumpHeld &&
+                !pendingJumpHeight.HasValue
+            )
+            {
+                BeginCharge();
+            }
+
             if (pendingJumpHeight.HasValue)
             {
                 if (Grounded || CanWallJump)
                 {
-                    if (!Grounded)
+                    bool wallJump = !Grounded;
+                    launchPlatform = Support;
+
+                    float speed = Mathf.Sqrt(
+                        2f * Gravity * pendingJumpHeight.Value
+                    );
+
+                    float angle =
+                        (Grounded ? pendingJumpAngle : 0f) * Mathf.Deg2Rad;
+
+                    float verticalImpulse = speed * Mathf.Cos(angle);
+                    float horizontalImpulse;
+
+                    if (wallJump)
                     {
                         wallJumpReady = false;
-                        externalSpeedX = wallNormalX * wallJumpAwaySpeed;
+                        horizontalImpulse = wallNormalX * wallJumpAwaySpeed;
                     }
-                    launchPlatform = Support;
-                    float speed = Mathf.Sqrt(2 * Gravity * pendingJumpHeight.Value);
-                    // A carga define a forca total; a mira divide entre altura e distancia. Salto de parede: vertical.
-                    float angulo = (Grounded ? pendingJumpAngle : 0) * Mathf.Deg2Rad;
-                    body.linearVelocity = Vector3.up * speed * Mathf.Cos(angulo);
-                    jumpSpeedX = speed * Mathf.Sin(angulo) * DireitaDaTela().x;
-                    impulsoSaltoX = Mathf.Abs(jumpSpeedX);
+                    else
+                    {
+                        horizontalImpulse =
+                            speed *
+                            Mathf.Sin(angle) *
+                            DireitaDaTela().x;
+                    }
+
+                    body.AddForce(
+                        new Vector3(horizontalImpulse, verticalImpulse, 0f),
+                        ForceMode.VelocityChange
+                    );
+
                     Grounded = false;
                     Support = null;
+                    ResetSupportVelocityTracking();
                     takeoffGrace = TakeoffGrace;
+
                     animationDriver?.Release();
                     onJump.Invoke();
                     JumpForceEventos.AvisarPulo();
                 }
+
                 pendingJumpHeight = null;
-                pendingJumpAngle = 0;
+                pendingJumpAngle = 0f;
             }
+
             if (!Grounded)
             {
-                if (Charging && !CanWallJump) { CancelCharge(); animationDriver?.Release(); }
+                if (Charging && !CanWallJump)
+                {
+                    CancelCharge();
+                    animationDriver?.Release();
+                }
+
                 SelectTarget();
-                MoveHorizontally(dt);
-                body.AddForce(Vector3.down * Gravity, ForceMode.Acceleration);
-                ApplyWallSlide();
-                if (body.linearVelocity.y < -maximumFallSpeed)
-                    body.linearVelocity = Vector3.down * maximumFallSpeed;
             }
             else
             {
-                MoveHorizontally(dt);
-                FindSupport();
-                if (Grounded) body.linearVelocity = Vector3.zero;
-                else body.AddForce(Vector3.down * Gravity, ForceMode.Acceleration);
+                Target = null;
             }
-            externalSpeedX *= Mathf.Exp(-(Grounded ? externalGroundDrag : externalHorizontalDrag) * dt);
-            UpdateCollisions();
-            LockToPlane();
-            previousFeet = FeetY;
-        }
-        float Gravity => Mathf.Max(0.1f, -Physics.gravity.y * gravityMultiplier);
-        const float TakeoffGrace = 0.12f;
 
-        // The constraint only covers the solver; carry, snaps and direct position writes can still leak into Z.
-        Vector3 ConstrainToWalls(Vector3 position)
-        {
-            if (JumpForceSpawnedElement.TryGetWallLimits(invisibleWalls, out float left, out float right) &&
-                right - left > 2 * playerRadius)
-                position.x = Mathf.Clamp(position.x, left + playerRadius + 0.01f, right - playerRadius - 0.01f);
-            return position;
+            MoveHorizontally(dt);
+
+            if (!Grounded)
+            {
+                // A gravidade base vem do Rigidbody. Apenas o multiplicador excedente
+                // e aplicado como aceleracao adicional.
+                if (Mathf.Abs(gravityMultiplier - 1f) > 0.0001f)
+                {
+                    body.AddForce(
+                        Physics.gravity * (gravityMultiplier - 1f),
+                        ForceMode.Acceleration
+                    );
+                }
+
+                ApplyWallSlide();
+            }
+
+            if (body.linearVelocity.y < -maximumFallSpeed)
+            {
+                Vector3 velocity = body.linearVelocity;
+                velocity.y = -maximumFallSpeed;
+                body.linearVelocity = velocity;
+            }
+
+            UpdateCollisions();
+            previousVerticalSpeed = body.linearVelocity.y;
         }
-        void LockToPlane()
-        {
-            body.position = ConstrainToWalls(body.position);
-            if (!lockZ) return;
-            var p = body.position;
-            if (p.z != planeZ) { p.z = planeZ; body.position = p; }
-            var v = body.linearVelocity;
-            if (v.z != 0) { v.z = 0; body.linearVelocity = v; }
-        }
+
 #if UNITY_EDITOR
         bool editorDragging;
-        // Play mode: interpolation and FixedUpdate rewrite the Transform every step, undoing Scene view gizmo drags.
-        // While the root is being dragged in the Scene view, the body follows the Transform instead.
+
         bool FollowEditorDrag()
         {
-            bool dragging = GUIUtility.hotControl != 0
-                && UnityEditor.EditorWindow.focusedWindow is UnityEditor.SceneView
-                && UnityEditor.Selection.Contains(gameObject);
+            bool dragging =
+                GUIUtility.hotControl != 0 &&
+                UnityEditor.EditorWindow.focusedWindow is UnityEditor.SceneView &&
+                UnityEditor.Selection.Contains(gameObject);
+
             if (dragging != editorDragging)
             {
                 editorDragging = dragging;
-                body.interpolation = dragging ? RigidbodyInterpolation.None : RigidbodyInterpolation.Interpolate;
-                if (!dragging) { Grounded = false; Support = null; }
+                body.interpolation = dragging
+                    ? RigidbodyInterpolation.None
+                    : RigidbodyInterpolation.Interpolate;
+
+                if (!dragging)
+                {
+                    Grounded = false;
+                    Support = null;
+                    ResetSupportVelocityTracking();
+                }
             }
-            if (!dragging) return false;
-            var p = transform.position;
-            if (lockZ) p.z = planeZ;
-            body.position = p;
+
+            if (!dragging)
+                return false;
+
+            body.position = transform.position;
             body.rotation = transform.rotation;
             body.linearVelocity = Vector3.zero;
-            externalSpeedX = 0;
-            previousFeet = FeetY;
+            body.angularVelocity = Vector3.zero;
+            previousVerticalSpeed = 0f;
             return true;
         }
 #endif
 
         void FindSupport()
         {
-            float impacto = Mathf.Max(0, -body.linearVelocity.y);
             JumpForcePlatform found = null;
-            if (takeoffGrace <= 0 && body.linearVelocity.y <= 0.5f)
+            float bestTop = float.NegativeInfinity;
+
+            if (takeoffGrace <= 0f && body.linearVelocity.y <= 0.5f)
             {
-                foreach (var platform in JumpForcePlatform.Active)
+                foreach (JumpForcePlatform platform in JumpForcePlatform.Active)
                 {
-                    if (!platform.Surface.enabled || platform.Surface.isTrigger) continue;
+                    if (
+                        !platform ||
+                        !platform.Surface ||
+                        !platform.Surface.enabled ||
+                        platform.Surface.isTrigger
+                    )
+                        continue;
+
                     float top = platform.Top;
-                    var local = platform.transform.InverseTransformPoint(body.position);
-                    var box = platform.Surface;
-                    var scale = platform.transform.lossyScale;
-                    bool inside = Mathf.Abs(local.x - box.center.x) <= box.size.x * 0.5f + playerRadius * 0.4f / Mathf.Abs(scale.x)
-                        && Mathf.Abs(local.z - box.center.z) <= box.size.z * 0.5f + playerRadius * 0.4f / Mathf.Abs(scale.z);
-                    bool touching = FeetY >= top - contactTolerance && FeetY <= top + groundProbeDistance;
-                    bool crossed = previousFeet >= top - platform.Delta.y - contactTolerance && FeetY <= top && !Grounded;
-                    if (inside && (touching || crossed) && (found == null || top > found.Top)) found = platform;
+                    Vector3 local = platform.transform.InverseTransformPoint(body.position);
+                    BoxCollider box = platform.Surface;
+                    Vector3 scale = platform.transform.lossyScale;
+
+                    float scaleX = Mathf.Max(0.0001f, Mathf.Abs(scale.x));
+                    float scaleZ = Mathf.Max(0.0001f, Mathf.Abs(scale.z));
+
+                    bool inside =
+                        Mathf.Abs(local.x - box.center.x) <=
+                            box.size.x * 0.5f + playerRadius * 0.4f / scaleX &&
+                        Mathf.Abs(local.z - box.center.z) <=
+                            box.size.z * 0.5f + playerRadius * 0.4f / scaleZ;
+
+                    bool touching =
+                        FeetY >= top - contactTolerance &&
+                        FeetY <= top + groundProbeDistance;
+
+                    if (inside && touching && top > bestTop)
+                    {
+                        found = platform;
+                        bestTop = top;
+                    }
                 }
             }
+
             bool wasGrounded = Grounded;
             Grounded = found != null;
             Support = found;
+
             if (found)
             {
-                var p = body.position;
-                p.y = found.Top - feetOffset + 0.005f;
-                body.position = p;
-                body.linearVelocity = Vector3.zero;
                 Target = null;
                 launchPlatform = null;
-                jumpSpeedX = impulsoSaltoX = 0;
+
                 if (!wasGrounded)
                 {
                     animationDriver?.Land();
-                    JumpForceEventos.AvisarPouso(impacto);
+                    JumpForceEventos.AvisarPouso(Mathf.Max(0f, -previousVerticalSpeed));
                 }
+
                 if (!found.startingGround && !ReachedPlatform)
                 {
                     ReachedPlatform = true;
                     onFirstPlatform.Invoke();
                 }
             }
-            else if (wasGrounded) animationDriver?.Release();
+            else
+            {
+                if (wasGrounded)
+                    animationDriver?.Release();
+
+                ResetSupportVelocityTracking();
+            }
         }
+
+        void SyncSupportBrake()
+        {
+            if (!Grounded || !Support || !Support.Body)
+            {
+                ResetSupportVelocityTracking();
+                return;
+            }
+
+            Vector3 currentVelocity = Support.Velocity;
+
+            if (supportVelocitySource != Support)
+            {
+                supportVelocitySource = Support;
+                previousSupportVelocity = currentVelocity;
+                return;
+            }
+
+            Vector3 delta = currentVelocity - previousSupportVelocity;
+
+            // Sincroniza somente mudancas que estejam freando/revertendo o suporte.
+            // A aceleracao normal continua sendo transmitida pelo contato fisico.
+            bool braking =
+                Vector3.Dot(previousSupportVelocity, delta) < 0f ||
+                Vector3.Dot(previousSupportVelocity, currentVelocity) < 0f;
+
+            if (braking && delta.magnitude >= platformBrakeSyncThreshold)
+                body.AddForce(delta, ForceMode.VelocityChange);
+
+            previousSupportVelocity = currentVelocity;
+        }
+
+        void ResetSupportVelocityTracking()
+        {
+            supportVelocitySource = null;
+            previousSupportVelocity = Vector3.zero;
+        }
+
         void SelectTarget()
         {
-            var best = (JumpForcePlatform)null;
+            JumpForcePlatform best = null;
             float bestScore = float.PositiveInfinity;
-            float apex = FeetY + Mathf.Pow(Mathf.Max(0, body.linearVelocity.y), 2) / (2 * Gravity);
-            foreach (var platform in JumpForcePlatform.Active)
+
+            float apex =
+                FeetY +
+                Mathf.Pow(Mathf.Max(0f, body.linearVelocity.y), 2f) /
+                (2f * Gravity);
+
+            foreach (JumpForcePlatform platform in JumpForcePlatform.Active)
             {
-                if (platform.startingGround || !platform.Surface.enabled || platform.Surface.isTrigger) continue;
-                if (platform == launchPlatform && body.linearVelocity.y > 0) continue;
-                if (platform.Top > apex + contactTolerance) continue;
-                var delta = platform.Center - body.position;
-                if (lockZ) delta.z = 0;
+                if (
+                    !platform ||
+                    platform.startingGround ||
+                    !platform.Surface ||
+                    !platform.Surface.enabled ||
+                    platform.Surface.isTrigger
+                )
+                    continue;
+
+                if (platform == launchPlatform && body.linearVelocity.y > 0f)
+                    continue;
+
+                if (platform.Top > apex + contactTolerance)
+                    continue;
+
+                Vector3 delta = platform.Center - body.position;
+
+                if (lockZ)
+                    delta.z = 0f;
+
                 float horizontal = new Vector2(delta.x, delta.z).magnitude;
-                if (horizontal > searchRadius || Mathf.Abs(platform.Top - FeetY) > searchRadius) continue;
-                delta.y = 0;
-                float alignment = delta.sqrMagnitude > 0.01f ? Vector3.Dot(facing, delta.normalized) : 0;
-                float score = horizontal + Mathf.Abs(platform.Top - FeetY) * verticalDistanceWeight - alignment * facingPreference;
-                if (platform == Target) score -= targetHysteresis;
-                if (score < bestScore) { bestScore = score; best = platform; }
-            }
-            Target = best;
-        }
-        void MoveHorizontally(float dt)
-        {
-            // Keep the held sources intact: airborne steering must remain available while jump is held.
-            bool holdOnGround = Grounded && (Charging || (input && input.JumpHeld));
-            float command = !holdOnGround && input ? Mathf.Clamp(input.Movement.x, -1, 1) : 0;
-            MoveAmount = Mathf.Abs(command);
-            Vector3 right = DireitaDaTela();
-            Vector3 desired = right * command * (Grounded ? groundSpeed : airSpeed);
-            Vector3 help = Vector3.zero;
-            if (!Grounded && !wallContact && assistanceEnabled && Target)
-            {
-                var radial = body.position - Target.Center;
-                radial.y = 0;
-                if (lockZ) radial.z = 0;
-                float radius = radial.magnitude;
-                if (radius <= assistanceRange)
+
+                if (
+                    horizontal > searchRadius ||
+                    Mathf.Abs(platform.Top - FeetY) > searchRadius
+                )
+                    continue;
+
+                delta.y = 0f;
+
+                float alignment =
+                    delta.sqrMagnitude > 0.01f
+                        ? Vector3.Dot(facing, delta.normalized)
+                        : 0f;
+
+                float scoreValue =
+                    horizontal +
+                    Mathf.Abs(platform.Top - FeetY) * verticalDistanceWeight -
+                    alignment * facingPreference;
+
+                if (platform == Target)
+                    scoreValue -= targetHysteresis;
+
+                if (scoreValue < bestScore)
                 {
-                    var outward = radius > 0.001f ? radial / radius : -right;
-                    if (FeetY < Target.Top)
-                    {
-                        float remaining = Mathf.Max(0, Target.SafeRadius(playerRadius) - radius);
-                        help = outward * Mathf.Min(repulsionSpeed, remaining / dt);
-                    }
-                    else help = -outward * Mathf.Min(attractionSpeed, radius / dt);
-                    if (MoveAmount > 0.01f)
-                    {
-                        help *= assistanceWhileSteering;
-                        // Assistance can bend the trajectory, but never oppose the player's command.
-                        var direction = desired.normalized;
-                        help -= direction * Mathf.Min(0, Vector3.Dot(help, direction));
-                    }
+                    bestScore = scoreValue;
+                    best = platform;
                 }
             }
-            // No ar, a parte horizontal do salto mantem a velocidade, mas vira para o lado comandado.
-            if (!Grounded && impulsoSaltoX > 0 && MoveAmount > 0.1f)
-            {
-                float alvo = Mathf.Sign(command) * right.x * impulsoSaltoX;
-                jumpSpeedX = Mathf.MoveTowards(jumpSpeedX, alvo, 2 * impulsoSaltoX / tempoViradaNoAr * MoveAmount * dt);
-            }
-            OlharParaOndeVai(desired.x + externalSpeedX + jumpSpeedX, dt);
-            Vector3 posicaoAlvo = (desired + help + Vector3.right * (externalSpeedX + jumpSpeedX)) * dt;
-            if (lockZ) posicaoAlvo.z = 0f;
-            posicaoAlvo = StopAtObstacles(posicaoAlvo);
-            if (posicaoAlvo != Vector3.zero) body.position += posicaoAlvo;
+
+            Target = best;
         }
-        // Gira so o visual (Direcao_Visual) em Y: a raiz e o corpo fisico nunca giram. A troca de lado passa
-        // pela frente (olhando para a camera), sem mostrar as costas.
+
+        void MoveHorizontally(float dt)
+        {
+            bool holdOnGround =
+                Grounded &&
+                (Charging || (input && input.JumpHeld));
+
+            float command =
+                !holdOnGround && input
+                    ? Mathf.Clamp(input.Movement.x, -1f, 1f)
+                    : 0f;
+
+            MoveAmount = Mathf.Abs(command);
+
+            float screenDirection = DireitaDaTela().x;
+            float supportSpeedX =
+                Grounded && Support
+                    ? Support.Velocity.x
+                    : 0f;
+
+            float relativeSpeedX =
+                body.linearVelocity.x - supportSpeedX;
+
+            if (Grounded)
+            {
+                float desiredRelativeSpeed =
+                    command * groundSpeed * screenDirection;
+
+                float acceleration =
+                    Mathf.Abs(command) > 0.01f
+                        ? groundAcceleration
+                        : groundBrakeAcceleration;
+
+                float speedError =
+                    desiredRelativeSpeed - relativeSpeedX;
+
+                if (Mathf.Abs(speedError) > 0.001f && acceleration > 0f)
+                {
+                    float requestedAcceleration =
+                        Mathf.Clamp(
+                            speedError / Mathf.Max(dt, 0.0001f),
+                            -acceleration,
+                            acceleration
+                        );
+
+                    body.AddForce(
+                        Vector3.right * requestedAcceleration,
+                        ForceMode.Acceleration
+                    );
+                }
+            }
+            else if (Mathf.Abs(command) > 0.01f)
+            {
+                float desiredDirection =
+                    Mathf.Sign(command * screenDirection);
+
+                float acceleration =
+                    2f * Mathf.Max(0.01f, airSpeed) /
+                    Mathf.Max(0.01f, tempoViradaNoAr);
+
+                // Acima de airSpeed, o controle nao apaga impulso externo no mesmo sentido.
+                // Para inverter, a aceleracao continua agindo naturalmente contra a inercia.
+                bool alreadyFasterSameDirection =
+                    Mathf.Sign(relativeSpeedX) == desiredDirection &&
+                    Mathf.Abs(relativeSpeedX) >= airSpeed;
+
+                if (!alreadyFasterSameDirection)
+                {
+                    body.AddForce(
+                        Vector3.right * desiredDirection * acceleration * Mathf.Abs(command),
+                        ForceMode.Acceleration
+                    );
+                }
+            }
+
+            ApplyPlatformAssistance(command);
+
+            float visualVelocity = Grounded
+                ? body.linearVelocity.x - supportSpeedX
+                : body.linearVelocity.x;
+
+            OlharParaOndeVai(visualVelocity, dt);
+        }
+
+        void ApplyPlatformAssistance(float command)
+        {
+            if (
+                Grounded ||
+                wallContact ||
+                !assistanceEnabled ||
+                !Target
+            )
+                return;
+
+            Vector3 radial = body.position - Target.Center;
+            radial.y = 0f;
+
+            if (lockZ)
+                radial.z = 0f;
+
+            float radius = radial.magnitude;
+
+            if (radius > assistanceRange || radius <= 0.0001f)
+                return;
+
+            Vector3 outward = radial / radius;
+            Vector3 acceleration;
+
+            if (FeetY < Target.Top)
+            {
+                // Abaixo da plataforma: afasta para ajudar a contornar a lateral.
+                acceleration = outward * repulsionAcceleration;
+            }
+            else
+            {
+                // Acima da plataforma: aproxima do centro para ajudar o pouso.
+                acceleration = -outward * attractionAcceleration;
+            }
+
+            if (Mathf.Abs(command) > 0.01f)
+            {
+                acceleration *= assistanceWhileSteering;
+
+                Vector3 commandedDirection =
+                    Vector3.right * Mathf.Sign(command * DireitaDaTela().x);
+
+                float opposing = Vector3.Dot(acceleration, commandedDirection);
+
+                if (opposing < 0f)
+                    acceleration -= commandedDirection * opposing;
+            }
+
+            body.AddForce(acceleration, ForceMode.Acceleration);
+        }
+
         void OlharParaOndeVai(float velocidadeX, float dt)
         {
-            if (Mathf.Abs(velocidadeX) < velocidadeMinimaParaVirar) return;
+            if (Mathf.Abs(velocidadeX) < velocidadeMinimaParaVirar)
+                return;
+
             facing = Vector3.right * Mathf.Sign(velocidadeX);
-            giroVisual = Mathf.MoveTowards(giroVisual, 90 * Mathf.Sign(velocidadeX), visualTurnSpeed * dt);
-            if (visual) visual.localRotation = initialRotation * Quaternion.Euler(0, -giroVisual, 0);
-        }
-        // Horizontal movement teleports the body, so the solver alone would let it sink into solid obstacles.
-        // Only obstacles stop it: platforms keep their pass-through-from-below behaviour.
-        Vector3 StopAtObstacles(Vector3 step)
-        {
-            const float skin = 0.01f;
-            float distance = step.magnitude;
-            if (distance < 0.00001f) return step;
-            var direction = step / distance;
-            float allowed = distance;
-            CapsulePoints(out var bottom, out var top);
-            int count = Physics.CapsuleCastNonAlloc(bottom, top, playerRadius * 0.95f, direction,
-                contactHits, distance + skin, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < count; i++)
+
+            giroVisual = Mathf.MoveTowards(
+                giroVisual,
+                90f * Mathf.Sign(velocidadeX),
+                visualTurnSpeed * dt
+            );
+
+            if (visual)
             {
-                var hit = contactHits[i];
-                if (hit.collider == capsule || hit.distance <= 0 || hit.collider.GetComponent<JumpForcePlatform>()) continue;
-                bool wall = System.Array.IndexOf(invisibleWalls, hit.collider) >= 0;
-                if (!wall && !hit.collider.GetComponentInParent<JumpForcePilarArco>()) continue;
-                allowed = Mathf.Min(allowed, Mathf.Max(0, hit.distance - skin));
+                visual.localRotation =
+                    initialRotation * Quaternion.Euler(0f, -giroVisual, 0f);
             }
-            // Hitting a wall also ends a trampoline or fan slide in that direction.
-            if (allowed < distance && externalSpeedX * direction.x > 0) externalSpeedX = 0;
-            if (allowed < distance && jumpSpeedX * direction.x > 0) jumpSpeedX = impulsoSaltoX = 0;
-            return direction * allowed;
         }
+
         void CapsulePoints(out Vector3 bottom, out Vector3 top)
         {
-            Vector3 center = body.position + Vector3.Scale(capsule.center, transform.lossyScale);
-            float half = Mathf.Max(0, capsule.height * transform.lossyScale.y * 0.5f - playerRadius);
+            Vector3 center =
+                body.position +
+                Vector3.Scale(capsule.center, transform.lossyScale);
+
+            float half = Mathf.Max(
+                0f,
+                capsule.height * transform.lossyScale.y * 0.5f - playerRadius
+            );
+
             bottom = center - Vector3.up * half;
             top = center + Vector3.up * half;
         }
+
         void ProbePillar()
         {
             Collider found = null;
-            float normal = 0, best = float.PositiveInfinity;
+            float normal = 0f;
+            float best = float.PositiveInfinity;
+
             if (!Grounded)
             {
-                CapsulePoints(out var bottom, out var top);
+                CapsulePoints(out Vector3 bottom, out Vector3 top);
                 Vector3 center = (bottom + top) * 0.5f;
+
                 for (int side = -1; side <= 1; side += 2)
                 {
-                    int count = Physics.SphereCastNonAlloc(center, playerRadius * 0.9f, Vector3.right * side,
-                        contactHits, wallProbeDistance + playerRadius * 0.1f, ~0, QueryTriggerInteraction.Ignore);
+                    int count = Physics.SphereCastNonAlloc(
+                        center,
+                        playerRadius * 0.9f,
+                        Vector3.right * side,
+                        contactHits,
+                        wallProbeDistance + playerRadius * 0.1f,
+                        ~0,
+                        QueryTriggerInteraction.Ignore
+                    );
+
                     for (int i = 0; i < count; i++)
                     {
-                        var hit = contactHits[i];
-                        if (!hit.collider || hit.collider == capsule || hit.collider.GetComponent<JumpForcePlatform>() ||
-                            !hit.collider.GetComponentInParent<JumpForcePilarArco>() || Mathf.Abs(hit.normal.x) < 0.7f ||
-                            center.y >= hit.collider.bounds.max.y - 0.05f || hit.distance >= best) continue;
+                        RaycastHit hit = contactHits[i];
+
+                        if (
+                            !hit.collider ||
+                            hit.collider == capsule ||
+                            hit.collider.GetComponent<JumpForcePlatform>() ||
+                            !hit.collider.GetComponentInParent<JumpForcePilarArco>() ||
+                            Mathf.Abs(hit.normal.x) < 0.7f ||
+                            center.y >= hit.collider.bounds.max.y - 0.05f ||
+                            hit.distance >= best
+                        )
+                            continue;
+
                         found = hit.collider;
                         normal = Mathf.Sign(hit.normal.x);
                         best = hit.distance;
                     }
                 }
             }
-            if (found != wallContact) wallJumpReady = found != null;
+
+            if (found != wallContact)
+                wallJumpReady = found != null;
+
             wallContact = found;
             wallNormalX = normal;
         }
+
         void ApplyWallSlide()
         {
-            if (!wallContact || takeoffGrace > 0) return;
-            // Steering away releases the attraction; contact must actually break to rearm another jump.
-            float command = input ? input.Movement.x : 0;
-            if (command * wallNormalX > 0.1f) return;
-            body.AddForce(Vector3.left * wallNormalX * wallAttraction, ForceMode.Acceleration);
-            if (body.linearVelocity.y < 0)
+            if (!wallContact || takeoffGrace > 0f)
+                return;
+
+            float command = input ? input.Movement.x : 0f;
+
+            if (command * wallNormalX > 0.1f)
+                return;
+
+            body.AddForce(
+                Vector3.left * wallNormalX * wallAttraction,
+                ForceMode.Acceleration
+            );
+
+            if (body.linearVelocity.y < 0f)
             {
-                body.AddForce(Vector3.up * (-body.linearVelocity.y * wallSlideDrag), ForceMode.Acceleration);
-                var velocity = body.linearVelocity;
+                body.AddForce(
+                    Vector3.up * (-body.linearVelocity.y * wallSlideDrag),
+                    ForceMode.Acceleration
+                );
+
+                Vector3 velocity = body.linearVelocity;
                 velocity.y = Mathf.Max(velocity.y, -wallSlideSpeed);
                 body.linearVelocity = velocity;
             }
         }
+
         void UpdateCollisions()
         {
-            foreach (var platform in JumpForcePlatform.Active)
+            foreach (JumpForcePlatform platform in JumpForcePlatform.Active)
             {
-                bool ignore = !platform.startingGround && platform != Support
-                    && (body.linearVelocity.y > 0.01f || FeetY < platform.Top - contactTolerance);
+                if (!platform || !platform.Surface || !capsule)
+                    continue;
+
+                bool ignore =
+                    !platform.startingGround &&
+                    platform != Support &&
+                    (
+                        body.linearVelocity.y > 0.01f ||
+                        FeetY < platform.Top - contactTolerance
+                    );
+
                 Physics.IgnoreCollision(capsule, platform.Surface, ignore);
             }
         }
+
         public void Die()
         {
-            if (Dead || !GameplayEnabled) return;
+            if (Dead || !GameplayEnabled)
+                return;
+
             CancelCharge();
             score?.ObserveHeight(body.position.y);
+
             Dead = true;
-            jumpSpeedX = impulsoSaltoX = 0;
             body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
             body.isKinematic = true;
+
             onDeath.Invoke();
             JumpForceEventos.AvisarMorte();
+
             body.position = Vector3.zero;
             transform.position = Vector3.zero;
+
             Grounded = false;
-            Target = Support = launchPlatform = null;
+            Target = null;
+            Support = null;
+            launchPlatform = null;
             wallContact = null;
             wallJumpReady = false;
+            ResetSupportVelocityTracking();
         }
+
         public void Restart()
         {
             FindAnyObjectByType<JumpForcePlatformVisibility>()?.RestoreAll();
+
             body.isKinematic = false;
-            Dead = Grounded = ReachedPlatform = false;
-            Target = Support = launchPlatform = null;
+            Dead = false;
+            Grounded = false;
+            ReachedPlatform = false;
+            Target = null;
+            Support = null;
+            launchPlatform = null;
+
             CancelCharge();
+
             body.position = Vector3.zero;
             transform.position = Vector3.zero;
-            planeZ = 0;
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+
             wallContact = null;
             wallJumpReady = false;
-            body.linearVelocity = Vector3.zero;
-            previousFeet = FeetY;
-            takeoffGrace = externalSpeedX = jumpSpeedX = impulsoSaltoX = giroVisual = AnguloMira = 0;
+            takeoffGrace = 0f;
+            giroVisual = 0f;
+            AnguloMira = 0f;
+            previousVerticalSpeed = 0f;
             facing = Vector3.forward;
-            if (visual) visual.localRotation = initialRotation;
+            ResetSupportVelocityTracking();
+
+            if (visual)
+                visual.localRotation = initialRotation;
+
             animationDriver?.ResetIntro();
             UpdateCollisions();
         }
+
         void OnDisable()
         {
-            if (!initialized) return;
+            if (!initialized)
+                return;
+
             CancelCharge();
-            foreach (var platform in JumpForcePlatform.Active)
-                if (platform && platform.Surface && capsule) Physics.IgnoreCollision(capsule, platform.Surface, false);
+            ResetSupportVelocityTracking();
+
+            foreach (JumpForcePlatform platform in JumpForcePlatform.Active)
+            {
+                if (platform && platform.Surface && capsule)
+                    Physics.IgnoreCollision(capsule, platform.Surface, false);
+            }
         }
     }
 }
