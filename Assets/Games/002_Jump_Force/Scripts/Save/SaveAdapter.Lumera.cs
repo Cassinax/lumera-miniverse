@@ -126,15 +126,14 @@ public partial class SaveAdapter
 
     //---------- Dados de cada jogo
 
-    // Cada jogo grava sob o proprio comando: [JOGO_<ID>],[chave]. Assim a lista de saves sabe quais jogos
-    // tem dados e consegue apagar so os de um. O id e o do JogoLumera (fixo depois de publicado).
-    public static string ComandoDoJogo(string idJogo) => "JOGO_" + (idJogo ?? "").Trim().ToUpperInvariant();
-
+    // Cada jogo grava sob o proprio comando: [JOGO_<ID>],[chave] (SaveSystem.GameCommand, do pacote). Assim a
+    // lista de saves sabe quais jogos tem dados e consegue apagar so os de um. O id e o do JogoLumera (fixo
+    // depois de publicado). Essas chaves sao progresso (viajam para a nuvem): ver Escopo em SaveAdapter.cs.
     public string ObterDadoJogo(string idJogo, string chave, string padrao)
     {
         try
         {
-            string valor = ObterDado(ComandoDoJogo(idJogo), chave);
+            string valor = ObterDado(SaveSystem.GameCommand(idJogo), chave);
             return valor == null || valor == SemDado ? padrao : valor;
         }
         catch (Exception) { return padrao; }
@@ -142,41 +141,35 @@ public partial class SaveAdapter
 
     public void SalvarDadoJogo(string idJogo, string chave, string valor)
     {
-        try { SalvarDados(ComandoDoJogo(idJogo), chave, valor ?? ""); }
+        try { SalvarDados(SaveSystem.GameCommand(idJogo), chave, valor ?? ""); }
         catch (Exception) { }
     }
 
-    public bool TemDadosDoJogo(string idJogo) => ChavesDoJogo(idJogo).Count > 0;
-
-    public bool ApagarDadosDoJogo(string idJogo)
+    // O pacote le o estado confirmado, nao a fila: grava antes de consultar.
+    public bool TemDadosDoJogo(string idJogo)
     {
-        var chaves = ChavesDoJogo(idJogo);
-        if (chaves.Count == 0) return true;
-        try
-        {
-            foreach (string chave in chaves) _saveSystem.EnqueueRemove(chave, PriorityLevel.Alto);
-            _saveSystem.ProcessQueues();
-            _saveSystem.ForceSave();
-            return !TemDadosDoJogo(idJogo);
-        }
-        catch (Exception) { return false; }
-    }
-
-    // O snapshot le o ultimo commit, nao a fila: grava antes de procurar.
-    private List<string> ChavesDoJogo(string idJogo)
-    {
-        var chaves = new List<string>();
-        if (string.IsNullOrWhiteSpace(idJogo)) return chaves;
+        if (string.IsNullOrWhiteSpace(idJogo)) return false;
         try
         {
             GarantirInicializacao();
             SalvarAgora();
-            string prefixo = "[" + ComandoDoJogo(idJogo) + "],";
-            foreach (var par in CapturarSnapshot().Data)
-                if (par.Key.StartsWith(prefixo, StringComparison.Ordinal)) chaves.Add(par.Key);
+            return _saveSystem.HasGameData(idJogo);
         }
-        catch (Exception) { }
-        return chaves;
+        catch (Exception) { return false; }
+    }
+
+    // So os dados do jogo: a carteira comum e as preferencias do aparelho nao sao tocadas.
+    public bool ApagarDadosDoJogo(string idJogo)
+    {
+        if (!TemDadosDoJogo(idJogo)) return true;
+        try
+        {
+            _saveSystem.EnqueueRemoveGameData(idJogo);
+            _saveSystem.ProcessQueues();
+            _saveSystem.ForceSave();
+            return !_saveSystem.HasGameData(idJogo);
+        }
+        catch (Exception) { return false; }
     }
 
     //---------- Apagar dados

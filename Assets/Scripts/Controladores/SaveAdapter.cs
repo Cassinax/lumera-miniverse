@@ -1,4 +1,7 @@
-// Cassinax Unity System Save - v0.10.0
+// Cassinax Unity System Save - v1.0.0
+// Adapter do Lumera Miniverse: a unica peca do save escrita pelo projeto, fora de "cassinax_recursos".
+// Baseado em Samples/LocalOnly/SaveAdapterExemplo.cs; regras do Lumera em SaveAdapter.Lumera.cs.
+// Tem GUID proprio (diferente do exemplo), para uma reimportacao do pacote nunca sobrescreve-lo.
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -112,7 +115,7 @@ public partial class SaveAdapter : MonoBehaviour
             if (_instancia == null) _instancia = FindFirstObjectByType<SaveAdapter>();
 #pragma warning restore CS0618
 #else
-            if (_instancia == null) _instancia = FindObjectOfType<SaveAdapter>();
+            if (_instancia == null) _instancia = FindAnyObjectByType<SaveAdapter>();
 #endif
             return _instancia;
         }
@@ -145,7 +148,7 @@ public partial class SaveAdapter : MonoBehaviour
         { Report(SaveError.InvalidConfiguration); return; }
         try
         {
-            _saveCore = new SaveCore(_chaveCriptografia, 2, _usarCompressao,
+            _saveCore = new SaveCore(_chaveCriptografia, SaveCore.CurrentCodecVersion, _usarCompressao,
                 new SaveLimits { MaxPayloadBytes = _limitePayloadBytes, MaxPlainTextBytes = _limiteDescomprimidoBytes });
             ISaveStorageAdapter storage = _storageMode == LocalStorageMode.PlayerPrefs ||
                 (_forcarPlayerPrefsNoWebGL && Application.platform == RuntimePlatform.WebGLPlayer)
@@ -196,7 +199,9 @@ public partial class SaveAdapter : MonoBehaviour
     {
         foreach (var rule in _escopos.Where(r => !string.IsNullOrEmpty(r.prefixo)).OrderByDescending(r => r.prefixo.Length))
             if (key.StartsWith(rule.prefixo, StringComparison.Ordinal)) return rule.escopo;
-        return SaveScope.LocalPreference;
+        // Progresso de cada jogo hospedado ([JOGO_<ID>],) viaja como progresso (SaveSystem.MultiGameScope).
+        // O resto sem regra fica no aparelho (preferencia local).
+        return SaveSystem.IsGameKey(key) ? SaveScope.Progress : SaveScope.LocalPreference;
     }
     private static string BuildKey(string comando, string chave)
     {
