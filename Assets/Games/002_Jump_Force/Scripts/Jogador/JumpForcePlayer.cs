@@ -12,7 +12,8 @@ namespace Lumera.JumpForce
             Indisponivel,
             Ajustavel,
             LateralPilar,
-            VentiladorGiratorio
+            VentiladorGiratorio,
+            ParadoGelo
         }
 
         [Header("Referencias")]
@@ -57,6 +58,8 @@ namespace Lumera.JumpForce
         [Range(0, 30)] public float margemPuloVertical = 5f;
         [Tooltip("Velocidade horizontal maxima em relacao ao apoio para considerar o jogador parado.")]
         [Min(0)] public float toleranciaParado = 0.15f;
+        [Tooltip("Zona sem comando de direcao que permite pular no gelo, mesmo deslizando.")]
+        [Range(0, 0.3f)] public float toleranciaDirecaoGelo = 0.05f;
         [Min(0)] public float tamanhoSetaMinimo = 0.6f;
         [Min(0)] public float tamanhoSetaMaximo = 1.2f;
         public float AnguloMira { get; private set; }
@@ -123,8 +126,13 @@ namespace Lumera.JumpForce
 
         readonly System.Collections.Generic.HashSet<JumpForcePlatform> landingSurfaces = new();
 
+        // parado_gelo: o deslizamento fisico nao significa que o jogador esta andando.
+        public bool ParadoNoGelo => Grounded && Support && Support.escorregadia &&
+            (Charging || pendingJumpHeight.HasValue || !input ||
+                Mathf.Abs(input.Direction) <= toleranciaDirecaoGelo);
         public bool ParadoNoChao => Grounded && body &&
-            Mathf.Abs(body.linearVelocity.x - (Support ? Support.Velocity.x : 0f)) <= toleranciaParado;
+            (Support && Support.escorregadia ? ParadoNoGelo :
+                Mathf.Abs(body.linearVelocity.x - (Support ? Support.Velocity.x : 0f)) <= toleranciaParado);
         public bool PodePular => GameplayEnabled && !Dead && takeoffGrace <= 0f &&
             !pendingJumpHeight.HasValue && (ParadoNoChao || CanWallJump);
         public CategoriaPulo CategoriaPuloAtual
@@ -134,12 +142,13 @@ namespace Lumera.JumpForce
                 if (!PodePular) return CategoriaPulo.Indisponivel;
                 if (ParadoNoChao)
                     return Support && Support.instantJump
-                        ? CategoriaPulo.VentiladorGiratorio : CategoriaPulo.Ajustavel;
+                        ? CategoriaPulo.VentiladorGiratorio : ParadoNoGelo ? CategoriaPulo.ParadoGelo : CategoriaPulo.Ajustavel;
                 return !Grounded && CanWallJump
                     ? CategoriaPulo.LateralPilar : CategoriaPulo.Indisponivel;
             }
         }
-        public bool JoystickPuloDisponivel => CategoriaPuloAtual == CategoriaPulo.Ajustavel;
+        public bool JoystickPuloDisponivel => CategoriaPuloAtual == CategoriaPulo.Ajustavel ||
+            CategoriaPuloAtual == CategoriaPulo.ParadoGelo;
         public bool PuloSimplesDisponivel => CategoriaPuloAtual == CategoriaPulo.LateralPilar ||
             CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio;
 
@@ -402,10 +411,11 @@ namespace Lumera.JumpForce
             if (!Charging)
                 return;
 
+            bool podePularAoSoltar = PodePular;
             Charging = false;
             MostrarMira(false);
 
-            if (!PodePular || Dead)
+            if (!podePularAoSoltar || Dead)
             {
                 animationDriver?.Land();
                 return;
