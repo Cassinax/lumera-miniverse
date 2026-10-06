@@ -596,16 +596,6 @@ namespace Lumera.JumpForce
             SyncSupportBrake();
             ProbePillar();
 
-            if (
-                CanWallJump &&
-                input &&
-                input.JumpHeld &&
-                !pendingJumpHeight.HasValue
-            )
-            {
-                BeginCharge();
-            }
-
             if (pendingJumpHeight.HasValue)
             {
                 if (ParadoNoChao || CanWallJump)
@@ -1100,10 +1090,46 @@ namespace Lumera.JumpForce
                 }
             }
 
-            if (found != wallContact)
-                wallJumpReady = found != null;
+            // A colisao fica liberada durante o salto para nao prender no arco.
+            // Ainda pode haver outro pulo por toque se a capsula continuar junto da lateral.
+            if (!Grounded && !found && takeoffGrace <= 0f)
+                foreach (var other in ignoredPillarColliders)
+                    if (ContatoLateralLiberado(other, out normalX))
+                    {
+                        found = other;
+                        break;
+                    }
+
+            wallJumpReady = found != null;
             wallContact = found;
             wallNormalX = normalX;
+        }
+
+        bool ContatoLateralLiberado(Collider other, out float normalX)
+        {
+            normalX = 0f;
+            if (!other || !other.enabled || !other.gameObject.activeInHierarchy || other.isTrigger)
+                return false;
+
+            Vector3 normal;
+            if (Physics.ComputePenetration(capsule, body.position, body.rotation,
+                other, other.transform.position, other.transform.rotation, out normal, out float profundidade))
+            {
+                if (profundidade > contactTolerance) return false;
+            }
+            else
+            {
+                Vector3 pontoPilar = other.ClosestPoint(capsule.bounds.center);
+                Vector3 pontoJogador = capsule.ClosestPoint(pontoPilar);
+                Vector3 distancia = pontoJogador - pontoPilar;
+                if (distancia.sqrMagnitude > contactTolerance * contactTolerance) return false;
+                normal = distancia.sqrMagnitude > 0.000001f ? distancia.normalized
+                    : (capsule.bounds.center - pontoPilar).normalized;
+            }
+
+            if (Mathf.Abs(normal.x) < 0.7f) return false;
+            normalX = Mathf.Sign(normal.x);
+            return true;
         }
 
         void ReleasePillarCollision()
@@ -1159,7 +1185,8 @@ namespace Lumera.JumpForce
 
         void ApplyWallSlide()
         {
-            if (!wallContact || takeoffGrace > 0f)
+            // Nao puxar a capsula para dentro de um pilar cuja colisao esta liberada.
+            if (!wallContact || takeoffGrace > 0f || ignoredPillarColliders.Contains(wallContact))
                 return;
 
             float command = input ? input.Movement.x : 0f;
