@@ -58,7 +58,9 @@ namespace Lumera.JumpForce
             bounds.center -= new Vector3(transform.position.x, top, transform.position.z);
             Shape = new JumpForceElementShape { bodyFromTop = bounds, fanBodyFromTop = bounds,
                 rotatingFanBodyFromTop = bounds, topOffset = top - transform.position.y, baseSpeed = Mathf.Max(0.1f, speed),
-                maximumDescent = ability && ability.tipo == JumpForcePlatformType.Nuvem ? Mathf.Max(0, ability.descidaMaxima) : 0 };
+                maximumDescent = ability && ability.tipo == JumpForcePlatformType.Nuvem ? Mathf.Max(0, ability.descidaMaxima) : 0,
+                cloudWaitSeconds = ability ? Mathf.Max(0, ability.esperaNuvem) : 0,
+                cloudDescentSpeed = ability ? Mathf.Max(0, ability.velocidadeDescida) : 0 };
             renderers = GetComponentsInChildren<Renderer>(true);
             rendererEnabled = new bool[renderers.Length];
             for (int i = 0; i < renderers.Length; i++) rendererEnabled[i] = renderers[i].enabled;

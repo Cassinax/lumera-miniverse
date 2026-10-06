@@ -152,6 +152,74 @@ namespace Lumera.JumpForce
         public bool PuloSimplesDisponivel => CategoriaPuloAtual == CategoriaPulo.LateralPilar ||
             CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio;
 
+#if UNITY_EDITOR
+        [Header("Desenvolvimento - somente Editor")]
+        [Tooltip("Ao morrer, entra em voo livre por X/Y. Espaco retoma a fisica sem desligar o modo.")]
+        public bool modoDev = true;
+        [Min(0.1f)] public float velocidadeVooDev = 15f;
+        public bool EmVooDev { get; private set; }
+        Vector2 direcaoVooDev;
+
+        public void RetomarFisicaDev()
+        {
+            if (!EmVooDev) return;
+            EmVooDev = false;
+            direcaoVooDev = Vector2.zero;
+            body.isKinematic = false;
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+            body.useGravity = true;
+            body.detectCollisions = true;
+            body.collisionDetectionMode = gameplayCollisionMode;
+            previousVerticalSpeed = 0f;
+            takeoffGrace = TakeoffGrace;
+            input?.SetGameplayEnabled(GameplayEnabled);
+            UpdateCollisions();
+        }
+
+        void EntrarVooDev()
+        {
+            if (EmVooDev) return;
+            CancelCharge();
+            RestorePillarCollision();
+            landingSurfaces.Clear();
+            physicsContactCount = 0;
+            Grounded = false;
+            Target = Support = launchPlatform = null;
+            wallContact = null;
+            wallJumpReady = false;
+            ResetSupportVelocityTracking();
+            // Zera no mesmo instante da suspensao: nao conserva a velocidade da queda.
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+            body.useGravity = false;
+            gameplayCollisionMode = body.collisionDetectionMode;
+            body.collisionDetectionMode = CollisionDetectionMode.Discrete;
+            body.isKinematic = true;
+            body.detectCollisions = false;
+            previousVerticalSpeed = MoveAmount = 0f;
+            direcaoVooDev = Vector2.zero;
+            EmVooDev = true;
+            input?.SetGameplayEnabled(false);
+        }
+
+        bool AtualizarVooDev()
+        {
+            if (!EmVooDev) return false;
+            var teclado = UnityEngine.InputSystem.Keyboard.current;
+            if (!modoDev || teclado != null && teclado.spaceKey.wasPressedThisFrame)
+            {
+                RetomarFisicaDev();
+                return true; // Espaco nao inicia tambem um salto neste quadro.
+            }
+            direcaoVooDev = teclado == null ? Vector2.zero : new Vector2(
+                (teclado.rightArrowKey.isPressed ? 1 : 0) - (teclado.leftArrowKey.isPressed ? 1 : 0),
+                (teclado.upArrowKey.isPressed ? 1 : 0) - (teclado.downArrowKey.isPressed ? 1 : 0));
+            direcaoVooDev = Vector2.ClampMagnitude(direcaoVooDev, 1);
+            return true;
+        }
+#endif
+
         Rigidbody body;
         CapsuleCollider capsule;
         float feetOffset;
@@ -198,6 +266,9 @@ namespace Lumera.JumpForce
             if (GameplayEnabled == value)
                 return;
 
+#if UNITY_EDITOR
+            if (EmVooDev) RetomarFisicaDev();
+#endif
             GameplayEnabled = value;
 
             if (!value)
@@ -255,6 +326,9 @@ namespace Lumera.JumpForce
 
         void Update()
         {
+#if UNITY_EDITOR
+            if (AtualizarVooDev()) return;
+#endif
             if (Dead || !GameplayEnabled || !input)
                 return;
 
@@ -584,6 +658,12 @@ namespace Lumera.JumpForce
                 return;
 
 #if UNITY_EDITOR
+            if (EmVooDev)
+            {
+                body.MovePosition(body.position + new Vector3(direcaoVooDev.x, direcaoVooDev.y, 0f) *
+                    velocidadeVooDev * Time.fixedDeltaTime);
+                return;
+            }
             if (FollowEditorDrag())
                 return;
 #endif
@@ -1263,6 +1343,10 @@ namespace Lumera.JumpForce
             if (Dead || !GameplayEnabled)
                 return;
 
+#if UNITY_EDITOR
+            if (modoDev) { EntrarVooDev(); return; }
+#endif
+
             CancelCharge();
             score?.ObserveHeight(body.position.y);
 
@@ -1291,6 +1375,9 @@ namespace Lumera.JumpForce
 
         public void Restart()
         {
+#if UNITY_EDITOR
+            RetomarFisicaDev();
+#endif
             RestorePillarCollision();
             landingSurfaces.Clear();
             physicsContactCount = 0;
@@ -1329,6 +1416,9 @@ namespace Lumera.JumpForce
 
         void OnDisable()
         {
+#if UNITY_EDITOR
+            if (initialized) RetomarFisicaDev();
+#endif
             RestorePillarCollision();
             landingSurfaces.Clear();
             physicsContactCount = 0;

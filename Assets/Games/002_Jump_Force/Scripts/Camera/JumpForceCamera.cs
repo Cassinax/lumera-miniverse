@@ -97,6 +97,9 @@ namespace Lumera.JumpForce
             return true;
         }
 
+#if UNITY_EDITOR
+        bool estavaEmVooDev;
+#endif
         float floorFeet;
         Vector3 initialPosition, velocidadeCamera;
         Vector3 cameraInicial;
@@ -153,8 +156,15 @@ namespace Lumera.JumpForce
             if (visao) visao.transform.localPosition -= tremorAplicado;
             tremorAplicado = Vector3.zero;
             if (!InWardrobe && (!player || player.Dead)) return;
+#if UNITY_EDITOR
+            if (estavaEmVooDev && (!player || !player.EmVooDev)) Restart();
+            estavaEmVooDev = player && player.EmVooDev;
+#endif
             Seguir();
             Focar();
+#if UNITY_EDITOR
+            if (player && player.EmVooDev) return;
+#endif
             if (InWardrobe || !visao) return;
 
             float restante = TremorRestante;
@@ -178,7 +188,14 @@ namespace Lumera.JumpForce
         {
             if (!player) return;
             float feet = player.FeetY;
-            if (!InWardrobe)
+#if UNITY_EDITOR
+            if (player.EmVooDev) LockedUpward = false;
+#endif
+            if (!InWardrobe
+#if UNITY_EDITOR
+                && !player.EmVooDev
+#endif
+            )
             {
                 LockedUpward |= player.ReachedPlatform;
                 // Standing on something moves the floor to it (also down, with a sinking pillar); in the air it holds.

@@ -28,6 +28,15 @@ namespace Lumera.JumpForce
                 if (status) status.text = "Escolha sua cor. Toque fora para jogar.\nControle: quadrado escolhe, X inicia. Teclado: Espaco ou Enter inicia.";
                 return;
             }
+#if UNITY_EDITOR
+            if (player.EmVooDev)
+            {
+                MostrarControles(false);
+                deathPanel.SetActive(false);
+                if (status) status.text = "Modo dev: setas movem em X/Y. Espaco retoma a fisica.";
+                return;
+            }
+#endif
             if (player.Dead && showedDeath && player.input.AnyPressed) { Restart(); return; }
             MostrarControles(!player.Dead);
             if (status) status.text = player.Dead ? "" : player.Charging

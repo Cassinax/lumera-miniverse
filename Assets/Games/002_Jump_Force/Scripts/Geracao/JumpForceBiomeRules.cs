@@ -23,6 +23,10 @@ namespace Lumera.JumpForce
         [Min(1)] public int niveisDescanso = 2;
         public JumpForceRouteSection[] conjuntos = Array.Empty<JumpForceRouteSection>();
 
+        [Header("Nuvens obrigatorias (niveis globais)")]
+        [Min(0)] public int primeiroNivelNuvemObrigatoria = 45;
+        [Min(0)] public int nivelIntensificarNuvens = 65;
+
         public static JumpForceBiomeRules[] Padrao() => new[]
         {
             new JumpForceBiomeRules { nome = "Campina", primeiroNivel = 0,
@@ -31,14 +35,19 @@ namespace Lumera.JumpForce
             new JumpForceBiomeRules { nome = "Ceus", primeiroNivel = 30,
                 plataformaNova = JumpForcePlatformType.Nuvem,
                 conjuntos = new[] { Secao("Nuvens em sequencia", "PPNPPNNPPP"),
-                    Secao("Nuvens intercaladas", "PNPNPPPNPP"), Secao("Travessia de nuvens", "PPNNPPPNPP") } }
+                    Secao("Nuvens intercaladas", "PNPNPPPNPP"), Secao("Travessia de nuvens", "PPNNPPPNPP") } },
+            new JumpForceBiomeRules { nome = "Serra Congelada", primeiroNivel = 91,
+                plataformaNova = JumpForcePlatformType.Gelo, intervaloApresentacao = 3,
+                conjuntos = new[] { Secao("Gelo entre apoios", "PPPGNPPNPP"),
+                    Secao("Travessia mista", "PNPPGPPNPP"), Secao("Nuvens e gelo", "PPNPPNGPPP") } }
         };
 
         static JumpForceRouteSection Secao(string nome, string sequencia)
         {
             var tipos = new JumpForcePlatformType[sequencia.Length];
             for (int i = 0; i < tipos.Length; i++)
-                tipos[i] = sequencia[i] == 'N' ? JumpForcePlatformType.Nuvem : JumpForcePlatformType.Padrao;
+                tipos[i] = sequencia[i] == 'N' ? JumpForcePlatformType.Nuvem :
+                    sequencia[i] == 'G' ? JumpForcePlatformType.Gelo : JumpForcePlatformType.Padrao;
             return new JumpForceRouteSection { nome = nome, plataformas = tipos };
         }
 
@@ -74,11 +83,19 @@ namespace Lumera.JumpForce
             var tipos = conjunto >= 0 ? bioma.conjuntos[conjunto]?.plataformas : null;
             bool descanso = passo >= tamanho - Mathf.Clamp(bioma.niveisDescanso, 1, tamanho);
             var tipo = !descanso && tipos != null && passo < tipos.Length ? tipos[passo] : JumpForcePlatformType.Padrao;
+            bool nuvemLiberada = false;
+            foreach (var anterior in biomas)
+                nuvemLiberada |= anterior != null && anterior.primeiroNivel <= nivel &&
+                    anterior.plataformaNova == JumpForcePlatformType.Nuvem;
+            // Um gargalo por conjunto; mais alto, dois. Nunca ocupa introducao ou descanso.
+            bool obrigatoria = nuvemLiberada && !descanso && nivel >= bioma.primeiroNivelNuvemObrigatoria &&
+                (passo == 2 || nivel >= bioma.nivelIntensificarNuvens && passo == 5);
+            if (obrigatoria) tipo = JumpForcePlatformType.Nuvem;
             bool liberada = tipo == JumpForcePlatformType.Padrao;
             foreach (var anterior in biomas)
                 liberada |= anterior != null && anterior.primeiroNivel <= nivel && anterior.plataformaNova == tipo;
             return new JumpForceBiomePlan(indice, conjunto, passo,
-                liberada ? tipo : JumpForcePlatformType.Padrao, false, descanso);
+                liberada ? tipo : JumpForcePlatformType.Padrao, false, descanso, obrigatoria);
         }
     }
 
@@ -86,11 +103,11 @@ namespace Lumera.JumpForce
     {
         public readonly int bioma, conjunto, passo;
         public readonly JumpForcePlatformType plataforma;
-        public readonly bool introducao, descanso;
+        public readonly bool introducao, descanso, nuvemObrigatoria;
         public bool ApoioSeguro => introducao || descanso;
-        public bool PermiteInterativo => !ApoioSeguro && plataforma == JumpForcePlatformType.Padrao;
-        public JumpForceBiomePlan(int bioma, int conjunto, int passo, JumpForcePlatformType plataforma, bool introducao, bool descanso)
+        public bool PermiteInterativo => !ApoioSeguro && (plataforma == JumpForcePlatformType.Padrao || nuvemObrigatoria);
+        public JumpForceBiomePlan(int bioma, int conjunto, int passo, JumpForcePlatformType plataforma, bool introducao, bool descanso, bool nuvemObrigatoria = false)
         { this.bioma = bioma; this.conjunto = conjunto; this.passo = passo; this.plataforma = plataforma;
-            this.introducao = introducao; this.descanso = descanso; }
+            this.introducao = introducao; this.descanso = descanso; this.nuvemObrigatoria = nuvemObrigatoria; }
     }
 }
