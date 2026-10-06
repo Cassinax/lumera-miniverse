@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 219e18b5446744946be42ef100e62496, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -4220,6 +4220,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1452426268}
   - component: {fileID: 1452426269}
+  - component: {fileID: 1452426270}
   m_Layer: 0
   m_Name: Spawner
   m_TagString: Untagged
@@ -4256,6 +4257,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceSpawner
   player: {fileID: 896773395}
   followCamera: {fileID: 1519061585}
+  biomeController: {fileID: 1452426270}
   startingGround: {fileID: 222424821302869639}
   platformPrefab: {fileID: 9111293917242899832, guid: dec85590dc11c4044b13a544b646a2ff, type: 3}
   platformPrefabs:
@@ -4328,6 +4330,32 @@ MonoBehaviour:
     - 1
     - 1
     - 1
+    useBiomes: 1
+    biomes:
+    - nome: Campina
+      primeiroNivel: 0
+      plataformaNova: 0
+      niveisIntroducao: 6
+      intervaloApresentacao: 2
+      niveisPorConjunto: 10
+      niveisDescanso: 2
+      conjuntos:
+      - nome: Aprender o salto
+        plataformas: 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - nome: Ceus
+      primeiroNivel: 30
+      plataformaNova: 3
+      niveisIntroducao: 6
+      intervaloApresentacao: 2
+      niveisPorConjunto: 10
+      niveisDescanso: 2
+      conjuntos:
+      - nome: Nuvens em sequencia
+        plataformas: 00000000000000000300000000000000000000000300000003000000000000000000000000000000
+      - nome: Nuvens intercaladas
+        plataformas: 00000000030000000000000003000000000000000000000000000000030000000000000000000000
+      - nome: Travessia de nuvens
+        plataformas: 00000000000000000300000003000000000000000000000000000000030000000000000000000000
     minimumSpeed: 0.4
     maximumSpeedFraction: 0.7
     safeFallMargin: 0.3
@@ -4341,6 +4369,23 @@ MonoBehaviour:
   createdPlatforms: 0
   createdPillars: 0
   runSeed: 0
+--- !u!114 &1452426270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452426267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e60540f421c1224da760faa4f87335b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceBiomeController
+  spawner: {fileID: 1452426269}
+  skyboxes:
+  - {fileID: 2100000, guid: 219e18b5446744946be42ef100e62496, type: 2}
+  - {fileID: 2100000, guid: 19f01540c5fd4384a858a5476fab03af, type: 2}
+  segundosTransicao: 2
 --- !u!1 &1517682375
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,6 +10,7 @@ namespace Lumera.JumpForce
         [Header("Referencias")]
         public JumpForcePlayer player;
         public JumpForceCamera followCamera;
+        public JumpForceBiomeController biomeController;
         public JumpForcePlatform startingGround;
         public GameObject platformPrefab;
         [Tooltip("Ordem: Padrao, Gelo, Invisivel, Nuvem, Instavel.")]
@@ -38,6 +39,7 @@ namespace Lumera.JumpForce
         [SerializeField] int runSeed;
         public JumpForceTrailMap Map { get; private set; }
         public IReadOnlyDictionary<int, JumpForceSpawnedElement> ActiveElements => active;
+        public int CurrentLevel => currentLevel;
         public int CreatedPlatforms => createdPlatforms;
         public int CreatedPillars => createdPillars;
 
@@ -134,6 +136,8 @@ namespace Lumera.JumpForce
             enabled = true;
             warnedAtLevel = -1;
             forgottenBelow = 0;
+            currentLevel = 0;
+            if (biomeController) biomeController.Resetar();
             startingGround.gameObject.SetActive(true);
             foreach (var item in active.Values) Return(item);
             active.Clear();
