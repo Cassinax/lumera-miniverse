@@ -223,7 +223,7 @@ MonoBehaviour:
   intervaloVisibilidade: {x: 4, y: 6}
   avisoPiscando: 1
   intervaloPiscada: 0.12
-  esperaNuvem: 3
+  esperaNuvem: 1.3
   velocidadeDescida: 0.4
   velocidadeRetorno: 0.6
   descidaMaxima: 3
