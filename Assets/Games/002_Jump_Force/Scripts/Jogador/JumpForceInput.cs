@@ -8,11 +8,6 @@ namespace Lumera.JumpForce
     [DefaultExecutionOrder(-150), DisallowMultipleComponent]
     public sealed class JumpForceInput : MonoBehaviour
     {
-        public bool tiltEnabled = true;
-        [Range(0, 0.9f)] public float tiltDeadZone = 0.12f;
-        [Min(0.1f)] public float tiltSensitivity = 2.5f;
-        [Min(0)] public float tiltSmoothing = 8;
-        public bool invertTilt;
         [Tooltip("Abaixo disto o analogico do controle e ignorado no movimento.")]
         [Range(0, 0.9f)] public float stickDeadZone = 0.2f;
         [Header("Joystick do pulo")]
@@ -26,8 +21,7 @@ namespace Lumera.JumpForce
         public bool AnyPressed { get; private set; }
         public Vector2 Movement { get; private set; }
         public float Direction => Movement.x;
-        // Botoes de direcao da tela (Button_Esquerda, Button_Direita): enquanto algum esta pressionado,
-        // a inclinacao do aparelho e ignorada.
+        // Botoes de direcao da tela: prioridade sobre teclado e analogico.
         public bool DirectionButtonsHeld => directionSources.Count > 0;
 
         // Joystick do pulo: posicao do botao, de -1 a 1 em cada eixo (comprimento 1 = borda). O comprimento
@@ -44,12 +38,7 @@ namespace Lumera.JumpForce
 
         readonly HashSet<object> jumpSources = new();
         readonly Dictionary<object, int> directionSources = new();
-        bool previousHeld, sensorEnabledByUs, uiJumpPulse;
-        float tilt, tiltNeutral;
-        JumpForcePlayer player;
-        bool PodeInclinar => player && player.GameplayEnabled && !player.Dead && !player.Grounded;
-
-        void Awake() => TryGetComponent(out player);
+        bool previousHeld, uiJumpPulse;
         Vector2 padToque;
         bool padToqueHeld, padToqueSoltou, padAnalogico;
         bool gameplayEnabled = true, waitingForRelease;
@@ -107,22 +96,13 @@ namespace Lumera.JumpForce
             if (!PadMirror) valor.y = Mathf.Max(0, valor.y);
             return valor;
         }
-        void OnEnable()
-        {
-            if (tiltEnabled && Accelerometer.current != null && !Accelerometer.current.enabled)
-            {
-                InputSystem.EnableDevice(Accelerometer.current);
-                sensorEnabledByUs = true;
-            }
-        }
-        public void CalibrateTilt() => tiltNeutral = Accelerometer.current?.acceleration.ReadValue().x ?? 0;
         void Update()
         {
             if (!gameplayEnabled) { Clear(); return; }
             if (waitingForRelease)
             {
                 Clear();
-                if (!ControlsHeld()) { waitingForRelease = false; CalibrateTilt(); }
+                if (!ControlsHeld()) { waitingForRelease = false; }
                 return;
             }
             bool held = jumpSources.Count > 0, pressed = uiJumpPulse, fisico = false;
@@ -161,15 +141,8 @@ namespace Lumera.JumpForce
             // Botoes da tela valem como as setas e passam na frente delas.
             int botoes = DirectionButtons();
             if (botoes != 0) digital = botoes;
-            // A inclinacao controla somente o voo; ao pousar, descarta a suavizacao acumulada.
-            bool usarInclinacao = tiltEnabled && PodeInclinar && !DirectionButtonsHeld;
-            float raw = usarInclinacao && Accelerometer.current != null
-                ? (Accelerometer.current.acceleration.ReadValue().x - tiltNeutral) * (invertTilt ? -1 : 1) : 0;
-            raw = Mathf.Abs(raw) < tiltDeadZone ? 0 : Mathf.Sign(raw) * (Mathf.Abs(raw) - tiltDeadZone) * tiltSensitivity;
-            tilt = usarInclinacao ? Mathf.Lerp(tilt, Mathf.Clamp(raw, -1, 1),
-                1 - Mathf.Exp(-tiltSmoothing * Time.unscaledDeltaTime)) : 0;
-            // Prioridade: botoes da tela, setas/direcional, analogico, inclinacao.
-            float move = digital != 0 ? digital : stick != 0 ? stick : tilt;
+            // Prioridade: botoes da tela, setas/direcional, analogico.
+            float move = digital != 0 ? digital : stick;
             Movement = new Vector2(Mathf.Clamp(move, -1, 1), 0);
             JumpPressed = !previousHeld && (held || pressed);
             JumpReleased = (previousHeld || pressed) && !held;
@@ -208,17 +181,11 @@ namespace Lumera.JumpForce
             JumpHeld = JumpPressed = JumpReleased = previousHeld = uiJumpPulse = AnyPressed = false;
             padToqueHeld = padToqueSoltou = padAnalogico = false;
             Movement = AimPad = padToque = Vector2.zero;
-            tilt = 0;
             jumpSources.Clear();
             directionSources.Clear();
         }
         void OnApplicationFocus(bool focus) { if (!focus) Clear(); }
         void OnApplicationPause(bool paused) { if (paused) Clear(); }
-        void OnDisable()
-        {
-            Clear();
-            if (sensorEnabledByUs && Accelerometer.current != null) InputSystem.DisableDevice(Accelerometer.current);
-            sensorEnabledByUs = false;
-        }
+        void OnDisable() => Clear();
     }
 }

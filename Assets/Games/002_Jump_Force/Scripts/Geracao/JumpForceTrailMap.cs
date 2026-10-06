@@ -30,6 +30,8 @@ namespace Lumera.JumpForce
     public sealed class JumpForceTrailSettings
     {
         [Min(0.5f)] public float levelHeight = 4;
+        [Tooltip("Nivel que encerra a partida. O mapa nao gera acima dele.")]
+        [Min(1)] public int finalLevel = 400;
         [Min(0)] public float separation = 0.1f;
         [Tooltip("Semente zero sorteia uma nova trilha a cada tentativa.")]
         public int seed;
@@ -309,7 +311,8 @@ namespace Lumera.JumpForce
                 if (!next.mandatoryCloud) next.platformVariant = 0;
                 var plan = Plan(next.level);
                 next.special = plan.PermiteInterativo
-                    ? nextFan == next.level ? JumpForceSpecial.Fan :
+                    ? nextFan == next.level && node.special != JumpForceSpecial.Trampoline &&
+                        !FanBlockedByTrampoline(next.level) ? JumpForceSpecial.Fan :
                         nextTrampoline == next.level ? JumpForceSpecial.Trampoline : JumpForceSpecial.None
                     : JumpForceSpecial.None;
                 if (Reachable(node, next) && Free(next) && !Envelope(node).Intersects(Envelope(next))) return true;
@@ -402,6 +405,7 @@ namespace Lumera.JumpForce
 
         public bool EnsureThrough(int endLevel)
         {
+            endLevel = Mathf.Min(endLevel, Mathf.Max(1, settings.finalLevel));
             int repairs = 0;
             while (lastLevel < endLevel)
             {
@@ -452,6 +456,16 @@ namespace Lumera.JumpForce
                     return true;
                 }
             return false; // Keep every accepted/published record; the caller can retry without disabling itself.
+        }
+
+        // Vale para todas as pistas e sobrevive ao pool: consulta apenas o mapa logico.
+        bool FanBlockedByTrampoline(int level)
+        {
+            for (int below = Mathf.Max(1, level - 2); below < level; below++)
+                if (levels.TryGetValue(below, out var lower))
+                    foreach (var node in lower.nodes)
+                        if (node.special == JumpForceSpecial.Trampoline) return true;
+            return false;
         }
 
         // Specials scheduled at or before this level move to the next one; fan and trampoline stay apart.
@@ -560,6 +574,12 @@ namespace Lumera.JumpForce
             // After a vertical pillar the level only takes common fixed platforms on the sides: specials wait.
             var plan = Plan(index);
             if (restricted || !plan.PermiteInterativo) PostponeSpecials(index);
+            // Um adiamento ou recuperacao nunca pode recolocar vento nos dois niveis de seguranca.
+            if (nextFan <= index && FanBlockedByTrampoline(index))
+            {
+                nextFan = index + 1;
+                if (nextFan == nextTrampoline) nextFan++;
+            }
             bool trampolineDue = index == nextTrampoline, fanDue = index == nextFan;
             bool coinDue = index >= nextCoin;
             bool fixedRoll = Chance(tier.fixedChance);
@@ -606,7 +626,11 @@ namespace Lumera.JumpForce
                     }
             }
             // Independent schedules, but a date reserved for one cannot be used by the other.
-            if (trampolineDue) nextTrampoline = index + GapExcept(nextFan - index, index);
+            if (trampolineDue)
+            {
+                nextFan = Mathf.Max(nextFan, index + 3);
+                nextTrampoline = index + GapExcept(nextFan - index, index);
+            }
             if (fanDue) nextFan = index + GapExcept(nextTrampoline - index, index);
             lastLevel = index;
             schedules[index] = (nextTrampoline, nextFan, nextCoin);

@@ -125,7 +125,7 @@ namespace Lumera.JumpForce
             if (PlayGames) PlayGames.DesbloquearConquista(conquistaPrimeiraPartida);
         }
 
-        // causa: morte, menu ou saida. Grava o recorde e envia o placar.
+        // causa: morte, menu, saida ou vitoria. Grava o recorde e envia o placar.
         public void EncerrarPartida(string causa)
         {
             if (!partidaAtiva) return;
@@ -137,6 +137,21 @@ namespace Lumera.JumpForce
                 ("altura_m", Mathf.FloorToInt(altura)), ("moedas", moedasPartida),
                 ("duracao_s", Mathf.RoundToInt(Time.time - inicioPartida)), ("recorde", novoRecorde ? 1 : 0));
             if (PlayGames && altura > 0) PlayGames.EnviarPlacar(placarAltura, Mathf.FloorToInt(altura));
+        }
+
+        public void ConcluirPartida(int recompensa)
+        {
+            if (!partidaAtiva) return;
+            if (Save && recompensa > 0)
+            {
+                if (Save.AdicionarMoedas(recompensa, "vitoria", idJogo))
+                {
+                    moedasPartida += recompensa;
+                    Save.SalvarAgora();
+                }
+                else Debug.LogError("Jump Force: falha ao creditar a recompensa de vitoria.", this);
+            }
+            EncerrarPartida("vitoria");
         }
 
         void GravarRecorde(float altura)
@@ -159,6 +174,7 @@ namespace Lumera.JumpForce
 
         void AoColetarMoeda()
         {
+            if (player && player.Victory) return;
             moedasPartida++;
             if (Save) Save.AdicionarMoedas(1, "gameplay", idJogo);
             if (PlayGames) PlayGames.IncrementarConquista(conquistaMoedas, 1);

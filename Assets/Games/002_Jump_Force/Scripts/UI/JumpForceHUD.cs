@@ -13,15 +13,32 @@ namespace Lumera.JumpForce
         public Text status;
         public GameObject deathPanel;
         public Button restartButton;
+        public GameObject victoryPanel;
+        public Button victoryRestartButton;
+        public Text victoryText;
         [Tooltip("Controles de toque (Controles: Button_Esquerda, Joystick_Pular, Button_Direita): ocultos no vestiario e apos a morte.")]
         public GameObject[] controlesToque = System.Array.Empty<GameObject>();
         public GameObject joystickPular;
         public GameObject botaoPularSimples;
-        bool showedDeath;
+        bool showedDeath, showedVictory;
         int restartFrame = -1;
         void Update()
         {
             if (!player) return;
+            if (player.Victory)
+            {
+                MostrarControles(false);
+                deathPanel.SetActive(false);
+                if (victoryPanel) victoryPanel.SetActive(true);
+                if (status) status.text = "";
+                if (victoryText) victoryText.text = "Vitoria!\nVoce chegou ao nivel " + player.score.Points +
+                    "!\nRecompensa: " + Mathf.Max(0, player.score.victoryReward) + " moedas";
+                if (!showedVictory && victoryRestartButton && EventSystem.current)
+                    EventSystem.current.SetSelectedGameObject(victoryRestartButton.gameObject);
+                else if (showedVictory && ReinicioVitoriaPressionado()) { Restart(); return; }
+                showedVictory = true;
+                return;
+            }
             if (wardrobe && wardrobe.IsOpen)
             {
                 MostrarControles(false);
@@ -49,6 +66,14 @@ namespace Lumera.JumpForce
                 EventSystem.current.SetSelectedGameObject(restartButton.gameObject);
             showedDeath = player.Dead;
         }
+        static bool ReinicioVitoriaPressionado()
+        {
+            var teclado = UnityEngine.InputSystem.Keyboard.current;
+            var controle = UnityEngine.InputSystem.Gamepad.current;
+            return (teclado != null && (teclado.enterKey.wasPressedThisFrame || teclado.spaceKey.wasPressedThisFrame)) ||
+                (controle != null && controle.buttonSouth.wasPressedThisFrame);
+        }
+
         public void MostrarControles(bool visiveis)
         {
             foreach (var controle in controlesToque)
@@ -67,12 +92,14 @@ namespace Lumera.JumpForce
         {
             if (restartFrame == Time.frameCount) return;
             restartFrame = Time.frameCount;
+            if (player.score && player.score.victoryFloat) player.score.victoryFloat.Restore();
             player.Restart();
             if (player.score) player.score.ResetRun();
             if (spawner) spawner.RestartTrail();
             followCamera.Restart();
             deathPanel.SetActive(false);
-            showedDeath = false;
+            showedDeath = showedVictory = false;
+            if (victoryPanel) victoryPanel.SetActive(false);
             if (EventSystem.current) EventSystem.current.SetSelectedGameObject(null);
             if (wardrobe && wardrobe.reopenOnRetry) wardrobe.Begin();
         }

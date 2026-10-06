@@ -32,14 +32,24 @@ namespace Lumera.JumpForce
             new JumpForceBiomeRules { nome = "Campina", primeiroNivel = 0,
                 plataformaNova = JumpForcePlatformType.Padrao,
                 conjuntos = new[] { Secao("Aprender o salto", "PPPPPPPPPP") } },
-            new JumpForceBiomeRules { nome = "Ceus", primeiroNivel = 30,
-                plataformaNova = JumpForcePlatformType.Nuvem,
-                conjuntos = new[] { Secao("Nuvens em sequencia", "PPNPPNNPPP"),
-                    Secao("Nuvens intercaladas", "PNPNPPPNPP"), Secao("Travessia de nuvens", "PPNNPPPNPP") } },
-            new JumpForceBiomeRules { nome = "Serra Congelada", primeiroNivel = 91,
+            new JumpForceBiomeRules { nome = "Ruinas", primeiroNivel = 30,
+                plataformaNova = JumpForcePlatformType.Instavel,
+                conjuntos = new[] { Secao("Pisos que cedem", "PPTPPTPPPP"),
+                    Secao("Travessia das ruinas", "PTPPPTPPPP"), Secao("Apoios alternados", "PPPTPPTPPP") } },
+            new JumpForceBiomeRules { nome = "Serra Congelada", primeiroNivel = 90,
                 plataformaNova = JumpForcePlatformType.Gelo, intervaloApresentacao = 3,
-                conjuntos = new[] { Secao("Gelo entre apoios", "PPPGNPPNPP"),
-                    Secao("Travessia mista", "PNPPGPPNPP"), Secao("Nuvens e gelo", "PPNPPNGPPP") } }
+                conjuntos = new[] { Secao("Gelo entre ruinas", "PPGPTPPTPP"),
+                    Secao("Travessia mista", "PTPPPGPTPP"), Secao("Gelo intercalado", "PPTPGPPTPP") } },
+            new JumpForceBiomeRules { nome = "Ceus", primeiroNivel = 200,
+                plataformaNova = JumpForcePlatformType.Nuvem,
+                primeiroNivelNuvemObrigatoria = 215, nivelIntensificarNuvens = 235,
+                conjuntos = new[] { Secao("Nuvens em sequencia", "PPNGPNNTPP"),
+                    Secao("Nuvens e ruinas", "PNGTPPPNPP"), Secao("Travessia de nuvens", "PPNNGPTNPP") } },
+            new JumpForceBiomeRules { nome = "Espacial", primeiroNivel = 300,
+                plataformaNova = JumpForcePlatformType.Invisivel,
+                primeiroNivelNuvemObrigatoria = 215, nivelIntensificarNuvens = 235,
+                conjuntos = new[] { Secao("Apoios entre estrelas", "PINIGPNTPP"),
+                    Secao("Memorizar a orbita", "PGNIPNITPP"), Secao("Passagens ocultas", "PTNIPNIGPP") } }
         };
 
         static JumpForceRouteSection Secao(string nome, string sequencia)
@@ -47,7 +57,9 @@ namespace Lumera.JumpForce
             var tipos = new JumpForcePlatformType[sequencia.Length];
             for (int i = 0; i < tipos.Length; i++)
                 tipos[i] = sequencia[i] == 'N' ? JumpForcePlatformType.Nuvem :
-                    sequencia[i] == 'G' ? JumpForcePlatformType.Gelo : JumpForcePlatformType.Padrao;
+                    sequencia[i] == 'G' ? JumpForcePlatformType.Gelo :
+                    sequencia[i] == 'I' ? JumpForcePlatformType.Invisivel :
+                    sequencia[i] == 'T' ? JumpForcePlatformType.Instavel : JumpForcePlatformType.Padrao;
             return new JumpForceRouteSection { nome = nome, plataformas = tipos };
         }
 

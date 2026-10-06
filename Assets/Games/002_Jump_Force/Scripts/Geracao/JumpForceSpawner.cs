@@ -180,7 +180,7 @@ namespace Lumera.JumpForce
             }
             int ahead = Mathf.Max(5, levelsAhead, Mathf.CeilToInt(aheadHeight / Mathf.Max(0.5f, settings.levelHeight)));
             int low = Mathf.Max(1, currentLevel - Mathf.Max(5, levelsBelow));
-            int high = currentLevel + ahead;
+            int high = Mathf.Min(currentLevel + ahead, Mathf.Max(1, settings.finalLevel));
             if (!Map.EnsureThrough(high))
             {
                 if (warnedAtLevel != Map.LastLevel)
@@ -262,7 +262,7 @@ namespace Lumera.JumpForce
 
         void LateUpdate()
         {
-            if (!initialized || !view) return;
+            if (!initialized || !view || player.Victory) return;
             remove.Clear();
             foreach (var pair in active)
             {

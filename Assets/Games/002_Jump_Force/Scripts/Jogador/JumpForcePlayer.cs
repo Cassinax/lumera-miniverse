@@ -13,7 +13,7 @@ namespace Lumera.JumpForce
             Ajustavel,
             LateralPilar,
             VentiladorGiratorio,
-            ParadoGelo
+            Gelo
         }
 
         [Header("Referencias")]
@@ -58,7 +58,7 @@ namespace Lumera.JumpForce
         [Range(0, 30)] public float margemPuloVertical = 5f;
         [Tooltip("Velocidade horizontal maxima em relacao ao apoio para considerar o jogador parado.")]
         [Min(0)] public float toleranciaParado = 0.15f;
-        [Tooltip("Zona sem comando de direcao que permite pular no gelo, mesmo deslizando.")]
+        [Tooltip("Zona sem comando de direcao para considerar Carlos parado no gelo. O pulo instantaneo continua disponivel durante o deslizamento.")]
         [Range(0, 0.3f)] public float toleranciaDirecaoGelo = 0.05f;
         [Min(0)] public float tamanhoSetaMinimo = 0.6f;
         [Min(0)] public float tamanhoSetaMaximo = 1.2f;
@@ -116,6 +116,7 @@ namespace Lumera.JumpForce
         public bool Grounded { get; private set; }
         public bool Charging { get; private set; }
         public bool Dead { get; private set; }
+        public bool Victory { get; private set; }
         public bool ReachedPlatform { get; private set; }
         public float Charge01 => Mathf.Clamp01(chargeTime / Mathf.Max(0.01f, fullChargeSeconds));
         public JumpForcePlatform Target { get; private set; }
@@ -126,7 +127,8 @@ namespace Lumera.JumpForce
 
         readonly System.Collections.Generic.HashSet<JumpForcePlatform> landingSurfaces = new();
 
-        // parado_gelo: o deslizamento fisico nao significa que o jogador esta andando.
+        public bool NoGelo => Grounded && Support && Support.escorregadia;
+        // O deslizamento fisico nao significa que o jogador esta andando.
         public bool ParadoNoGelo => Grounded && Support && Support.escorregadia &&
             (Charging || pendingJumpHeight.HasValue || !input ||
                 Mathf.Abs(input.Direction) <= toleranciaDirecaoGelo);
@@ -134,23 +136,23 @@ namespace Lumera.JumpForce
             (Support && Support.escorregadia ? ParadoNoGelo :
                 Mathf.Abs(body.linearVelocity.x - (Support ? Support.Velocity.x : 0f)) <= toleranciaParado);
         public bool PodePular => GameplayEnabled && !Dead && takeoffGrace <= 0f &&
-            !pendingJumpHeight.HasValue && (ParadoNoChao || CanWallJump);
+            !pendingJumpHeight.HasValue && (ParadoNoChao || NoGelo || CanWallJump);
         public CategoriaPulo CategoriaPuloAtual
         {
             get
             {
                 if (!PodePular) return CategoriaPulo.Indisponivel;
+                if (NoGelo) return CategoriaPulo.Gelo;
                 if (ParadoNoChao)
                     return Support && Support.instantJump
-                        ? CategoriaPulo.VentiladorGiratorio : ParadoNoGelo ? CategoriaPulo.ParadoGelo : CategoriaPulo.Ajustavel;
+                        ? CategoriaPulo.VentiladorGiratorio : CategoriaPulo.Ajustavel;
                 return !Grounded && CanWallJump
                     ? CategoriaPulo.LateralPilar : CategoriaPulo.Indisponivel;
             }
         }
-        public bool JoystickPuloDisponivel => CategoriaPuloAtual == CategoriaPulo.Ajustavel ||
-            CategoriaPuloAtual == CategoriaPulo.ParadoGelo;
+        public bool JoystickPuloDisponivel => CategoriaPuloAtual == CategoriaPulo.Ajustavel;
         public bool PuloSimplesDisponivel => CategoriaPuloAtual == CategoriaPulo.LateralPilar ||
-            CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio;
+            CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio || CategoriaPuloAtual == CategoriaPulo.Gelo;
 
 #if UNITY_EDITOR
         [Header("Desenvolvimento - somente Editor")]
@@ -277,6 +279,7 @@ namespace Lumera.JumpForce
                 CancelCharge();
                 MoveAmount = 0f;
                 body.linearVelocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
                 gameplayCollisionMode = body.collisionDetectionMode;
                 body.collisionDetectionMode = CollisionDetectionMode.Discrete;
                 body.isKinematic = true;
@@ -470,8 +473,9 @@ namespace Lumera.JumpForce
 
             deferredTapHeight = null;
             float proporcao = Mathf.Clamp(
-                CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio
-                    ? proporcaoPuloVentiladorGiratorio : proporcaoPuloPilar, 0.1f, 1f);
+                CategoriaPuloAtual == CategoriaPulo.Gelo ? 1f :
+                    CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio
+                        ? proporcaoPuloVentiladorGiratorio : proporcaoPuloPilar, 0.1f, 1f);
             // v = sqrt(2gh): escalar a altura por p^2 aplica p do impulso.
             pendingJumpHeight = Mathf.Max(minimumJumpHeight, maximumJumpHeight) *
                 proporcao * proporcao;
@@ -678,7 +682,7 @@ namespace Lumera.JumpForce
 
             if (pendingJumpHeight.HasValue)
             {
-                if (ParadoNoChao || CanWallJump)
+                if (ParadoNoChao || NoGelo || CanWallJump)
                 {
                     bool wallJump = !Grounded;
                     launchPlatform = Support;
@@ -1373,6 +1377,22 @@ namespace Lumera.JumpForce
             ResetSupportVelocityTracking();
         }
 
+        public void CompleteRun()
+        {
+            if (Victory || Dead) return;
+            SetGameplayEnabled(false);
+            input?.SetGameplayEnabled(false);
+            Victory = true;
+            Grounded = false;
+            Target = Support = launchPlatform = null;
+            wallContact = null;
+            wallJumpReady = false;
+            landingSurfaces.Clear();
+            physicsContactCount = 0;
+            body.useGravity = false;
+            ResetSupportVelocityTracking();
+        }
+
         public void Restart()
         {
 #if UNITY_EDITOR
@@ -1383,7 +1403,11 @@ namespace Lumera.JumpForce
             physicsContactCount = 0;
             FindAnyObjectByType<JumpForcePlatformVisibility>()?.RestoreAll();
 
+            SetGameplayEnabled(true);
+            input?.SetGameplayEnabled(true);
+            body.useGravity = true;
             body.isKinematic = false;
+            Victory = false;
             Dead = false;
             Grounded = false;
             ReachedPlatform = false;
