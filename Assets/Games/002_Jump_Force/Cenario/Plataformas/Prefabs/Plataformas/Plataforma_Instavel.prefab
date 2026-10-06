@@ -583,7 +583,7 @@ MonoBehaviour:
   forcaVertical: 2400
   escalaMinimaNuvem: 0.25
   visualNuvem: {fileID: 0}
-  intervaloQueda: 3
+  intervaloQueda: 1
   partes:
   - {fileID: 2950330466428112985}
   - {fileID: 4249196669255303342}
