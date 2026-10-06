@@ -7,6 +7,14 @@ namespace Lumera.JumpForce
     [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider), typeof(JumpForceInput))]
     public sealed class JumpForcePlayer : MonoBehaviour
     {
+        public enum CategoriaPulo
+        {
+            Indisponivel,
+            Ajustavel,
+            LateralPilar,
+            VentiladorGiratorio
+        }
+
         [Header("Referencias")]
         public JumpForceInput input;
         public JumpForceScore score;
@@ -26,12 +34,17 @@ namespace Lumera.JumpForce
         [Header("Pulo - alturas em metros")]
         [Min(0.1f)] public float minimumJumpHeight = 1.5f;
         [Min(0.1f)] public float maximumJumpHeight = 6.5f;
-        [Tooltip("Fracao do impulso vertical maximo aplicada no pulo instantaneo (0,6 = 60%).")]
-        [Range(0.1f, 1f)] public float proporcaoPuloInstantaneo = 0.6f;
         [Min(0.01f)] public float fullChargeSeconds = 1f;
         public AnimationCurve chargeCurve = AnimationCurve.Linear(0, 0, 1, 1);
         [Min(0.1f)] public float gravityMultiplier = 1.8f;
         [Min(1f)] public float maximumFallSpeed = 28f;
+
+        [Header("Pulos instantaneos por categoria")]
+        [UnityEngine.Serialization.FormerlySerializedAs("proporcaoPuloInstantaneo")]
+        [Tooltip("Fracao do impulso maximo ao pular pela lateral do pilar.")]
+        [Range(0.1f, 1f)] public float proporcaoPuloPilar = 0.6f;
+        [Tooltip("Fracao do impulso maximo ao pular da base do ventilador giratorio. No topo volta o pulo ajustavel.")]
+        [Range(0.1f, 1f)] public float proporcaoPuloVentiladorGiratorio = 0.8f;
 
         [Header("Direcao do salto")]
         [Tooltip("Direcao_Pulo: aparece durante a carga no chao e aponta para onde o salto vai. Rotacao global, so no eixo Z.")]
@@ -114,8 +127,21 @@ namespace Lumera.JumpForce
             Mathf.Abs(body.linearVelocity.x - (Support ? Support.Velocity.x : 0f)) <= toleranciaParado;
         public bool PodePular => GameplayEnabled && !Dead && takeoffGrace <= 0f &&
             !pendingJumpHeight.HasValue && (ParadoNoChao || CanWallJump);
-        public bool JoystickPuloDisponivel => PodePular && ParadoNoChao && !(Support && Support.instantJump);
-        public bool PuloSimplesDisponivel => PodePular && !JoystickPuloDisponivel;
+        public CategoriaPulo CategoriaPuloAtual
+        {
+            get
+            {
+                if (!PodePular) return CategoriaPulo.Indisponivel;
+                if (ParadoNoChao)
+                    return Support && Support.instantJump
+                        ? CategoriaPulo.VentiladorGiratorio : CategoriaPulo.Ajustavel;
+                return !Grounded && CanWallJump
+                    ? CategoriaPulo.LateralPilar : CategoriaPulo.Indisponivel;
+            }
+        }
+        public bool JoystickPuloDisponivel => CategoriaPuloAtual == CategoriaPulo.Ajustavel;
+        public bool PuloSimplesDisponivel => CategoriaPuloAtual == CategoriaPulo.LateralPilar ||
+            CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio;
 
         Rigidbody body;
         CapsuleCollider capsule;
@@ -360,7 +386,9 @@ namespace Lumera.JumpForce
                 return;
 
             deferredTapHeight = null;
-            float proporcao = Mathf.Clamp(proporcaoPuloInstantaneo, 0.1f, 1f);
+            float proporcao = Mathf.Clamp(
+                CategoriaPuloAtual == CategoriaPulo.VentiladorGiratorio
+                    ? proporcaoPuloVentiladorGiratorio : proporcaoPuloPilar, 0.1f, 1f);
             // v = sqrt(2gh): escalar a altura por p^2 aplica p do impulso.
             pendingJumpHeight = Mathf.Max(minimumJumpHeight, maximumJumpHeight) *
                 proporcao * proporcao;
