@@ -49,6 +49,12 @@ namespace Lumera.JumpForce
         public JumpForceTrailNode Estado => estado;
         public bool Quebrada => tipo == JumpForcePlatformType.Instavel && caidas == (1 << partes.Length) - 1;
 
+        public bool ParteMontada(JumpForcePlatform superficie) =>
+            tipo == JumpForcePlatformType.Instavel && superficie && superficie.Body &&
+            superficie.Body != corpo && superficie.transform.IsChildOf(transform);
+
+        public Vector3 VelocidadeBase => corpo ? corpo.linearVelocity : Vector3.zero;
+
         void Awake() => Preparar();
         void Start()
         {

@@ -46,6 +46,10 @@ namespace Lumera.JumpForce
         readonly Dictionary<object, int> directionSources = new();
         bool previousHeld, sensorEnabledByUs, uiJumpPulse;
         float tilt, tiltNeutral;
+        JumpForcePlayer player;
+        bool PodeInclinar => player && player.GameplayEnabled && !player.Dead && !player.Grounded;
+
+        void Awake() => TryGetComponent(out player);
         Vector2 padToque;
         bool padToqueHeld, padToqueSoltou, padAnalogico;
         bool gameplayEnabled = true, waitingForRelease;
@@ -157,11 +161,13 @@ namespace Lumera.JumpForce
             // Botoes da tela valem como as setas e passam na frente delas.
             int botoes = DirectionButtons();
             if (botoes != 0) digital = botoes;
-            // Inclinar o aparelho so vale com os botoes de direcao soltos.
-            float raw = tiltEnabled && !DirectionButtonsHeld && Accelerometer.current != null
+            // A inclinacao controla somente o voo; ao pousar, descarta a suavizacao acumulada.
+            bool usarInclinacao = tiltEnabled && PodeInclinar && !DirectionButtonsHeld;
+            float raw = usarInclinacao && Accelerometer.current != null
                 ? (Accelerometer.current.acceleration.ReadValue().x - tiltNeutral) * (invertTilt ? -1 : 1) : 0;
             raw = Mathf.Abs(raw) < tiltDeadZone ? 0 : Mathf.Sign(raw) * (Mathf.Abs(raw) - tiltDeadZone) * tiltSensitivity;
-            tilt = DirectionButtonsHeld ? 0 : Mathf.Lerp(tilt, Mathf.Clamp(raw, -1, 1), 1 - Mathf.Exp(-tiltSmoothing * Time.unscaledDeltaTime));
+            tilt = usarInclinacao ? Mathf.Lerp(tilt, Mathf.Clamp(raw, -1, 1),
+                1 - Mathf.Exp(-tiltSmoothing * Time.unscaledDeltaTime)) : 0;
             // Prioridade: botoes da tela, setas/direcional, analogico, inclinacao.
             float move = digital != 0 ? digital : stick != 0 ? stick : tilt;
             Movement = new Vector2(Mathf.Clamp(move, -1, 1), 0);

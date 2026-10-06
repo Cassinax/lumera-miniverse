@@ -1201,8 +1201,16 @@ namespace Lumera.JumpForce
                 float relativeVerticalSpeed =
                     body.linearVelocity.y - platform.Velocity.y;
 
-                bool leavingSupport = takeoffGrace > 0f && platform == launchPlatform;
-                bool solid = platform.startingGround || !platform.oneWay || platform == Support;
+                bool sameMountedSupport = platform.proprietario &&
+                    platform.proprietario.ParteMontada(platform) &&
+                    platform.proprietario.ParteMontada(Support);
+                bool sameMountedLaunch = platform.proprietario &&
+                    platform.proprietario.ParteMontada(platform) &&
+                    platform.proprietario.ParteMontada(launchPlatform);
+                bool leavingSupport = takeoffGrace > 0f &&
+                    (platform == launchPlatform || sameMountedLaunch);
+                bool solid = platform.startingGround || !platform.oneWay ||
+                    (!leavingSupport && (platform == Support || sameMountedSupport));
                 if (!solid)
                 {
                     // Once approaching from above, keep the physical contact through the rounded

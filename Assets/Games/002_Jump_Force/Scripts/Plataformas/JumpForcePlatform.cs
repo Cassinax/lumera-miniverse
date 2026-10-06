@@ -7,7 +7,9 @@ namespace Lumera.JumpForce
     public sealed class JumpForcePlatform : MonoBehaviour
     {
         public Rigidbody Body { get; private set; }
-        public Vector3 Velocity => Body ? Body.linearVelocity : Vector3.zero;
+        // Pecas presas acompanham o corpo principal; oscilacoes da junta nao sao um salto.
+        public Vector3 Velocity => proprietario && proprietario.ParteMontada(this)
+            ? proprietario.VelocidadeBase : Body ? Body.linearVelocity : Vector3.zero;
         public static readonly List<JumpForcePlatform> Active = new();
         [Tooltip("O chao inicial e solido; nao atrai nem ativa a camera de morte.")]
         public bool startingGround;
