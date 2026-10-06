@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.299279
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.929
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.3145595
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -30,11 +30,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -66,6 +66,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1296811505895485118}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1727876068685603481}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4814941729350293289}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4803215043780486084}
   m_SourcePrefab: {fileID: 100100000, guid: dbfb1d86372d47ca9b94b31ab4660b6d, type: 3}
 --- !u!1 &8385485900511563329 stripped
 GameObject:
@@ -79,7 +88,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8385485900511563329}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 4708e3a7c9757d24ab51868a8b18bf53, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -101,7 +110,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8385485900511563329}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 100
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -115,8 +124,73 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_Interpolate: 1
+  m_Constraints: 126
+  m_CollisionDetection: 2
+--- !u!114 &1727876068685603481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385485900511563329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73329f6bf7a3c6a4691d09b61a956f25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatform
+  startingGround: 0
+  oneWay: 1
+  instantJump: 0
+  escorregadia: 0
+  proprietario: {fileID: 4803215043780486084}
+  extraOrbitClearance: 0.15
+--- !u!114 &4814941729350293289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385485900511563329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41342c546814d904fab3af189e06bc47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatformMotion
+  motorForce: 900
+  brakeForce: 1200
+  endpointTolerance: 0.03
+  amplitude: {x: 1, y: 0, z: 0}
+  period: 4
+  phase: 0
+  randomStartDirection: 1
+--- !u!114 &4803215043780486084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385485900511563329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90787475f4604a8419cab01f797ee65d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatformAbility
+  tipo: 2
+  intervaloVisibilidade: {x: 4, y: 6}
+  avisoPiscando: 1
+  intervaloPiscada: 0.12
+  esperaNuvem: 3
+  velocidadeDescida: 0.4
+  velocidadeRetorno: 0.6
+  descidaMaxima: 3
+  forcaVertical: 2400
+  escalaMinimaNuvem: 0.25
+  visualNuvem: {fileID: 0}
+  intervaloQueda: 3
+  partes: []
+  margemDesativacao: 0.05
+  jogador: {fileID: 0}
+  cameraJogo: {fileID: 0}

@@ -22,7 +22,7 @@ namespace Lumera.JumpForce
             if (!view) view = follow ? follow.Visao : GetComponentInChildren<Camera>();
             foreach (var platform in FindObjectsByType<JumpForcePlatform>())
             {
-                if (platform.GetComponentInParent<JumpForceSpawnedElement>()) continue;
+                if (platform.GetComponentInParent<JumpForceSpawnedElement>() || platform.proprietario || platform.GetComponentInParent<JumpForcePlatformAbility>()) continue;
                 var renderers = platform.GetComponentsInChildren<Renderer>(true);
                 var enabled = new bool[renderers.Length];
                 for (int i = 0; i < enabled.Length; i++) enabled[i] = renderers[i].enabled;

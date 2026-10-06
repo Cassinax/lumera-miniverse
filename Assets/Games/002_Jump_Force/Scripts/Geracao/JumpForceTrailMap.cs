@@ -39,6 +39,9 @@ namespace Lumera.JumpForce
         [Tooltip("Faixa 0: niveis 0-29; faixa 1: 30-59; faixa 2: 60-89; e assim por diante. " +
             "A ultima faixa vale para sempre: quatro faixas = tres aumentos e depois estavel.")]
         public JumpForceDifficultyTier[] tiers = DefaultTiers();
+        [Header("Tipos de plataforma: Padrao, Gelo, Invisivel, Nuvem, Instavel")]
+        [Tooltip("Pesos relativos. Zero desativa um tipo; o catalogo de prefabs usa a mesma ordem.")]
+        public float[] platformWeights = { 4, 1, 1, 1, 1 };
         [Header("Velocidade dos elementos")]
         [Tooltip("Velocidade minima de um elemento movel, em m/s. Evita plataformas quase paradas.")]
         [Min(0.05f)] public float minimumSpeed = 0.4f;
@@ -91,6 +94,11 @@ namespace Lumera.JumpForce
         public int id, level, lane, previousId, tier;
         public bool primary, hasCoin, coinCollected;
         public JumpForceElementKind kind;
+        public int platformVariant;
+        // Estado logico sobrevive ao retorno do GameObject ao pool.
+        public bool breakStarted, destroyed;
+        public int brokenPieces;
+        public float breakTimer, cloudOffset, cloudTimer;
         public JumpForceSpecial special;
         public JumpForceMotionAxis axis;
         public float topY, amplitude, baseSpeed, fanYaw, fanSpinY, motionCenterOffsetX;
@@ -118,6 +126,7 @@ namespace Lumera.JumpForce
         readonly JumpForceTrailSettings settings;
         readonly System.Random random;
         readonly JumpForceElementShape platform, pillar, ground;
+        readonly JumpForceElementShape[] variants;
         readonly SortedDictionary<int, JumpForceTrailLevel> levels = new();
         readonly List<int> obsolete = new();
         readonly Dictionary<int, (int trampoline, int fan, int coin)> schedules = new();
@@ -138,14 +147,16 @@ namespace Lumera.JumpForce
             settings.tiers != null && settings.tiers.Length > 0 ? settings.tiers[settings.TierIndex(level)] ?? fallbackTier : fallbackTier;
 
         public JumpForceTrailMap(JumpForceTrailSettings settings, int seed, float originY,
-            JumpForceElementShape platform, JumpForceElementShape pillar, JumpForceElementShape ground)
+            JumpForceElementShape platform, JumpForceElementShape pillar, JumpForceElementShape ground, JumpForceElementShape[] variants = null)
         {
             this.settings = settings;
             this.platform = platform;
+            this.variants = variants;
             this.pillar = pillar;
             this.ground = ground;
             this.originY = originY;
             float span = Mathf.Max(platform.bodyFromTop.size.y, pillar.bodyFromTop.size.y, ground.bodyFromTop.size.y);
+            if (variants != null) foreach (var shape in variants) span = Mathf.Max(span, shape.bodyFromTop.size.y);
             collisionLevels = 2 + Mathf.CeilToInt((2 * span + 4) / Mathf.Max(0.5f, settings.levelHeight));
             random = new System.Random(seed);
             var start = new JumpForceTrailLevel(0);
@@ -184,7 +195,8 @@ namespace Lumera.JumpForce
         }
         bool Chance(float chance) => random.NextDouble() < chance;
         float Range(float low, float high) => Mathf.Lerp(low, high, (float)random.NextDouble());
-        JumpForceElementShape Shape(JumpForceTrailNode node) => node.level == 0 ? ground : node.kind == JumpForceElementKind.Pillar ? pillar : platform;
+        JumpForceElementShape Shape(JumpForceTrailNode node) => node.level == 0 ? ground : node.kind == JumpForceElementKind.Pillar ? pillar :
+            variants != null && node.platformVariant >= 0 && node.platformVariant < variants.Length ? variants[node.platformVariant] : platform;
 
         public Bounds Envelope(JumpForceTrailNode node)
         {
@@ -265,6 +277,22 @@ namespace Lumera.JumpForce
             return false;
         }
 
+        int ChooseVariant()
+        {
+            if (variants == null || variants.Length <= 1) return 0;
+            float sum = 0;
+            for (int i = 0; i < variants.Length; i++)
+                sum += settings.platformWeights != null && i < settings.platformWeights.Length ? Mathf.Max(0, settings.platformWeights[i]) : 0;
+            if (sum <= 0) return 0;
+            float choice = Range(0, sum);
+            for (int i = 0; i < variants.Length; i++)
+            {
+                choice -= settings.platformWeights != null && i < settings.platformWeights.Length ? Mathf.Max(0, settings.platformWeights[i]) : 0;
+                if (choice < 0) return i;
+            }
+            return 0;
+        }
+
         JumpForceTrailNode NewNode(int level, int lane, JumpForceElementKind kind, bool primary, int previousId)
         {
             var tier = Tier(level);
@@ -276,7 +304,7 @@ namespace Lumera.JumpForce
             {
                 id = level * 2 + (primary ? 0 : 1), level = level, lane = lane, primary = primary,
                 previousId = previousId, topY = originY + level * settings.levelHeight,
-                kind = kind, axis = JumpForceMotionAxis.X, tier = settings.TierIndex(level),
+                kind = kind, platformVariant = kind == JumpForceElementKind.Platform ? ChooseVariant() : 0, axis = JumpForceMotionAxis.X, tier = settings.TierIndex(level),
                 baseSpeed = Mathf.Clamp(speed, minimumSpeed, maximumSpeed), speedVariation = tier.speedVariation,
                 minimumSpeed = minimumSpeed, maximumSpeed = maximumSpeed,
                 motionSeed = random.Next(), direction = Chance(0.5f) ? -1 : 1,

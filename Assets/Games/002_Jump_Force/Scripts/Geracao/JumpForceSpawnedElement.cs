@@ -3,218 +3,87 @@ using UnityEngine;
 
 namespace Lumera.JumpForce
 {
-    // The pooled scene representation; generation records themselves hold no Unity objects.
     public sealed class JumpForceSpawnedElement : MonoBehaviour
     {
         [SerializeField] JumpForceTrailNode node;
         public JumpForceTrailNode Node => node;
         public JumpForceElementShape Shape { get; private set; }
-        public Bounds WorldBounds
-        {
-            get { var bounds = node != null && node.special == JumpForceSpecial.Fan ? (node.fanSpinY != 0 ? Shape.rotatingFanBodyFromTop : Shape.fanBodyFromTop) : Shape.bodyFromTop; bounds.center += transform.position + Vector3.up * Shape.topOffset; return bounds; }
-        }
         public JumpForceElementKind Kind { get; private set; }
+        public int Variant { get; private set; }
+        public float Offset => node.offset;
         Renderer[] renderers;
         bool[] rendererEnabled;
-        Transform trampoline, fan;
-        JumpForceCoin coin;
-        Vector3 coinLocalPosition;
-        Quaternion fanRotation;
-        JumpForceGirador fanSpinner;
-        JumpForcePlatform baseSurface;
-        bool visible = true;
         Transform[] parts;
         Quaternion[] rotations;
-        public float Offset => node.offset;
-
-        public void Initialize(JumpForceElementKind kind)
+        Vector3[] positions, scales;
+        JumpForcePlatform[] surfaces;
+        JumpForcePlatformAbility ability;
+        JumpForceCoin coin;
+        JumpForceInteractive interactive;
+        Vector3 coinLocalPosition;
+        Rigidbody body;
+        public Bounds WorldBounds
         {
-            Kind = kind;
-
+            get
+            {
+                var b = node != null && node.special == JumpForceSpecial.Fan
+                    ? (node.fanSpinY != 0 ? Shape.rotatingFanBodyFromTop : Shape.fanBodyFromTop) : Shape.bodyFromTop;
+                b.center += transform.position + Vector3.up * Shape.topOffset;
+                return ability ? ability.IncluirPartes(b) : b;
+            }
+        }
+        public void Initialize(JumpForceElementKind kind, int variant = 0)
+        {
+            Kind = kind; Variant = variant;
+            body = GetComponent<Rigidbody>();
+            ability = GetComponent<JumpForcePlatformAbility>();
             var motion = GetComponent<JumpForcePlatformMotion>();
             var pillar = GetComponent<JumpForcePilarArco>();
-
-            // A velocidade-base continua sendo registrada como dado do elemento,
-            // mas o SpawnedElement não controla nem desativa mais o movimento físico.
-            float speed =
-                motion
-                    ? 4f * motion.amplitude.magnitude / Mathf.Max(0.1f, motion.period)
-                    : pillar
-                        ? 4f * pillar.amplitude / Mathf.Max(0.1f, pillar.period)
-                        : 1f;
-
-            var trampComponent =
-                GetComponentInChildren<JumpForceTrampolim>(true);
-
-            var fanComponent =
-                GetComponentInChildren<JumpForceVentilador>(true);
-
-            trampoline =
-                AccessoryRoot(trampComponent ? trampComponent.transform : null);
-
-            fan =
-                AccessoryRoot(fanComponent ? fanComponent.transform : null);
-
-            if (fan)
-            {
-                fanRotation = fan.localRotation;
-                fanSpinner = fan.GetComponent<JumpForceGirador>();
-            }
-
-            coin =
-                GetComponentInChildren<JumpForceCoin>(true);
-
-            if (coin)
-                coinLocalPosition = coin.transform.localPosition;
-
-            var surface =
-                GetComponent<JumpForcePlatform>();
-
-            baseSurface = surface;
-            Bounds body = default;
-            Bounds fanBody = default;
-
+            float speed = motion ? 4f * motion.amplitude.magnitude / Mathf.Max(0.1f, motion.period)
+                : pillar ? 4f * pillar.amplitude / Mathf.Max(0.1f, pillar.period) : 1;
+            coin = GetComponentInChildren<JumpForceCoin>(true);
+            if (coin) coinLocalPosition = coin.transform.localPosition;
+            Bounds bounds = default;
             bool first = true;
-            bool firstFan = true;
-
             foreach (var collider in GetComponentsInChildren<Collider>(true))
             {
-                if (
-                    collider.isTrigger ||
-                    collider.GetComponentInParent<JumpForceCoin>() ||
-                    (
-                        kind == JumpForceElementKind.Pillar &&
-                        collider.GetComponent<JumpForcePlatform>()
-                    )
-                )
-                    continue;
-
-                Bounds bounds = ColliderBounds(collider);
-
-                if (fan && collider.transform.IsChildOf(fan))
-                {
-                    if (firstFan)
-                    {
-                        fanBody = bounds;
-                        firstFan = false;
-                    }
-                    else
-                    {
-                        fanBody.Encapsulate(bounds);
-                    }
-
-                    continue;
-                }
-
-                if (trampoline && collider.transform.IsChildOf(trampoline))
-                    continue;
-
-                if (first)
-                {
-                    body = bounds;
-                    first = false;
-                }
-                else
-                {
-                    body.Encapsulate(bounds);
-                }
+                if (collider.isTrigger || collider.GetComponentInParent<JumpForceCoin>() ||
+                    (kind == JumpForceElementKind.Pillar && collider.GetComponent<JumpForcePlatform>())) continue;
+                var next = ColliderBounds(collider);
+                if (first) { bounds = next; first = false; } else bounds.Encapsulate(next);
             }
-
-            if (first)
-                throw new InvalidOperationException(
-                    "Elemento sem collider solido: " + name
-                );
-
-            float top =
-                surface
-                    ? ColliderBounds(surface.GetComponent<BoxCollider>()).max.y
-                    : body.max.y;
-
-            Bounds rotatingFanBody = body;
-            if (firstFan)
-                fanBody = body;
-            else
-            {
-                // Reserve the body's whole Y rotation, while the wind remains a trigger.
-                Vector3 pivot = fan.position;
-                float dx = Mathf.Max(Mathf.Abs(fanBody.min.x - pivot.x), Mathf.Abs(fanBody.max.x - pivot.x));
-                float dz = Mathf.Max(Mathf.Abs(fanBody.min.z - pivot.z), Mathf.Abs(fanBody.max.z - pivot.z));
-                float radius = Mathf.Sqrt(dx * dx + dz * dz);
-                rotatingFanBody = new Bounds(new Vector3(pivot.x, fanBody.center.y, pivot.z),
-                    new Vector3(2 * radius, fanBody.size.y, 2 * radius));
-                rotatingFanBody.Encapsulate(body);
-                fanBody.Encapsulate(body);
-            }
-
-            Vector3 reference =
-                new Vector3(
-                    transform.position.x,
-                    top,
-                    transform.position.z
-                );
-
-            body.center -= reference;
-            fanBody.center -= reference;
-            rotatingFanBody.center -= reference;
-
-            float halfX =
-                Mathf.Max(
-                    Mathf.Abs(fanBody.min.x),
-                    Mathf.Abs(fanBody.max.x)
-                );
-
-            float halfZ =
-                Mathf.Max(
-                    Mathf.Abs(fanBody.min.z),
-                    Mathf.Abs(fanBody.max.z)
-                );
-
-            fanBody =
-                new Bounds(
-                    new Vector3(0, fanBody.center.y, 0),
-                    new Vector3(
-                        2f * halfX,
-                        fanBody.size.y,
-                        2f * halfZ
-                    )
-                );
-
-            Shape =
-                new JumpForceElementShape
-                {
-                    bodyFromTop = body,
-                    fanBodyFromTop = fanBody,
-                    rotatingFanBodyFromTop = rotatingFanBody,
-                    topOffset = top - transform.position.y,
-                    baseSpeed = Mathf.Max(0.1f, speed)
-                };
-
-            renderers =
-                GetComponentsInChildren<Renderer>(true);
-
-            rendererEnabled =
-                new bool[renderers.Length];
-
-            for (int i = 0; i < renderers.Length; i++)
-                rendererEnabled[i] = renderers[i].enabled;
-
-            parts =
-                GetComponentsInChildren<Transform>(true);
-
-            rotations =
-                new Quaternion[parts.Length];
-
+            if (first) throw new InvalidOperationException("Elemento sem collider solido: " + name);
+            var surface = GetComponent<JumpForcePlatform>();
+            float top = surface ? ColliderBounds(surface.GetComponent<BoxCollider>()).max.y : bounds.max.y;
+            bounds.center -= new Vector3(transform.position.x, top, transform.position.z);
+            Shape = new JumpForceElementShape { bodyFromTop = bounds, fanBodyFromTop = bounds,
+                rotatingFanBodyFromTop = bounds, topOffset = top - transform.position.y, baseSpeed = Mathf.Max(0.1f, speed) };
+            renderers = GetComponentsInChildren<Renderer>(true);
+            rendererEnabled = new bool[renderers.Length];
+            for (int i = 0; i < renderers.Length; i++) rendererEnabled[i] = renderers[i].enabled;
+            parts = GetComponentsInChildren<Transform>(true);
+            rotations = new Quaternion[parts.Length]; positions = new Vector3[parts.Length]; scales = new Vector3[parts.Length];
             for (int i = 0; i < parts.Length; i++)
-                rotations[i] = parts[i].localRotation;
+            {
+                rotations[i] = parts[i].localRotation; positions[i] = parts[i].localPosition; scales[i] = parts[i].localScale;
+            }
+            surfaces = GetComponentsInChildren<JumpForcePlatform>(true);
         }
-
-        Transform AccessoryRoot(Transform part)
+        public void ConfigureFanBounds(Bounds localFan)
         {
-            if (!part) return null;
-            while (part.parent && part.parent != transform) part = part.parent;
-            return part == transform ? null : part;
+            var shape = Shape;
+            // Prefabs do catalogo possuem escala raiz unitaria e origens de montagem comuns.
+            localFan.center -= Vector3.up * shape.topOffset;
+            var fan = localFan;
+            float halfX = Mathf.Max(Mathf.Abs(fan.min.x), Mathf.Abs(fan.max.x));
+            float halfZ = Mathf.Max(Mathf.Abs(fan.min.z), Mathf.Abs(fan.max.z));
+            fan = new Bounds(new Vector3(0, fan.center.y, 0), new Vector3(halfX * 2, fan.size.y, halfZ * 2));
+            float radius = Mathf.Sqrt(halfX * halfX + halfZ * halfZ);
+            var rotating = new Bounds(new Vector3(0, fan.center.y, 0), new Vector3(radius * 2, fan.size.y, radius * 2));
+            fan.Encapsulate(shape.bodyFromTop); rotating.Encapsulate(shape.bodyFromTop);
+            shape.fanBodyFromTop = fan; shape.rotatingFanBodyFromTop = rotating;
+            Shape = shape;
         }
-
         // These are corridor limits, independent of the finite wall height and physics sync timing.
         public static bool TryGetWallLimits(Collider[] walls, out float left, out float right)
         {
@@ -247,70 +116,38 @@ namespace Lumera.JumpForce
             return result;
         }
 
-        public void Assign(JumpForceTrailNode record, float z, JumpForceScore score)
+
+        public void Assign(JumpForceTrailNode record, float z, JumpForceScore score,
+            JumpForcePlayer player = null, JumpForceCamera camera = null, JumpForceInteractive accessory = null, Transform pool = null)
         {
             node = record;
-            if (baseSurface) baseSurface.instantJump = record.special == JumpForceSpecial.Fan && record.fanSpinY != 0;
-
             for (int i = 0; i < parts.Length; i++)
             {
-                if (parts[i] != transform)
-                    parts[i].localRotation = rotations[i];
+                if (!parts[i] || parts[i] == transform) continue;
+                parts[i].localPosition = positions[i];
+                parts[i].localRotation = rotations[i];
+                parts[i].localScale = scales[i];
             }
-
-            // Centro do percurso planejado. O objeto ainda esta inativo: a posicao vale ao ativar.
+            transform.rotation = Quaternion.identity;
             Vector3 centro = record.TopPosition(z) - Vector3.up * Shape.topOffset;
             transform.position = centro;
-
-            if (trampoline)
-                trampoline.gameObject.SetActive(
-                    record.special == JumpForceSpecial.Trampoline
-                );
-
-            if (fan)
-            {
-                fan.gameObject.SetActive(
-                    record.special == JumpForceSpecial.Fan
-                );
-
-                if (fanSpinner) fanSpinner.DefinirVelocidadeY(record.fanSpinY);
-                var euler = fanRotation.eulerAngles;
-
-                fan.localRotation =
-                    Quaternion.Euler(
-                        euler.x,
-                        record.fanYaw,
-                        euler.z
-                    );
-            }
-
+            if (body) body.position = centro;
+            if (ability) ability.Reiniciar(record, player, camera);
+            foreach (var surface in surfaces) if (surface) surface.instantJump = record.special == JumpForceSpecial.Fan && record.fanSpinY != 0;
+            interactive = accessory;
+            if (interactive) interactive.Montar(transform, record, pool);
             if (coin)
             {
                 coin.transform.localPosition = coinLocalPosition;
-
-                Vector3 coinPosition = coin.transform.position;
-                coinPosition.z = z;
-
-                if (record.special == JumpForceSpecial.Fan)
-                {
-                    coinPosition.y =
-                        Mathf.Max(
-                            coinPosition.y,
-                            WorldBounds.max.y + 0.5f
-                        );
-                }
-
-                coin.transform.position = coinPosition;
+                var pos = coin.transform.position; pos.z = z;
+                if (record.special == JumpForceSpecial.Fan) pos.y = Mathf.Max(pos.y, WorldBounds.max.y + 0.5f);
+                coin.transform.position = pos;
                 coin.Configure(record, score);
             }
-
             SetVisible(true);
             gameObject.SetActive(true);
             ConfigurarMovimento(centro);
         }
-
-        // O movimento continua sendo do Rigidbody e do motor do proprio objeto; aqui so entra o plano do gerador
-        // (eixo, amplitude, velocidade e sentido), para o percurso real caber no envelope que a rota reservou.
         void ConfigurarMovimento(Vector3 centro)
         {
             Vector3 inicio = centro;
@@ -319,26 +156,28 @@ namespace Lumera.JumpForce
             var motion = GetComponent<JumpForcePlatformMotion>();
             if (motion) motion.Configurar(centro, eixo, node.amplitude, node.baseSpeed, node.direction);
             var pillar = GetComponent<JumpForcePilarArco>();
-            if (pillar)
-                pillar.Configurar(centro, node.axis == JumpForceMotionAxis.Y ? JumpForcePilarArco.Eixo.Y : JumpForcePilarArco.Eixo.X,
-                    node.amplitude, node.baseSpeed, node.direction);
-            // The motor's center can differ from the birth lane (full-width corner fan).
-            if (node.motionCenterOffsetX != 0 && TryGetComponent<Rigidbody>(out var body))
-            {
-                body.position = inicio;
-                transform.position = inicio;
-            }
+            if (pillar) pillar.Configurar(centro, node.axis == JumpForceMotionAxis.Y ? JumpForcePilarArco.Eixo.Y : JumpForcePilarArco.Eixo.X,
+                node.amplitude, node.baseSpeed, node.direction);
+            if (node.motionCenterOffsetX != 0 && body) { body.position = inicio; transform.position = inicio; }
         }
-
         public void SetVisible(bool value)
         {
-            if (visible == value) return;
-            visible = value;
             for (int i = 0; i < renderers.Length; i++) if (renderers[i]) renderers[i].enabled = value && rendererEnabled[i];
+            if (interactive) interactive.SetVisible(value);
         }
+        public void DesativarConteudo()
+        {
+            if (interactive) interactive.gameObject.SetActive(false);
+            if (coin) coin.gameObject.SetActive(false);
+        }
+        // Ponto unico de retorno: encerra habilidades, recolhe pecas e devolve o interativo ao pool.
         public void Release()
         {
+            if (interactive) { interactive.Liberar(); interactive = null; }
             gameObject.SetActive(false);
+            if (ability) ability.ResetarParaPool();
+            if (body && !body.isKinematic) { body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; }
+            foreach (var surface in surfaces) if (surface) surface.instantJump = false;
             SetVisible(true);
             node = null;
         }

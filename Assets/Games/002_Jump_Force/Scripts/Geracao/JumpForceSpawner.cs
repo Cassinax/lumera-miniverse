@@ -12,6 +12,12 @@ namespace Lumera.JumpForce
         public JumpForceCamera followCamera;
         public JumpForcePlatform startingGround;
         public GameObject platformPrefab;
+        [Tooltip("Ordem: Padrao, Gelo, Invisivel, Nuvem, Instavel.")]
+        public GameObject[] platformPrefabs = Array.Empty<GameObject>();
+        [Header("Interativos independentes")]
+        public JumpForceInteractive trampolinePrefab;
+        public JumpForceInteractive fanPrefab;
+        public GameObject coinPrefab;
         public GameObject pillarPrefab;
         public Collider[] invisibleWalls = Array.Empty<Collider>();
         [Header("Mapa da trilha")]
@@ -40,6 +46,9 @@ namespace Lumera.JumpForce
         readonly Dictionary<int, JumpForceSpawnedElement> active = new();
         readonly HashSet<int> retired = new();
         readonly List<int> remove = new();
+        readonly List<JumpForceInteractive> trampolines = new();
+        readonly List<JumpForceInteractive> fans = new();
+        JumpForceElementShape[] variantShapes;
         JumpForceElementShape platformShape, pillarShape, groundShape;
         float originY, z;
         Camera view;
@@ -48,9 +57,9 @@ namespace Lumera.JumpForce
 
         void Start()
         {
-            if (!player || !followCamera || !startingGround || !platformPrefab || !pillarPrefab)
+            if (!player || !followCamera || !startingGround || !platformPrefab || !pillarPrefab || !trampolinePrefab || !fanPrefab)
             {
-                Debug.LogError("Spawner: preencha jogador, camera, chao e os dois prefabs.", this);
+                Debug.LogError("Spawner: preencha jogador, camera, chao, catalogo e interativos.", this);
                 enabled = false;
                 return;
             }
@@ -60,27 +69,63 @@ namespace Lumera.JumpForce
             originY = groundBounds.max.y;
             groundBounds.center -= new Vector3(0, originY, z);
             groundShape = new JumpForceElementShape { bodyFromTop = groundBounds };
+            if (platformPrefabs == null || platformPrefabs.Length == 0) platformPrefabs = new[] { platformPrefab };
+            variantShapes = new JumpForceElementShape[platformPrefabs.Length];
             for (int i = 0; i < Mathf.Max(10, initialPerType); i++)
             {
-                Create(JumpForceElementKind.Platform);
-                Create(JumpForceElementKind.Pillar);
+                CreateInteractive(JumpForceSpecial.Trampoline);
+                CreateInteractive(JumpForceSpecial.Fan);
             }
-            platformShape = platforms[0].Shape;
+            for (int variant = 0; variant < platformPrefabs.Length; variant++)
+                for (int i = 0; i < Mathf.Max(10, initialPerType); i++)
+                {
+                    var item = Create(JumpForceElementKind.Platform, variant);
+                    variantShapes[variant] = item.Shape;
+                }
+            for (int i = 0; i < Mathf.Max(10, initialPerType); i++) Create(JumpForceElementKind.Pillar);
+            platformShape = variantShapes[0];
             pillarShape = pillars[0].Shape;
             initialized = true;
             RestartTrail();
         }
 
-        JumpForceSpawnedElement Create(JumpForceElementKind kind)
+        JumpForceSpawnedElement Create(JumpForceElementKind kind, int variant = 0)
         {
-            var prefab = kind == JumpForceElementKind.Platform ? platformPrefab : pillarPrefab;
+            var prefab = kind == JumpForceElementKind.Platform ? platformPrefabs[variant] : pillarPrefab;
             var instance = Instantiate(prefab, Vector3.zero, Quaternion.identity, transform);
             var item = instance.AddComponent<JumpForceSpawnedElement>();
-            item.Initialize(kind);
+            if (kind == JumpForceElementKind.Platform && coinPrefab)
+            {
+                var coinObject = Instantiate(coinPrefab, instance.transform);
+                coinObject.transform.localPosition = new Vector3(0, 1.1f, 0);
+                coinObject.transform.localRotation = Quaternion.identity;
+                coinObject.transform.localScale = Vector3.one;
+            }
+            item.Initialize(kind, variant);
+            if (kind == JumpForceElementKind.Platform) item.ConfigureFanBounds(fans[0].CorpoLocal);
             instance.SetActive(false);
             if (kind == JumpForceElementKind.Platform) createdPlatforms++; else createdPillars++;
             (kind == JumpForceElementKind.Platform ? platforms : pillars).Add(item);
             return item;
+        }
+
+        JumpForceInteractive CreateInteractive(JumpForceSpecial type)
+        {
+            var instance = Instantiate(type == JumpForceSpecial.Fan ? fanPrefab : trampolinePrefab, transform);
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+            instance.Preparar();
+            instance.gameObject.SetActive(false);
+            (type == JumpForceSpecial.Fan ? fans : trampolines).Add(instance);
+            return instance;
+        }
+        JumpForceInteractive AcquireInteractive(JumpForceSpecial type)
+        {
+            if (type == JumpForceSpecial.None) return null;
+            var pool = type == JumpForceSpecial.Fan ? fans : trampolines;
+            foreach (var item in pool) if (item && !item.Reservado && !item.gameObject.activeSelf) return item;
+            return CreateInteractive(type);
         }
 
         public void RestartTrail()
@@ -94,7 +139,7 @@ namespace Lumera.JumpForce
             active.Clear();
             retired.Clear();
             runSeed = settings.seed != 0 ? settings.seed : UnityEngine.Random.Range(1, int.MaxValue);
-            Map = new JumpForceTrailMap(settings, runSeed, originY, platformShape, pillarShape, groundShape);
+            Map = new JumpForceTrailMap(settings, runSeed, originY, platformShape, pillarShape, groundShape, variantShapes);
             if (JumpForceSpawnedElement.TryGetWallLimits(invisibleWalls, out float left, out float right))
                 Map.SetHorizontalBounds(left, right);
             RefreshWindow();
@@ -165,11 +210,11 @@ namespace Lumera.JumpForce
                 if (!Map.Levels.TryGetValue(index, out var level)) continue;
                 foreach (var node in level.nodes)
                 {
-                    if (active.ContainsKey(node.id) || retired.Contains(node.id)) continue;
+                    if (active.ContainsKey(node.id) || retired.Contains(node.id) || node.destroyed) continue;
                     Map.ProtectThrough(node.level);
-                    var item = Acquire(node.kind);
+                    var item = Acquire(node.kind, node.platformVariant);
                     item.name = (node.kind == JumpForceElementKind.Platform ? "Plataforma" : "Pilar") + "_Nivel_" + node.level + "_X_" + node.lane * 3;
-                    item.Assign(node, z, player.score);
+                    item.Assign(node, z, player.score, player, followCamera, AcquireInteractive(node.special), transform);
                     active.Add(node.id, item);
                 }
             }
@@ -186,15 +231,16 @@ namespace Lumera.JumpForce
         }
 
         bool IsSupporting(JumpForceSpawnedElement item) =>
-            (player.Support && player.Support.transform.IsChildOf(item.transform)) ||
+            (player.Support && (player.Support.transform.IsChildOf(item.transform) ||
+                (player.Support.proprietario && player.Support.proprietario.gameObject == item.gameObject))) ||
             (player.PillarContact && player.PillarContact.transform.IsChildOf(item.transform));
 
-        JumpForceSpawnedElement Acquire(JumpForceElementKind kind)
+        JumpForceSpawnedElement Acquire(JumpForceElementKind kind, int variant)
         {
             var pool = kind == JumpForceElementKind.Platform ? platforms : pillars;
             foreach (var item in pool)
-                if (item && !item.gameObject.activeSelf && item.Node == null) return item;
-            return Create(kind);
+                if (item && !item.gameObject.activeSelf && item.Node == null && (kind == JumpForceElementKind.Pillar || item.Variant == variant)) return item;
+            return Create(kind, variant);
         }
 
         void Return(JumpForceSpawnedElement item) => item.Release();

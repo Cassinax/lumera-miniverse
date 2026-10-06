@@ -13,8 +13,11 @@ namespace Lumera.JumpForce
         public bool startingGround;
         [Tooltip("Desligado: superficie solida tambem por baixo e pelas laterais, como o corpo do ventilador.")]
         public bool oneWay = true;
-        [Tooltip("Usa pulo vertical maximo imediato em vez do joystick. Configurado pelo gerador na base do ventilador giratorio.")]
+        [Tooltip("Usa a categoria de pulo instantaneo do ventilador giratorio em vez do joystick. Configurado pelo gerador na base do ventilador giratorio.")]
         public bool instantJump;
+        [Tooltip("Gelo: desativa correcao artificial de pouso e acompanhamento da frenagem.")]
+        public bool escorregadia;
+        [HideInInspector] public JumpForcePlatformAbility proprietario;
         [Min(0)] public float extraOrbitClearance = 0.15f;
         public BoxCollider Surface { get; private set; }
         public float Top => Surface.bounds.max.y;

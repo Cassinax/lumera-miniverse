@@ -765,7 +765,7 @@ namespace Lumera.JumpForce
 
                 if (!wasGrounded)
                 {
-                    if (pousoFirme)
+                    if (pousoFirme && !found.escorregadia)
                     {
                         float relativo = body.linearVelocity.x - found.Velocity.x;
                         float limitado = Mathf.Clamp(relativo, -groundSpeed, groundSpeed);
@@ -794,7 +794,7 @@ namespace Lumera.JumpForce
 
         void SyncSupportBrake()
         {
-            if (!Grounded || !Support || !Support.Body)
+            if (!Grounded || !Support || !Support.Body || Support.escorregadia)
             {
                 ResetSupportVelocityTracking();
                 return;

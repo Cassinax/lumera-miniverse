@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.806
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.305
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.07100948
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalRotation.w
@@ -26,15 +26,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -72,9 +72,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6503940983228857058}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6798698483719637234}
     - targetCorrespondingSourceObject: {fileID: -733780072980804430, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4840102097395913792}
+    - targetCorrespondingSourceObject: {fileID: -733780072980804430, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4584308585651886514}
     - targetCorrespondingSourceObject: {fileID: 1594563328881446633, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6988203621382832700}
@@ -84,6 +90,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7587839238504795397, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7602670814421331325}
+    - targetCorrespondingSourceObject: {fileID: 7587839238504795397, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2622532253552953430}
   m_SourcePrefab: {fileID: 100100000, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
 --- !u!1 &600389878991903534 stripped
 GameObject:
@@ -97,7 +106,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 600389878991903534}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 4708e3a7c9757d24ab51868a8b18bf53, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -111,6 +120,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0405178, y: 2.215, z: 1.2747204}
   m_Center: {x: -0.2609911, y: 1.1075, z: 0}
+--- !u!114 &4584308585651886514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600389878991903534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73329f6bf7a3c6a4691d09b61a956f25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForcePlatform
+  startingGround: 0
+  oneWay: 0
+  instantJump: 0
+  escorregadia: 0
+  proprietario: {fileID: 0}
+  extraOrbitClearance: 0.15
 --- !u!1 &1497866981371288217 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7587839238504795397, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
@@ -152,6 +179,19 @@ CapsuleCollider:
   m_Height: 2.0192459
   m_Direction: 0
   m_Center: {x: -0.76245296, y: 0.0016713142, z: 0}
+--- !u!114 &2622532253552953430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1497866981371288217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2094bddaa82a5144a9b95606e48b64ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceVentilador
+  forca: -30
 --- !u!1 &7756627264227416437 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1594563328881446633, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
@@ -188,3 +228,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceGirador
   velocidadeRotacao: {x: 0, y: 0, z: 0}
+--- !u!114 &6798698483719637234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8162066588400904909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 113bb965ce917a247aee5ae9c1938456, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceInteractive
+  tipo: 2

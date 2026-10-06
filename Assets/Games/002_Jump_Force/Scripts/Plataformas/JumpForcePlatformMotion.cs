@@ -27,6 +27,16 @@ namespace Lumera.JumpForce
         public Vector3 Centro => centro;
         public float VelocidadeMaxima => velocidadeMaxima;
 
+        bool altitudeAtiva;
+        float altitude, velocidadeVertical, limiteVertical;
+        public void ConfigurarAltitude(float offset, float velocidade, float forca)
+        {
+            altitudeAtiva = true;
+            altitude = offset;
+            velocidadeVertical = Mathf.Max(0.01f, velocidade);
+            limiteVertical = Mathf.Max(1, forca);
+            body.constraints &= ~RigidbodyConstraints.FreezePositionY;
+        }
         Rigidbody body;
         Vector3 centro, eixo = Vector3.right;
         float distancia, velocidadeMaxima, sentido = 1;
@@ -48,6 +58,7 @@ namespace Lumera.JumpForce
         public void Configurar(Vector3 novoCentro, Vector3 novoEixo, float novaDistancia, float novaVelocidade, int novoSentido)
         {
             if (!body) body = GetComponent<Rigidbody>();
+            altitudeAtiva = false;
             centro = novoCentro;
             eixo = novoEixo.sqrMagnitude > 0.0001f ? novoEixo.normalized : Vector3.right;
             distancia = Mathf.Max(0, novaDistancia);
@@ -63,8 +74,14 @@ namespace Lumera.JumpForce
             }
         }
 
-        void FixedUpdate() =>
+        void FixedUpdate()
+        {
             JumpForceMotorFisico.Aplicar(body, centro, eixo, distancia, velocidadeMaxima, motorForce, brakeForce, endpointTolerance, ref sentido);
+            if (!altitudeAtiva) return;
+            float alvo = Mathf.Clamp((centro.y + altitude - body.position.y) / Time.fixedDeltaTime, -velocidadeVertical, velocidadeVertical);
+            float forca = Mathf.Clamp((alvo - body.linearVelocity.y) * body.mass / Time.fixedDeltaTime, -limiteVertical, limiteVertical);
+            body.AddForce(Vector3.up * forca);
+        }
 
 #if UNITY_EDITOR
         void OnDrawGizmosSelected()
