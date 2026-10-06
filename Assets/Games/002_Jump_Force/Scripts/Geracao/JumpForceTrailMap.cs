@@ -31,7 +31,18 @@ namespace Lumera.JumpForce
     {
         [Min(0.5f)] public float levelHeight = 4;
         [Tooltip("Nivel que encerra a partida. O mapa nao gera acima dele.")]
-        [Min(1)] public int finalLevel = 400;
+        [Min(1)] public int finalLevel = 450;
+        [Header("Trecho final: rota unica")]
+        [Min(1)] public int finalChallengeStart = 400;
+        public JumpForceDifficultyTier finalChallengeTier = new()
+        {
+            intencao = "Final: sequencias precisas sem caminhos alternativos.",
+            fixedChance = 0.2f, secondPlatformChance = 0, pillarChance = 0.35f, verticalPillarChance = 0,
+            platformAmplitude = 5, pillarAmplitude = 2, shortSpecialGapChance = 0.3f,
+            speedMultiplier = 1.35f, speedVariation = 1.4f, reachMargin = 0.92f
+        };
+        public JumpForceRouteSection[] finalSections = JumpForceBiomeRules.FinalPadrao();
+        public bool IsFinalChallenge(int level) => level >= Mathf.Max(1, finalChallengeStart);
         [Min(0)] public float separation = 0.1f;
         [Tooltip("Semente zero sorteia uma nova trilha a cada tentativa.")]
         public int seed;
@@ -79,7 +90,8 @@ namespace Lumera.JumpForce
                 speedMultiplier = 1.15f, speedVariation = 1.2f, reachMargin = 0.85f },
         };
 
-        public int TierIndex(int level) => tiers == null || tiers.Length == 0 ? 0 :
+        public int TierIndex(int level) => IsFinalChallenge(level) ? (tiers == null ? 0 : tiers.Length) :
+            tiers == null || tiers.Length == 0 ? 0 :
             Mathf.Clamp(Mathf.Max(0, level) / Mathf.Max(1, levelsPerTier), 0, tiers.Length - 1);
     }
 
@@ -109,7 +121,15 @@ namespace Lumera.JumpForce
         // Estado logico sobrevive ao retorno do GameObject ao pool.
         public bool breakStarted, destroyed;
         public int brokenPieces;
-        public float breakTimer, cloudOffset, cloudTimer;
+        public float breakTimer, cloudOffset, cloudTimer, reassembleAt;
+        public bool ReassembleIfDue(float now)
+        {
+            if (reassembleAt <= 0 || now < reassembleAt) return false;
+            breakStarted = destroyed = false;
+            brokenPieces = 0;
+            breakTimer = reassembleAt = 0;
+            return true;
+        }
         public JumpForceSpecial special;
         public JumpForceMotionAxis axis;
         public float topY, amplitude, baseSpeed, fanYaw, fanSpinY, motionCenterOffsetX;
@@ -155,7 +175,8 @@ namespace Lumera.JumpForce
         public IReadOnlyDictionary<int, JumpForceTrailLevel> Levels => levels;
         public int LastLevel => lastLevel;
         public int TierIndex(int level) => settings.TierIndex(level);
-        JumpForceDifficultyTier Tier(int level) =>
+        JumpForceDifficultyTier Tier(int level) => settings.IsFinalChallenge(level)
+            ? settings.finalChallengeTier ?? fallbackTier :
             settings.tiers != null && settings.tiers.Length > 0 ? settings.tiers[settings.TierIndex(level)] ?? fallbackTier : fallbackTier;
 
         public JumpForceTrailMap(JumpForceTrailSettings settings, int seed, float originY,
@@ -208,9 +229,26 @@ namespace Lumera.JumpForce
             leftBoundary = left;
             rightBoundary = right;
         }
-        JumpForceBiomePlan Plan(int level) => settings.useBiomes
-            ? JumpForceBiomeRules.Planejar(settings.biomes, seed, level)
-            : new JumpForceBiomePlan(-1, -1, 0, JumpForcePlatformType.Padrao, false, false);
+        JumpForceBiomePlan Plan(int level)
+        {
+            if (settings.IsFinalChallenge(level) && settings.finalSections != null && settings.finalSections.Length > 0)
+            {
+                int local = level - Mathf.Max(1, settings.finalChallengeStart);
+                int block = local / 10;
+                int section = (int)(unchecked((uint)seed + (uint)block * 2654435761u) % (uint)settings.finalSections.Length);
+                var sequence = settings.finalSections[section]?.plataformas;
+                var type = sequence != null && sequence.Length > 0 ? sequence[local % sequence.Length] : JumpForcePlatformType.Instavel;
+                return new JumpForceBiomePlan(JumpForceBiomeRules.Indice(settings.biomes, level), section, local % 10,
+                    type, false, false, type == JumpForcePlatformType.Nuvem);
+            }
+            return settings.useBiomes ? JumpForceBiomeRules.Planejar(settings.biomes, seed, level)
+                : new JumpForceBiomePlan(-1, -1, 0, JumpForcePlatformType.Padrao, false, false);
+        }
+        int FinalLane(int level)
+        {
+            int step = (level - Mathf.Max(1, settings.finalChallengeStart)) % 4;
+            return (step == 1 ? 1 : step == 3 ? -1 : 0) * ((seed & 1) == 0 ? 1 : -1);
+        }
         bool Cloud(JumpForceTrailNode node) => node.kind == JumpForceElementKind.Platform &&
             node.platformVariant == (int)JumpForcePlatformType.Nuvem;
         bool Chance(float chance) => random.NextDouble() < chance;
@@ -302,13 +340,14 @@ namespace Lumera.JumpForce
 
         bool HasSafeExit(JumpForceTrailNode node)
         {
+            if (node.level >= Mathf.Max(1, settings.finalLevel)) return true;
             bool vertical = node.kind == JumpForceElementKind.Pillar && node.axis == JumpForceMotionAxis.Y && node.amplitude > 0;
             for (int lane = -1; lane <= 1; lane++)
             {
-                if (vertical && lane == 0) continue;
+                if (vertical && lane == 0 || settings.IsFinalChallenge(node.level + 1) && lane != FinalLane(node.level + 1)) continue;
                 var next = NewNode(node.level + 1, lane, JumpForceElementKind.Platform, true, node.id);
                 // Gargalos exigem a geometria real da nuvem; os demais aceitam ponte padrao.
-                if (!next.mandatoryCloud) next.platformVariant = 0;
+                if (!next.mandatoryCloud && !settings.IsFinalChallenge(next.level)) next.platformVariant = 0;
                 var plan = Plan(next.level);
                 next.special = plan.PermiteInterativo
                     ? nextFan == next.level && node.special != JumpForceSpecial.Trampoline &&
@@ -316,16 +355,6 @@ namespace Lumera.JumpForce
                         nextTrampoline == next.level ? JumpForceSpecial.Trampoline : JumpForceSpecial.None
                     : JumpForceSpecial.None;
                 if (Reachable(node, next) && Free(next) && !Envelope(node).Intersects(Envelope(next))) return true;
-            }
-            if (!Cloud(node) || node.mandatoryCloud) return false;
-            // Mesmo no fim da descida, a nuvem permite voltar a um apoio fixo no mesmo nivel.
-            for (int lane = -1; lane <= 1; lane++)
-            {
-                if (lane == node.lane) continue;
-                var escape = NewNode(node.level, lane, JumpForceElementKind.Platform, false, node.id);
-                escape.platformVariant = 0;
-                if (Reachable(node, escape) && Free(escape) &&
-                    !Envelope(node).Intersects(Envelope(escape)) && HasSafeExit(escape)) return true;
             }
             return false;
         }
@@ -363,7 +392,7 @@ namespace Lumera.JumpForce
                 previousId = previousId, topY = originY + level * settings.levelHeight,
                 kind = kind, platformVariant = variant, axis = JumpForceMotionAxis.X, tier = settings.TierIndex(level),
                 biomeIndex = plan.bioma, sectionIndex = plan.conjunto, sectionStep = plan.passo,
-                mandatoryCloud = plan.nuvemObrigatoria,
+                mandatoryCloud = kind == JumpForceElementKind.Platform && variant == (int)JumpForcePlatformType.Nuvem,
                 baseSpeed = Mathf.Clamp(speed, minimumSpeed, maximumSpeed), speedVariation = tier.speedVariation,
                 minimumSpeed = minimumSpeed, maximumSpeed = maximumSpeed,
                 motionSeed = random.Next(), direction = Chance(0.5f) ? -1 : 1,
@@ -437,11 +466,11 @@ namespace Lumera.JumpForce
             foreach (var previous in lower.nodes)
                 foreach (int lane in new[] { previous.lane, 0, -1, 1 })
                 {
-                    if (restricted && lane == 0) continue;
+                    if (restricted && lane == 0 || settings.IsFinalChallenge(index) && lane != FinalLane(index)) continue;
                     var node = NewNode(index, lane, JumpForceElementKind.Platform, true, previous.id);
-                    if (!node.mandatoryCloud) node.platformVariant = 0;
+                    if (!node.mandatoryCloud && !settings.IsFinalChallenge(index)) node.platformVariant = 0;
                     node.routeRecovery = true;
-                    if (!Reachable(previous, node) || !Free(node)) continue;
+                    if (!Reachable(previous, node) || !Free(node) || !HasSafeExit(node)) continue;
                     var level = new JumpForceTrailLevel(index);
                     level.nodes.Add(node);
                     levels.Add(index, level);
@@ -499,6 +528,7 @@ namespace Lumera.JumpForce
         bool AddAlternative(JumpForceTrailLevel level, JumpForceTrailNode previous,
             bool restricted, bool oppositePillar)
         {
+            if (settings.IsFinalChallenge(level.index) || Cloud(level.Primary)) return false;
             if (level.nodes.Count == 2) return true;
             var primary = level.Primary;
             if (primary.mandatoryCloud) oppositePillar = true;
@@ -591,10 +621,11 @@ namespace Lumera.JumpForce
                 foreach (int lane in lanes)
                 {
                     if (accepted != null) break;
-                    if ((restricted && lane == 0) || Mathf.Abs(lane - previous.lane) > 1) continue;
+                    if ((restricted && lane == 0) || Mathf.Abs(lane - previous.lane) > 1 ||
+                        settings.IsFinalChallenge(index) && lane != FinalLane(index)) continue;
                     var kind = attempt == 0 && pillarRoll ? JumpForceElementKind.Pillar : JumpForceElementKind.Platform;
                     var node = NewNode(index, lane, kind, true, previous.id);
-                    if (!plan.nuvemObrigatoria && (restricted || attempt > 0))
+                    if (!node.mandatoryCloud && !settings.IsFinalChallenge(index) && (restricted || attempt > 0))
                     {
                         node.routeRecovery = node.platformVariant != 0;
                         node.platformVariant = 0;
@@ -602,7 +633,8 @@ namespace Lumera.JumpForce
                     node.special = trampolineDue ? JumpForceSpecial.Trampoline :
                         fanDue ? JumpForceSpecial.Fan : JumpForceSpecial.None;
                     bool moving = !fixedRoll && !restricted && !plan.ApoioSeguro && !plan.nuvemObrigatoria && attempt == 0;
-                    if (moving && kind == JumpForceElementKind.Pillar && lane == 0 && !Plan(index + 1).nuvemObrigatoria && Chance(tier.verticalPillarChance))
+                    if (moving && kind == JumpForceElementKind.Pillar && lane == 0 && !settings.IsFinalChallenge(index + 1) &&
+                        Plan(index + 1).plataforma != JumpForcePlatformType.Nuvem && Chance(tier.verticalPillarChance))
                         node.axis = JumpForceMotionAxis.Y;
                     if (!(moving ? FitMoving(node, previous, kind == JumpForceElementKind.Pillar ?
                         tier.pillarAmplitude : tier.platformAmplitude) : Fit(node, previous))) continue;

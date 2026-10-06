@@ -214,6 +214,7 @@ namespace Lumera.JumpForce
                 if (!Map.Levels.TryGetValue(index, out var level)) continue;
                 foreach (var node in level.nodes)
                 {
+                    if (!active.ContainsKey(node.id) && node.ReassembleIfDue(Time.time)) retired.Remove(node.id);
                     if (active.ContainsKey(node.id) || retired.Contains(node.id) || node.destroyed) continue;
                     Map.ProtectThrough(node.level);
                     var item = Acquire(node.kind, node.platformVariant);
@@ -263,6 +264,11 @@ namespace Lumera.JumpForce
         void LateUpdate()
         {
             if (!initialized || !view || player.Victory) return;
+            if (followCamera.InWardrobe)
+            {
+                foreach (var item in active.Values) item.SetVisible(false);
+                return;
+            }
             remove.Clear();
             foreach (var pair in active)
             {

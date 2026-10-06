@@ -27,7 +27,7 @@ namespace Lumera.JumpForce
         {
             if (!player || !player.GameplayEnabled || player.Dead || Completed) return;
             ObserveHeight(player.Body.position.y);
-            int finalLevel = spawner ? Mathf.Max(1, spawner.settings.finalLevel) : 400;
+            int finalLevel = spawner ? Mathf.Max(1, spawner.settings.finalLevel) : 450;
             if (points < finalLevel) return;
             Completed = true;
             player.CompleteRun();
@@ -39,7 +39,7 @@ namespace Lumera.JumpForce
         }
         public void ObserveHeight(float height)
         {
-            float finalHeight = (spawner ? Mathf.Max(1, spawner.settings.finalLevel) : 400) * Mathf.Max(0.1f, metersPerPoint);
+            float finalHeight = (spawner ? Mathf.Max(1, spawner.settings.finalLevel) : 450) * Mathf.Max(0.1f, metersPerPoint);
             maximumHeight = Mathf.Min(finalHeight, Mathf.Max(maximumHeight, height));
             int next = Mathf.FloorToInt(maximumHeight / Mathf.Max(0.1f, metersPerPoint));
             if (next == points) return;

@@ -52,6 +52,13 @@ namespace Lumera.JumpForce
                     Secao("Memorizar a orbita", "PGNIPNITPP"), Secao("Passagens ocultas", "PTNIPNIGPP") } }
         };
 
+        public static JumpForceRouteSection[] FinalPadrao() => new[]
+        {
+            Secao("Precisao e ritmo", "TIGNTPINPT"),
+            Secao("Memoria e agilidade", "ITNPIGTNPI"),
+            Secao("Ultima travessia", "NTIPNTGITP")
+        };
+
         static JumpForceRouteSection Secao(string nome, string sequencia)
         {
             var tipos = new JumpForcePlatformType[sequencia.Length];

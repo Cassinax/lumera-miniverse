@@ -234,6 +234,8 @@ namespace Lumera.JumpForce
         {
             LockedUpward = false;
             floorFeet = player ? player.FeetY : 0;
+            transform.position = new Vector3(initialPosition.x, floorFeet, initialPosition.z) + offset;
+            velocidadeCamera = Vector3.zero;
         }
     }
 }

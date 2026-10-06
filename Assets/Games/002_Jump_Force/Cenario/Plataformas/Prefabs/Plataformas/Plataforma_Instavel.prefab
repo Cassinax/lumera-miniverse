@@ -589,6 +589,7 @@ MonoBehaviour:
   - {fileID: 4249196669255303342}
   - {fileID: 7102925727881363150}
   - {fileID: 8638297476853194871}
+  tempoReconstrucao: 5
   margemDesativacao: 0.05
   jogador: {fileID: 0}
   cameraJogo: {fileID: 0}

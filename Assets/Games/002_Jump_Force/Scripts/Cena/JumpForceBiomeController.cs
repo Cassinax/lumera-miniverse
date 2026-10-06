@@ -9,9 +9,20 @@ namespace Lumera.JumpForce
         [Tooltip("Na mesma ordem de Settings > Biomas no Spawner.")]
         public Material[] skyboxes = System.Array.Empty<Material>();
         [Min(0)] public float segundosTransicao = 2;
+        [Header("Luz por bioma (mesma ordem dos skyboxes)")]
+        public Light directionalLight;
+        public Color[] lightColors = DefaultLightColors();
+        public static Color[] DefaultLightColors() => new Color[]
+        {
+            new Color32(255, 244, 214, 255), new Color32(255, 208, 163, 255),
+            new Color32(213, 230, 255, 255), new Color32(241, 243, 255, 255),
+            new Color32(205, 197, 255, 255)
+        };
         public int BiomaAtual { get; private set; } = -1;
         public int NivelMaximo { get; private set; }
-        public bool EmTransicao => destino;
+        public bool EmTransicao => destino || transicaoLuz;
+        Color luzOriginal, luzOrigem, luzDestino;
+        bool transicaoLuz;
 
         Material original, atribuido, mistura, destino;
         float tempo;
@@ -25,18 +36,26 @@ namespace Lumera.JumpForce
         static readonly int Exposicao = Shader.PropertyToID("_Exposure");
         static readonly int Rotacao = Shader.PropertyToID("_Rotation");
 
-        void OnEnable() { original = RenderSettings.skybox; Resetar(); }
+        void OnEnable()
+        {
+            original = RenderSettings.skybox;
+            if (directionalLight) luzOriginal = directionalLight.color;
+            Resetar();
+        }
 
         public void Resetar()
         {
             destino = null;
+            transicaoLuz = false;
             tempo = 0;
             NivelMaximo = 0;
             BiomaAtual = spawner && spawner.settings.useBiomes
                 ? JumpForceBiomeRules.Indice(spawner.settings.biomes, 0) : -1;
             Definir(Ceu(BiomaAtual) ? Ceu(BiomaAtual) : original);
+            if (directionalLight) directionalLight.color = CorLuz(BiomaAtual);
         }
 
+        Color CorLuz(int indice) => lightColors != null && indice >= 0 && indice < lightColors.Length ? lightColors[indice] : luzOriginal;
         Material Ceu(int indice) => skyboxes != null && indice >= 0 && indice < skyboxes.Length ? skyboxes[indice] : null;
         void Definir(Material material) { RenderSettings.skybox = material; atribuido = material; }
 
@@ -49,11 +68,18 @@ namespace Lumera.JumpForce
                 int indice = JumpForceBiomeRules.Indice(spawner.settings.biomes, NivelMaximo);
                 if (indice != BiomaAtual) Trocar(indice);
             }
-            if (!destino) return;
+            if (!destino && !transicaoLuz) return;
             tempo += Time.deltaTime;
             float proporcao = segundosTransicao <= 0 ? 1 : Mathf.Clamp01(tempo / segundosTransicao);
-            mistura.SetFloat(Proporcao, Mathf.SmoothStep(0, 1, proporcao));
-            if (proporcao >= 1) { Definir(destino); destino = null; }
+            float suavizado = Mathf.SmoothStep(0, 1, proporcao);
+            if (destino) mistura.SetFloat(Proporcao, suavizado);
+            if (transicaoLuz && directionalLight) directionalLight.color = Color.Lerp(luzOrigem, luzDestino, suavizado);
+            if (proporcao >= 1)
+            {
+                if (destino) Definir(destino);
+                destino = null;
+                transicaoLuz = false;
+            }
         }
 
         void Trocar(int indice)
@@ -62,6 +88,14 @@ namespace Lumera.JumpForce
             var anterior = Ceu(BiomaAtual) ? Ceu(BiomaAtual) : RenderSettings.skybox;
             BiomaAtual = indice;
             destino = null;
+            tempo = 0;
+            transicaoLuz = directionalLight;
+            if (directionalLight)
+            {
+                luzOrigem = directionalLight.color;
+                luzDestino = CorLuz(indice);
+                if (segundosTransicao <= 0) { directionalLight.color = luzDestino; transicaoLuz = false; }
+            }
             if (!proximo) return;
             if (!anterior || anterior.shader != proximo.shader || !anterior.HasProperty(ProximaTextura) || segundosTransicao <= 0)
             { Definir(proximo); return; }
@@ -81,6 +115,8 @@ namespace Lumera.JumpForce
         void OnDisable()
         {
             if (RenderSettings.skybox == atribuido) RenderSettings.skybox = original;
+            if (directionalLight) directionalLight.color = luzOriginal;
+            transicaoLuz = false;
             destino = null;
             if (mistura)
             {

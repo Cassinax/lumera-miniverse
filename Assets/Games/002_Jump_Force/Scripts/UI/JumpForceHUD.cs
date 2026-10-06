@@ -95,8 +95,8 @@ namespace Lumera.JumpForce
             if (player.score && player.score.victoryFloat) player.score.victoryFloat.Restore();
             player.Restart();
             if (player.score) player.score.ResetRun();
-            if (spawner) spawner.RestartTrail();
             followCamera.Restart();
+            if (spawner) spawner.RestartTrail();
             deathPanel.SetActive(false);
             showedDeath = showedVictory = false;
             if (victoryPanel) victoryPanel.SetActive(false);

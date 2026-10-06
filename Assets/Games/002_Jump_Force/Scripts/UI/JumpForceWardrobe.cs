@@ -113,7 +113,7 @@ namespace Lumera.JumpForce
             hud.player.animationDriver.Preview = true;
             hud.player.animationDriver.ResetIntro();
             hud.followCamera.HoldForWardrobe();
-            if (visibility) { restoreVisibility = visibility.enabled; visibility.enabled = false; }
+            if (visibility && visibility.enabled) { restoreVisibility = true; visibility.enabled = false; }
             hud.MostrarControles(false);
             if (hud.deathPanel) hud.deathPanel.SetActive(false);
             ConfigureSubmit();

@@ -24,6 +24,8 @@ namespace Lumera.JumpForce
         [Header("Instavel")]
         [Min(0.05f)] public float intervaloQueda = 3;
         public Rigidbody[] partes = System.Array.Empty<Rigidbody>();
+        [Tooltip("Segundos entre a ultima peca se soltar e a plataforma se remontar.")]
+        [Min(0)] public float tempoReconstrucao = 5;
         [Range(0, 0.5f)] public float margemDesativacao = 0.05f;
         [Header("Referencias opcionais para objetos colocados na cena")]
         public JumpForcePlayer jogador;
@@ -41,7 +43,7 @@ namespace Lumera.JumpForce
         BoxCollider[] colisores;
         ConfigurableJoint[] juntas;
         int caidas;
-        float tempoQueda, tempoNuvem, deslocamento;
+        float tempoQueda, tempoNuvem, deslocamento, reconstrucaoEm;
         bool contando, visivel = true;
         float proximaTroca, tempoVisibilidade;
         System.Random sorteio;
@@ -100,6 +102,7 @@ namespace Lumera.JumpForce
             caidas = node != null ? node.brokenPieces : 0;
             tempoQueda = node != null ? node.breakTimer : 0;
             contando = node != null && node.breakStarted;
+            reconstrucaoEm = node != null ? node.reassembleAt : 0;
             deslocamento = node != null ? node.cloudOffset : 0;
             tempoNuvem = node != null ? node.cloudTimer : 0;
             visivel = true;
@@ -180,6 +183,13 @@ namespace Lumera.JumpForce
                 if (estado != null) { estado.cloudOffset = deslocamento; estado.cloudTimer = tempoNuvem; }
             }
             if (tipo != JumpForcePlatformType.Instavel) return;
+            if (Quebrada && reconstrucaoEm > 0 && Time.time >= reconstrucaoEm)
+            {
+                if (estado != null) estado.ReassembleIfDue(Time.time);
+                Reiniciar(estado, jogador, cameraJogo);
+                if (elemento) elemento.RestaurarConteudo();
+                return;
+            }
             contando |= Apoiado;
             if (contando && !Quebrada)
             {
@@ -188,6 +198,11 @@ namespace Lumera.JumpForce
                 {
                     tempoQueda -= Mathf.Max(0.05f, intervaloQueda);
                     SoltarParte();
+                    if (Quebrada)
+                    {
+                        reconstrucaoEm = Time.time + Mathf.Max(0, tempoReconstrucao);
+                        if (estado != null) estado.reassembleAt = reconstrucaoEm;
+                    }
                 }
             }
             for (int i = 0; i < partes.Length; i++)
@@ -201,9 +216,8 @@ namespace Lumera.JumpForce
             {
                 if (estado != null) estado.destroyed = true;
                 if (elemento) elemento.DesativarConteudo();
-                bool terminou = true;
-                foreach (var parte in partes) terminou &= !parte.gameObject.activeSelf;
-                if (terminou) gameObject.SetActive(false);
+                // O corpo vazio mantem o temporizador. Fora da janela, o mapa guarda o prazo.
+                // Pecas caidas continuam sendo desativadas individualmente.
             }
         }
         void SoltarParte()
@@ -271,7 +285,7 @@ namespace Lumera.JumpForce
             sorteio = null;
             contando = false;
             caidas = 0;
-            tempoQueda = tempoNuvem = deslocamento = tempoVisibilidade = 0;
+            tempoQueda = tempoNuvem = deslocamento = tempoVisibilidade = reconstrucaoEm = 0;
             visivel = true;
             if (visualNuvem) visualNuvem.localScale = escalaNuvem;
             Mostrar(true);

@@ -251,7 +251,7 @@ namespace Lumera.JumpForce
         Vector3 previousSupportVelocity;
         Vector3 facing = Vector3.forward;
 
-        Quaternion initialRotation;
+        Quaternion initialRotation, initialBodyRotation;
         Vector3 escalaSetaOriginal = Vector3.one;
         MaterialPropertyBlock blocoSeta;
         static readonly int CorBase = Shader.PropertyToID("_BaseColor");
@@ -316,6 +316,7 @@ namespace Lumera.JumpForce
             body.interpolation = RigidbodyInterpolation.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
+            initialBodyRotation = body.rotation;
             initialRotation = visual ? visual.localRotation : Quaternion.identity;
             facing = visual ? visual.forward : Vector3.forward;
 
@@ -1417,8 +1418,12 @@ namespace Lumera.JumpForce
 
             CancelCharge();
 
+            var interpolation = body.interpolation;
+            body.interpolation = RigidbodyInterpolation.None;
             body.position = Vector3.zero;
-            transform.position = Vector3.zero;
+            body.rotation = initialBodyRotation;
+            transform.SetPositionAndRotation(Vector3.zero, initialBodyRotation);
+            body.interpolation = interpolation;
             body.linearVelocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
 

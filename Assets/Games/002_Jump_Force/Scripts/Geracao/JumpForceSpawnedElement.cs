@@ -19,6 +19,7 @@ namespace Lumera.JumpForce
         JumpForcePlatform[] surfaces;
         JumpForcePlatformAbility ability;
         JumpForceCoin coin;
+        JumpForceScore placar;
         JumpForceInteractive interactive;
         Vector3 coinLocalPosition;
         Rigidbody body;
@@ -124,6 +125,7 @@ namespace Lumera.JumpForce
             JumpForcePlayer player = null, JumpForceCamera camera = null, JumpForceInteractive accessory = null, Transform pool = null)
         {
             node = record;
+            placar = score;
             for (int i = 0; i < parts.Length; i++)
             {
                 if (!parts[i] || parts[i] == transform) continue;
@@ -134,7 +136,11 @@ namespace Lumera.JumpForce
             transform.rotation = Quaternion.identity;
             Vector3 centro = record.TopPosition(z) - Vector3.up * Shape.topOffset;
             transform.position = centro;
-            if (body) body.position = centro;
+            if (body)
+            {
+                body.position = centro;
+                body.rotation = Quaternion.identity;
+            }
             if (ability) ability.Reiniciar(record, player, camera);
             foreach (var surface in surfaces) if (surface) surface.instantJump = record.special == JumpForceSpecial.Fan && record.fanSpinY != 0;
             interactive = accessory;
@@ -172,6 +178,11 @@ namespace Lumera.JumpForce
         {
             if (interactive) interactive.gameObject.SetActive(false);
             if (coin) coin.gameObject.SetActive(false);
+        }
+        public void RestaurarConteudo()
+        {
+            if (interactive) interactive.gameObject.SetActive(true);
+            if (coin && node != null) coin.Configure(node, placar);
         }
         // Ponto unico de retorno: encerra habilidades, recolhe pecas e devolve o interativo ao pool.
         public void Release()

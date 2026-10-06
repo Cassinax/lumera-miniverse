@@ -3691,7 +3691,7 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: 'Vitoria!
 
-    Voce chegou ao nivel 400!
+    Voce chegou ao nivel 450!
 
     Recompensa: 500 moedas'
 --- !u!222 &1120847924
@@ -4514,7 +4514,27 @@ MonoBehaviour:
   - {fileID: 1595250949}
   settings:
     levelHeight: 4
-    finalLevel: 400
+    finalLevel: 450
+    finalChallengeStart: 400
+    finalChallengeTier:
+      intencao: 'Final: sequencias precisas sem caminhos alternativos.'
+      fixedChance: 0.2
+      secondPlatformChance: 0
+      pillarChance: 0.35
+      verticalPillarChance: 0
+      platformAmplitude: 5
+      pillarAmplitude: 2
+      shortSpecialGapChance: 0.3
+      speedMultiplier: 1.35
+      speedVariation: 1.4
+      reachMargin: 0.92
+    finalSections:
+    - nome: Precisao e ritmo
+      plataformas: 04000000020000000100000003000000040000000000000002000000030000000000000004000000
+    - nome: Memoria e agilidade
+      plataformas: 02000000040000000300000000000000020000000100000004000000030000000000000002000000
+    - nome: Ultima travessia
+      plataformas: 03000000040000000200000000000000030000000400000001000000020000000400000000000000
     separation: 0.1
     seed: 0
     levelsPerTier: 30
@@ -4682,6 +4702,13 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 19f01540c5fd4384a858a5476fab03af, type: 2}
   - {fileID: 2100000, guid: 8cb0733240ca313439091beba51d25a8, type: 2}
   segundosTransicao: 2
+  directionalLight: {fileID: 940012971}
+  lightColors:
+  - {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  - {r: 1, g: 0.8156863, b: 0.6392157, a: 1}
+  - {r: 0.8352941, g: 0.9019608, b: 1, a: 1}
+  - {r: 0.94509804, g: 0.9529412, b: 1, a: 1}
+  - {r: 0.8039216, g: 0.77254903, b: 1, a: 1}
 --- !u!1 &1517682375
 GameObject:
   m_ObjectHideFlags: 0

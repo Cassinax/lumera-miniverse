@@ -19,7 +19,7 @@ namespace Lumera.JumpForce.Editor
             var invisivel = Campos("intervaloVisibilidade", "avisoPiscando", "intervaloPiscada");
             var nuvem = Campos("esperaNuvem", "velocidadeDescida", "velocidadeRetorno",
                 "descidaMaxima", "forcaVertical", "escalaMinimaNuvem", "visualNuvem");
-            var instavel = Campos("intervaloQueda", "partes", "margemDesativacao");
+            var instavel = Campos("intervaloQueda", "tempoReconstrucao", "partes", "margemDesativacao");
             root.Add(invisivel);
             root.Add(nuvem);
             root.Add(instavel);
