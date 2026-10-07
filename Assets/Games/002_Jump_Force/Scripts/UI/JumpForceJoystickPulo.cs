@@ -31,7 +31,8 @@ namespace Lumera.JumpForce
 
         Sprite spriteAtual;
         Texture2D textura;
-        Color32[] pixels;
+        byte[] pixels;
+        int larguraMascara, alturaMascara;
         Rect textureRect;
 
         Vector2 ultimaDirecao;
@@ -68,20 +69,47 @@ namespace Lumera.JumpForce
             spriteAtual = imagem.sprite;
             textura = spriteAtual.texture;
 
-            if (!textura || !textura.isReadable)
+            if (!textura)
             {
                 pixels = null;
-
-                Debug.LogError(
-                    "JumpForceJoystickPulo: a textura do joystick precisa estar com Read/Write Enabled.",
-                    this
-                );
-
                 return;
             }
 
             textureRect = spriteAtual.textureRect;
-            pixels = textura.GetPixels32();
+            PrepararMascaraAlpha();
+        }
+
+        void PrepararMascaraAlpha()
+        {
+            // O atlas pode ficar sem Read/Write. Guardamos so um byte de alpha por pixel do sprite.
+            larguraMascara = Mathf.Max(1, Mathf.RoundToInt(textureRect.width));
+            alturaMascara = Mathf.Max(1, Mathf.RoundToInt(textureRect.height));
+            var anterior = RenderTexture.active;
+            var alvo = RenderTexture.GetTemporary(larguraMascara, alturaMascara, 0,
+                RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
+            Texture2D leitura = null;
+            try
+            {
+                var escala = new Vector2(textureRect.width / textura.width, textureRect.height / textura.height);
+                var deslocamento = new Vector2(textureRect.x / textura.width, textureRect.y / textura.height);
+                Graphics.Blit(textura, alvo, escala, deslocamento);
+                RenderTexture.active = alvo;
+                leitura = new Texture2D(larguraMascara, alturaMascara, TextureFormat.RGBA32, false, true);
+                leitura.ReadPixels(new Rect(0, 0, larguraMascara, alturaMascara), 0, 0, false);
+                var dados = leitura.GetRawTextureData<byte>();
+                pixels = new byte[larguraMascara * alturaMascara];
+                for (int i = 0; i < pixels.Length; i++) pixels[i] = dados[i * 4 + 3];
+            }
+            finally
+            {
+                RenderTexture.active = anterior;
+                RenderTexture.ReleaseTemporary(alvo);
+                if (leitura)
+                {
+                    if (Application.isPlaying) Destroy(leitura);
+                    else DestroyImmediate(leitura);
+                }
+            }
         }
 
         void OnDisable()
@@ -289,28 +317,9 @@ namespace Lumera.JumpForce
                     local.y
                 );
 
-            int x = Mathf.Clamp(
-                Mathf.FloorToInt(
-                    textureRect.x +
-                    u * textureRect.width
-                ),
-                0,
-                textura.width - 1
-            );
-
-            int y = Mathf.Clamp(
-                Mathf.FloorToInt(
-                    textureRect.y +
-                    v * textureRect.height
-                ),
-                0,
-                textura.height - 1
-            );
-
-            Color32 pixel =
-                pixels[y * textura.width + x];
-
-            return pixel.a / 255f >= alphaMinimo;
+            int x = Mathf.Clamp(Mathf.FloorToInt(u * larguraMascara), 0, larguraMascara - 1);
+            int y = Mathf.Clamp(Mathf.FloorToInt(v * alturaMascara), 0, alturaMascara - 1);
+            return pixels[y * larguraMascara + x] / 255f >= alphaMinimo;
         }
 
         Rect RectDesenho()
