@@ -1346,13 +1346,14 @@ namespace Lumera.JumpForce
                     (!leavingSupport && (platform == Support || sameMountedSupport));
                 if (!solid)
                 {
-                    // Once approaching from above, keep the physical contact through the rounded
-                    // capsule's edge contact. Feet below Top alone does not mean we are underneath.
+                    // Once approaching from above, keep contact through penetration and solver
+                    // rebound. Upward velocity alone is not a new jump (jointed pieces can rebound).
+                    // An explicit jump releases its support; going fully underneath releases the rest.
                     if (!platform.Surface.enabled || platform.Surface.isTrigger ||
-                        leavingSupport || relativeVerticalSpeed > 0.01f ||
+                        leavingSupport ||
                         capsule.bounds.max.y < platform.Surface.bounds.min.y - contactTolerance)
                         landingSurfaces.Remove(platform);
-                    else if (FeetY >= platform.Top - contactTolerance)
+                    else if (relativeVerticalSpeed <= 0.01f && FeetY >= platform.Top - contactTolerance)
                         landingSurfaces.Add(platform);
 
                     solid = landingSurfaces.Contains(platform);

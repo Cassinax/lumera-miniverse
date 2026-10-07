@@ -34,11 +34,14 @@ namespace Lumera.JumpForce
         JumpForceTrailNode estado;
         JumpForcePlatformMotion motor;
         Rigidbody corpo;
+        BoxCollider superficieInteira;
         JumpForceSpawnedElement elemento;
         Renderer[] visuais;
         Vector3 escalaNuvem;
         Vector3[] posicoes;
         Quaternion[] rotacoes;
+        Vector3[] posicoesCorpo;
+        Quaternion[] rotacoesCorpo;
         Transform[] pais;
         BoxCollider[] colisores;
         ConfigurableJoint[] juntas;
@@ -53,7 +56,8 @@ namespace Lumera.JumpForce
 
         public bool ParteMontada(JumpForcePlatform superficie) =>
             tipo == JumpForcePlatformType.Instavel && superficie && superficie.Body &&
-            superficie.Body != corpo && superficie.transform.IsChildOf(transform);
+            ((superficie.Body == corpo && caidas == 0) ||
+             (superficie.Body != corpo && superficie.transform.IsChildOf(transform)));
 
         public Vector3 VelocidadeBase => corpo ? corpo.linearVelocity : Vector3.zero;
 
@@ -70,10 +74,13 @@ namespace Lumera.JumpForce
             preparado = true;
             motor = GetComponent<JumpForcePlatformMotion>();
             corpo = GetComponent<Rigidbody>();
+            if (tipo == JumpForcePlatformType.Instavel) superficieInteira = GetComponent<BoxCollider>();
             visuais = GetComponentsInChildren<Renderer>(true);
             if (visualNuvem) escalaNuvem = visualNuvem.localScale;
             posicoes = new Vector3[partes.Length];
             rotacoes = new Quaternion[partes.Length];
+            posicoesCorpo = new Vector3[partes.Length];
+            rotacoesCorpo = new Quaternion[partes.Length];
             pais = new Transform[partes.Length];
             colisores = new BoxCollider[partes.Length];
             juntas = new ConfigurableJoint[partes.Length];
@@ -87,6 +94,8 @@ namespace Lumera.JumpForce
                 posicoes[i] = partes[i].transform.localPosition;
                 rotacoes[i] = partes[i].transform.localRotation;
                 pais[i] = partes[i].transform.parent;
+                posicoesCorpo[i] = corpo.transform.InverseTransformPoint(partes[i].transform.position);
+                rotacoesCorpo[i] = Quaternion.Inverse(corpo.rotation) * partes[i].rotation;
                 colisores[i] = partes[i].GetComponent<BoxCollider>();
                 juntas[i] = partes[i].GetComponent<ConfigurableJoint>();
             }
@@ -111,13 +120,20 @@ namespace Lumera.JumpForce
             visivel = true;
             tempoVisibilidade = 0;
             SortearIntervalo();
+            // Inteira, usa uma unica caixa continua. A primeira queda abre os colisores individuais.
+            if (superficieInteira) superficieInteira.isTrigger = caidas != 0;
             for (int i = 0; i < partes.Length; i++)
             {
                 var p = partes[i];
-                p.isKinematic = false;
+                if (!p.isKinematic)
+                {
+                    p.linearVelocity = Vector3.zero;
+                    p.angularVelocity = Vector3.zero;
+                }
+                // Montadas, as pecas formam um plano rigido: juntas dinamicas cedem no pouso.
+                p.isKinematic = true;
                 p.useGravity = false;
-                p.linearVelocity = Vector3.zero;
-                p.angularVelocity = Vector3.zero;
+                p.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
                 p.constraints = RigidbodyConstraints.FreezeRotation;
                 p.transform.SetParent(pais[i], false);
                 p.transform.localPosition = posicoes[i];
@@ -127,13 +143,12 @@ namespace Lumera.JumpForce
                 var junta = juntas[i];
                 if (junta)
                 {
-                    junta.connectedBody = corpo;
-                    junta.autoConfigureConnectedAnchor = false;
-                    junta.anchor = Vector3.zero;
-                    junta.connectedAnchor = posicoes[i];
-                    junta.xMotion = junta.yMotion = junta.zMotion = ConfigurableJointMotion.Locked;
-                    junta.angularXMotion = junta.angularYMotion = junta.angularZMotion = ConfigurableJointMotion.Locked;
+                    // Nao prender o corpo principal a quatro corpos cinematicos.
+                    junta.connectedBody = null;
+                    junta.xMotion = junta.yMotion = junta.zMotion = ConfigurableJointMotion.Free;
+                    junta.angularXMotion = junta.angularYMotion = junta.angularZMotion = ConfigurableJointMotion.Free;
                 }
+                if (colisores[i]) colisores[i].enabled = caidas != 0;
                 p.gameObject.SetActive((caidas & (1 << i)) == 0);
                 if (p.gameObject.activeInHierarchy) p.WakeUp();
                 // Juntas prendem as pecas ao corpo; colisao entre vizinhas so forca as emendas.
@@ -202,6 +217,13 @@ namespace Lumera.JumpForce
                 if (elemento) elemento.RestaurarConteudo();
                 return;
             }
+            for (int i = 0; i < partes.Length; i++)
+            {
+                var p = partes[i];
+                if ((caidas & (1 << i)) != 0 || !p.gameObject.activeInHierarchy) continue;
+                p.MovePosition(corpo.position + corpo.rotation * Vector3.Scale(posicoesCorpo[i], corpo.transform.lossyScale));
+                p.MoveRotation(corpo.rotation * rotacoesCorpo[i]);
+            }
             contando |= Apoiado;
             if (contando && !Quebrada)
             {
@@ -241,6 +263,11 @@ namespace Lumera.JumpForce
             {
                 if ((caidas & (1 << i)) != 0) continue;
                 if (escolhido-- != 0) continue;
+                if (caidas == 0)
+                {
+                    if (superficieInteira) superficieInteira.isTrigger = true;
+                    foreach (var colisor in colisores) if (colisor) colisor.enabled = true;
+                }
                 caidas |= 1 << i;
                 var p = partes[i];
                 var junta = juntas[i];
