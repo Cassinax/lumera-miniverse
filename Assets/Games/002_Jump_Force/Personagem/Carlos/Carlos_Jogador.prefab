@@ -57,7 +57,7 @@ Transform:
   m_GameObject: {fileID: 5499341613647620104}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.01, y: 0.895, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -164,11 +164,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6882f59781ee8f41977a6186e00d26e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceInput
-  tiltEnabled: 1
-  tiltDeadZone: 0.12
-  tiltSensitivity: 2.5
-  tiltSmoothing: 8
-  invertTilt: 0
   stickDeadZone: 0.2
   padDeadZone: 0.2
   padArrowSpeed: 1.5
@@ -213,6 +208,7 @@ MonoBehaviour:
   wallAttraction: 3
   wallSlideDrag: 5
   wallSlideSpeed: 2
+  wallJumpCollisionGrace: 0.15
   minimumJumpHeight: 0.45
   maximumJumpHeight: 6.5
   fullChargeSeconds: 1
@@ -242,13 +238,16 @@ MonoBehaviour:
     m_RotationOrder: 4
   gravityMultiplier: 1.8
   maximumFallSpeed: 28
+  proporcaoPuloPilar: 0.6
+  proporcaoPuloVentiladorGiratorio: 0.8
   direcaoPulo: {fileID: 5483662344048922275}
   seta: {fileID: 5773859761357117771}
   anguloMaximo: 70
   margemPuloVertical: 5
   toleranciaParado: 0.15
+  toleranciaDirecaoGelo: 0.05
   tamanhoSetaMinimo: 0.1
-  tamanhoSetaMaximo: 2.5
+  tamanhoSetaMaximo: 1.5
   doubleTapWindow: 0.25
   quickTapDuration: 0.12
   doubleTapChargeMultiplier: 2
@@ -280,6 +279,8 @@ MonoBehaviour:
   onDeath:
     m_PersistentCalls:
       m_Calls: []
+  modoDev: 1
+  velocidadeVooDev: 15
 --- !u!1 &7971880307291355066
 GameObject:
   m_ObjectHideFlags: 0
@@ -306,13 +307,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7971880307291355066}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.498, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5483662344048922275}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7883520751451029666
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -320,7 +321,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7971880307291355066}
-  m_Mesh: {fileID: 4098947425839601514, guid: 2477e52bcebab814698b9060cdf92e88, type: 3}
+  m_Mesh: {fileID: 2474077722414804797, guid: 76cd9b8e65594274b1667e14aaad0b72, type: 3}
 --- !u!23 &5773859761357117771
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -346,7 +347,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 691a9383e15248aa97405a8df598fe8d, type: 2}
+  - {fileID: 2100000, guid: 02a4ce3d42934a8f976c36c96e61702f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
