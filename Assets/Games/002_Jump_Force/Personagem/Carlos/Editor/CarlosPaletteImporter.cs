@@ -253,7 +253,8 @@ public static class CarlosPaletteTools
             AssetDatabase.CreateAsset(catalog, path);
         }
         catalog.options = settings.paletas.Select(p => new Lumera.JumpForce.JumpForcePaletteCatalog.Option { name = p.nome, swatch = p.camisa }).ToArray();
-        catalog.defaultIndex = settings.selecionada;
+        int aqua = Array.FindIndex(settings.paletas, p => p.nome == "Lumera/Aqua");
+        catalog.defaultIndex = aqua >= 0 ? aqua : settings.selecionada;
         EditorUtility.SetDirty(catalog);
         AssetDatabase.SaveAssetIfDirty(catalog);
         return catalog;

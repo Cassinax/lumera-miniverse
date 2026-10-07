@@ -1104,7 +1104,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &416833146
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7129,7 +7129,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1924509748
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8056,13 +8056,16 @@ MonoBehaviour:
   followCamera: {fileID: 1519061585}
   status: {fileID: 0}
   deathPanel: {fileID: 538034041}
-  restartButton: {fileID: 0}
+  restartButton: {fileID: 134446761}
   victoryPanel: {fileID: 646132453}
   victoryRestartButton: {fileID: 2138561028}
   victoryText: {fileID: 0}
+  gameplayPanel: {fileID: 599411786}
+  deathHeightText: {fileID: 218032721}
+  deathRecordText: {fileID: 594812262}
+  victoryRewardText: {fileID: 825644157}
   controlesToque:
   - {fileID: 91972558}
-  - {fileID: 465677668}
   joystickPular: {fileID: 113725560}
   botaoPularSimples: {fileID: 2071715602}
 --- !u!114 &2130574728
@@ -8167,14 +8170,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lumera.JumpForce.JumpForceWardrobe
   hud: {fileID: 2130574727}
-  wardrobePanel: {fileID: 1212634641}
+  wardrobePanel: {fileID: 1160935894}
   returnMenuPanel: {fileID: 1786819750}
   scroll: {fileID: 1212634643}
   toggleTemplate: {fileID: 1434249634}
   toggleGroup: {fileID: 681309794}
   characterRenderer: {fileID: 896773397}
   palettes: {fileID: 11400000, guid: 247f8712268f8354b9808b32d0db2581, type: 2}
-  plataforma: {fileID: 0}
+  plataforma: {fileID: 1007123539}
+  buyButton: {fileID: 1924509749}
+  playButton: {fileID: 1698103299}
+  freePaletteCount: 3
+  defaultPrice: 15
   reopenOnRetry: 1
 --- !u!114 &2130574733
 MonoBehaviour:

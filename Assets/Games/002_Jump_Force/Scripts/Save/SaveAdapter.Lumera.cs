@@ -145,6 +145,38 @@ public partial class SaveAdapter
         catch (Exception) { }
     }
 
+    // Debito e liberacao do item na mesma transacao. Repetir uma compra nao cobra de novo.
+    public bool ComprarItemJogo(string idJogo, string chaveItem, long preco)
+    {
+        if (string.IsNullOrWhiteSpace(idJogo) || string.IsNullOrEmpty(chaveItem) || preco < 0) return false;
+        bool iniciou = false;
+        long depois;
+        try
+        {
+            GarantirInicializacao();
+            if (_falhaPersistencia) return false;
+            _saveSystem.ProcessQueues();
+            if (_saveSystem.HasPendingOperations()) return false;
+            if (ObterDadoJogo(idJogo, chaveItem, "0") == "1") return true;
+            long antes = ObterMoedas();
+            if (antes < preco) return false;
+            depois = antes - preco;
+            Begin();
+            iniciou = true;
+            SalvarDados(CMD_PROGRESSO, CHAVE_MOEDAS, depois.ToString(CultureInfo.InvariantCulture));
+            SalvarDados(SaveSystem.GameCommand(idJogo), chaveItem, "1");
+            RegistrarGasto(CHAVE_MOEDAS, preco, antes, depois, "skin", idJogo + "/" + chaveItem);
+            if (!Commit()) { Rollback(); return false; }
+        }
+        catch (Exception)
+        {
+            if (iniciou) Rollback();
+            return false;
+        }
+        MoedasAlteradas?.Invoke(depois);
+        return true;
+    }
+
     // O pacote le o estado confirmado, nao a fila: grava antes de consultar.
     public bool TemDadosDoJogo(string idJogo)
     {

@@ -16,6 +16,11 @@ namespace Lumera.JumpForce
         public GameObject victoryPanel;
         public Button victoryRestartButton;
         public Text victoryText;
+        [Header("Canvas reorganizado")]
+        public GameObject gameplayPanel;
+        public TMPro.TMP_Text deathHeightText;
+        public TMPro.TMP_Text deathRecordText;
+        public TMPro.TMP_Text victoryRewardText;
         [Tooltip("Controles de toque (Controles: Button_Esquerda, Joystick_Pular, Button_Direita): ocultos no vestiario e apos a morte.")]
         public GameObject[] controlesToque = System.Array.Empty<GameObject>();
         public GameObject joystickPular;
@@ -25,6 +30,7 @@ namespace Lumera.JumpForce
         void Update()
         {
             if (!player) return;
+            MostrarGameplay(!(wardrobe && wardrobe.IsOpen) && !player.Dead && !player.Victory);
             if (player.Victory)
             {
                 MostrarControles(false);
@@ -33,6 +39,8 @@ namespace Lumera.JumpForce
                 if (status) status.text = "";
                 if (victoryText) victoryText.text = "Vitoria!\nVoce chegou ao nivel " + player.score.Points +
                     "!\nRecompensa: " + Mathf.Max(0, player.score.victoryReward) + " moedas";
+                if (!showedVictory && victoryRewardText && player.score)
+                    victoryRewardText.text = Mathf.Max(0, player.score.victoryReward).ToString("N0");
                 if (!showedVictory && victoryRestartButton && EventSystem.current)
                     EventSystem.current.SetSelectedGameObject(victoryRestartButton.gameObject);
                 else if (showedVictory && ReinicioVitoriaPressionado()) { Restart(); return; }
@@ -62,8 +70,15 @@ namespace Lumera.JumpForce
                 : player.JoystickPuloDisponivel ? "Segure e arraste PULAR para carregar o salto."
                 : player.Grounded ? "Pare para poder pular." : "Controle a direcao no ar";
             deathPanel.SetActive(player.Dead);
-            if (player.Dead && !showedDeath && EventSystem.current)
-                EventSystem.current.SetSelectedGameObject(restartButton.gameObject);
+            if (player.Dead && !showedDeath)
+            {
+                var score = player.score;
+                if (deathHeightText) deathHeightText.text = Mathf.FloorToInt(score ? score.MaximumHeight : 0).ToString("N0") + " M";
+                float record = score && score.plataforma ? score.plataforma.RecordeMetros : score ? score.MaximumHeight : 0;
+                if (deathRecordText) deathRecordText.text = Mathf.FloorToInt(record).ToString("N0") + " M";
+                if (restartButton && EventSystem.current)
+                    EventSystem.current.SetSelectedGameObject(restartButton.gameObject);
+            }
             showedDeath = player.Dead;
         }
         static bool ReinicioVitoriaPressionado()
@@ -73,6 +88,8 @@ namespace Lumera.JumpForce
             return (teclado != null && (teclado.enterKey.wasPressedThisFrame || teclado.spaceKey.wasPressedThisFrame)) ||
                 (controle != null && controle.buttonSouth.wasPressedThisFrame);
         }
+
+        public void MostrarGameplay(bool visivel) => DefinirVisibilidade(gameplayPanel, visivel);
 
         public void MostrarControles(bool visiveis)
         {

@@ -211,6 +211,18 @@ namespace Lumera.JumpForce
             textoRecorde.rectTransform.localScale = escalaOriginal * Mathf.Lerp(1, escalaPulso, Mathf.Sin(restante * Mathf.PI));
         }
 
+        public float RecordeMetros => Mathf.Max(recordeSalvo, placar ? placar.MaximumHeight : 0);
+        public long SaldoMoedas => Save ? Save.ObterMoedas() : 0;
+        public bool CarteiraDisponivel => Save;
+
+        // O nome ja identifica a paleta no save. Base64 evita delimitadores nas chaves.
+        static string ChaveSkin(string nome) => "skin_" +
+            System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(nome ?? ""));
+        public bool PaletaComprada(string nome) => Save &&
+            Save.ObterDadoJogo(idJogo, ChaveSkin(nome), "0") == "1";
+        public bool ComprarPaleta(string nome, int preco) => Save && !string.IsNullOrEmpty(nome) &&
+            Save.ComprarItemJogo(idJogo, ChaveSkin(nome), Mathf.Max(0, preco));
+
         // Paleta (roupa) escolhida no vestiario, pelo nome: continua certa se a lista de paletas mudar de ordem.
         public string PaletaSalva => Save ? Save.ObterDadoJogo(idJogo, ChavePaleta, "") : "";
 
