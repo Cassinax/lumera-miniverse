@@ -94,6 +94,9 @@ namespace Lumera.JumpForce
         public void Reiniciar(JumpForceTrailNode node, JumpForcePlayer player, JumpForceCamera camera)
         {
             Preparar();
+            // Teleportar/reutilizar as pecas invalida contatos fisicos da montagem anterior.
+            if (jogador) jogador.EsquecerApoio(this);
+            if (player && player != jogador) player.EsquecerApoio(this);
             estado = node;
             elemento = GetComponent<JumpForceSpawnedElement>();
             jogador = player;
@@ -132,6 +135,10 @@ namespace Lumera.JumpForce
                     junta.angularXMotion = junta.angularYMotion = junta.angularZMotion = ConfigurableJointMotion.Locked;
                 }
                 p.gameObject.SetActive((caidas & (1 << i)) == 0);
+                if (p.gameObject.activeInHierarchy) p.WakeUp();
+                // Juntas prendem as pecas ao corpo; colisao entre vizinhas so forca as emendas.
+                for (int j = 0; j < i; j++)
+                    if (colisores[i] && colisores[j]) Physics.IgnoreCollision(colisores[i], colisores[j], true);
             }
             if (visualNuvem) visualNuvem.localScale = escalaNuvem;
             Mostrar(true);
@@ -142,7 +149,10 @@ namespace Lumera.JumpForce
             float maximo = Mathf.Max(minimo, Mathf.Max(intervaloVisibilidade.x, intervaloVisibilidade.y));
             proximaTroca = Mathf.Lerp(minimo, maximo, (float)sorteio.NextDouble());
         }
-        bool Apoiado => jogador && jogador.Grounded && jogador.Support && jogador.Support.proprietario == this;
+        bool Apoiado => jogador && jogador.Grounded && jogador.Support &&
+            jogador.Support.gameObject.activeInHierarchy && jogador.Support.Surface &&
+            jogador.Support.Surface.enabled && jogador.Support.proprietario == this &&
+            (tipo != JumpForcePlatformType.Instavel || ParteMontada(jogador.Support));
         void Update()
         {
             if (tipo != JumpForcePlatformType.Invisivel || sorteio == null || (jogador && (!jogador.GameplayEnabled || jogador.Dead))) return;
@@ -185,7 +195,9 @@ namespace Lumera.JumpForce
             if (tipo != JumpForcePlatformType.Instavel) return;
             if (Quebrada && reconstrucaoEm > 0 && Time.time >= reconstrucaoEm)
             {
-                if (estado != null) estado.ReassembleIfDue(Time.time);
+                // O prazo local encerrou este ciclo: limpar o registro antes de restaurar as pecas.
+                // Nao herdar breakStarted/breakTimer da montagem que acabou de cair.
+                if (estado != null) estado.ResetBreakState();
                 Reiniciar(estado, jogador, cameraJogo);
                 if (elemento) elemento.RestaurarConteudo();
                 return;
@@ -271,6 +283,7 @@ namespace Lumera.JumpForce
         public void ResetarParaPool()
         {
             // Executado depois de SetActive(false); a Unity proibe reparentear dentro de OnDisable.
+            if (jogador) jogador.EsquecerApoio(this);
             for (int i = 0; i < partes.Length; i++)
             {
                 if (!partes[i]) continue;

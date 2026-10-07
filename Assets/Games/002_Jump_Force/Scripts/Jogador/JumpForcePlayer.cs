@@ -621,6 +621,27 @@ namespace Lumera.JumpForce
             }
         }
 
+        // Reconstruir uma plataforma teleporta seus colisores; OnCollisionExit pode nao ocorrer.
+        public void EsquecerApoio(JumpForcePlatformAbility plataforma)
+        {
+            for (int i = physicsContactCount - 1; i >= 0; i--)
+            {
+                GetContact(i, out Collider other, out _);
+                var surface = other ? other.GetComponent<JumpForcePlatform>() : null;
+                if (!other || (surface && surface.proprietario == plataforma))
+                    physicsContacts[i] = physicsContacts[--physicsContactCount];
+            }
+            landingSurfaces.RemoveWhere(surface => !surface || surface.proprietario == plataforma);
+            if (Support && Support.proprietario == plataforma)
+            {
+                Support = null;
+                Grounded = false;
+                ResetSupportVelocityTracking();
+            }
+            if (launchPlatform && launchPlatform.proprietario == plataforma) launchPlatform = null;
+            if (Target && Target.proprietario == plataforma) Target = null;
+        }
+
         void RememberContacts(Collision collision)
         {
             ForgetContacts(collision);

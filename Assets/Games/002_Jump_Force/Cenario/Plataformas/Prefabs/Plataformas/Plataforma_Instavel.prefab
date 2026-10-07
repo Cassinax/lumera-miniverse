@@ -148,8 +148,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.95396996, y: 0.28914845, z: 0.9656489}
-  m_Center: {x: -0.00426507, y: -0.15011317, z: -0.0015745163}
+  m_Size: {x: 1, y: 0.3, z: 1}
+  m_Center: {x: 0, y: -0.15, z: 0}
 --- !u!54 &7102925727881363150
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -286,9 +286,9 @@ ConfigurableJoint:
     positionDamper: 0
     maximumForce: 3.4028233e+38
     useAcceleration: 0
-  m_ProjectionMode: 0
-  m_ProjectionDistance: 0.1
-  m_ProjectionAngle: 180
+  m_ProjectionMode: 1
+  m_ProjectionDistance: 0.001
+  m_ProjectionAngle: 0.1
   m_ConfiguredInWorldSpace: 0
   m_SwapBodies: 0
   m_BreakForce: Infinity
@@ -321,8 +321,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.96321416, y: 0.30107456, z: 0.9681107}
-  m_Center: {x: -0.00035703182, y: -0.15607616, z: -0.0028054118}
+  m_Size: {x: 1, y: 0.3, z: 1}
+  m_Center: {x: 0, y: -0.15, z: 0}
 --- !u!54 &8638297476853194871
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -459,9 +459,9 @@ ConfigurableJoint:
     positionDamper: 0
     maximumForce: 3.4028233e+38
     useAcceleration: 0
-  m_ProjectionMode: 0
-  m_ProjectionDistance: 0.1
-  m_ProjectionAngle: 180
+  m_ProjectionMode: 1
+  m_ProjectionDistance: 0.001
+  m_ProjectionAngle: 0.1
   m_ConfiguredInWorldSpace: 0
   m_SwapBodies: 0
   m_BreakForce: Infinity
@@ -617,8 +617,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.95396996, y: 0.29759276, z: 0.9598094}
-  m_Center: {x: -0.00426507, y: -0.15923208, z: -0.0013452619}
+  m_Size: {x: 1, y: 0.3, z: 1}
+  m_Center: {x: 0, y: -0.15, z: 0}
 --- !u!54 &2950330466428112985
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -755,9 +755,9 @@ ConfigurableJoint:
     positionDamper: 0
     maximumForce: 3.4028233e+38
     useAcceleration: 0
-  m_ProjectionMode: 0
-  m_ProjectionDistance: 0.1
-  m_ProjectionAngle: 180
+  m_ProjectionMode: 1
+  m_ProjectionDistance: 0.001
+  m_ProjectionAngle: 0.1
   m_ConfiguredInWorldSpace: 0
   m_SwapBodies: 0
   m_BreakForce: Infinity
@@ -790,8 +790,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.9656489, y: 0.30546355, z: 0.9598093}
-  m_Center: {x: -0.0015743971, y: -0.15337384, z: -0.0013453364}
+  m_Size: {x: 1, y: 0.3, z: 1}
+  m_Center: {x: 0, y: -0.15, z: 0}
 --- !u!54 &4249196669255303342
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -928,9 +928,9 @@ ConfigurableJoint:
     positionDamper: 0
     maximumForce: 3.4028233e+38
     useAcceleration: 0
-  m_ProjectionMode: 0
-  m_ProjectionDistance: 0.1
-  m_ProjectionAngle: 180
+  m_ProjectionMode: 1
+  m_ProjectionDistance: 0.001
+  m_ProjectionAngle: 0.1
   m_ConfiguredInWorldSpace: 0
   m_SwapBodies: 0
   m_BreakForce: Infinity

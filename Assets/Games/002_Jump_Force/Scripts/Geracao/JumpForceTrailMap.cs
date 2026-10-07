@@ -125,10 +125,14 @@ namespace Lumera.JumpForce
         public bool ReassembleIfDue(float now)
         {
             if (reassembleAt <= 0 || now < reassembleAt) return false;
+            ResetBreakState();
+            return true;
+        }
+        public void ResetBreakState()
+        {
             breakStarted = destroyed = false;
             brokenPieces = 0;
             breakTimer = reassembleAt = 0;
-            return true;
         }
         public JumpForceSpecial special;
         public JumpForceMotionAxis axis;
